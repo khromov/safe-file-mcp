@@ -1,4 +1,6 @@
-# Everything MCP Server
+# safe-file-mcp
+
+_Work in progress_
 
 This MCP server attempts to exercise all the features of the MCP protocol. It is not intended to be a useful server, but rather a test server for builders of MCP clients. It implements prompts, tools, resources, sampling, and more to showcase MCP capabilities.
 
@@ -7,12 +9,14 @@ This MCP server attempts to exercise all the features of the MCP protocol. It is
 ### Tools
 
 1. `echo`
+
    - Simple tool to echo back input messages
    - Input:
      - `message` (string): Message to echo back
    - Returns: Text content with echoed message
 
 2. `add`
+
    - Adds two numbers together
    - Inputs:
      - `a` (number): First number
@@ -20,6 +24,7 @@ This MCP server attempts to exercise all the features of the MCP protocol. It is
    - Returns: Text result of the addition
 
 3. `longRunningOperation`
+
    - Demonstrates progress notifications for long operations
    - Inputs:
      - `duration` (number, default: 10): Duration in seconds
@@ -28,6 +33,7 @@ This MCP server attempts to exercise all the features of the MCP protocol. It is
    - Sends progress notifications during execution
 
 4. `sampleLLM`
+
    - Demonstrates LLM sampling capability using MCP sampling feature
    - Inputs:
      - `prompt` (string): The prompt to send to the LLM
@@ -35,17 +41,20 @@ This MCP server attempts to exercise all the features of the MCP protocol. It is
    - Returns: Generated LLM response
 
 5. `getTinyImage`
+
    - Returns a small test image
    - No inputs required
    - Returns: Base64 encoded PNG image data
 
 6. `printEnv`
+
    - Prints all environment variables
    - Useful for debugging MCP server configuration
    - No inputs required
    - Returns: JSON string of all environment variables
 
 7. `annotatedMessage`
+
    - Demonstrates how annotations can be used to provide metadata about content
    - Inputs:
      - `messageType` (enum: "error" | "success" | "debug"): Type of message to demonstrate different annotation patterns
@@ -75,7 +84,9 @@ This MCP server attempts to exercise all the features of the MCP protocol. It is
 ### Resources
 
 The server provides 100 test resources in two formats:
+
 - Even numbered resources:
+
   - Plaintext format
   - URI pattern: `test://static/resource/{even_number}`
   - Content: Simple text description
@@ -86,6 +97,7 @@ The server provides 100 test resources in two formats:
   - Content: Base64 encoded binary data
 
 Resource features:
+
 - Supports pagination (10 items per page)
 - Allows subscribing to resource updates
 - Demonstrates resource templates
@@ -94,10 +106,12 @@ Resource features:
 ### Prompts
 
 1. `simple_prompt`
+
    - Basic prompt without arguments
    - Returns: Single message exchange
 
 2. `complex_prompt`
+
    - Advanced prompt demonstrating argument handling
    - Required arguments:
      - `temperature` (number): Temperature setting
@@ -120,8 +134,8 @@ The server sends random-leveled log messages every 15 seconds, e.g.:
 {
   "method": "notifications/message",
   "params": {
-	"level": "info",
-	"data": "Info-level message"
+    "level": "info",
+    "data": "Info-level message"
   }
 }
 ```
@@ -135,10 +149,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "everything": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-everything"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
     }
   }
 }
@@ -190,28 +201,33 @@ npm run start:streamableHttp
 ```
 
 ## Running as an installed package
-### Install 
+
+### Install
+
 ```shell
 npm install -g @modelcontextprotocol/server-everything@latest
-````
+```
 
 ### Run the default (stdio) server
+
 ```shell
 npx @modelcontextprotocol/server-everything
 ```
 
 ### Or specify stdio explicitly
+
 ```shell
 npx @modelcontextprotocol/server-everything stdio
 ```
 
 ### Run the SSE server
+
 ```shell
 npx @modelcontextprotocol/server-everything sse
 ```
 
 ### Run the streamable HTTP server
+
 ```shell
 npx @modelcontextprotocol/server-everything streamableHttp
 ```
-
