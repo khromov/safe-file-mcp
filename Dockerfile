@@ -1,11 +1,12 @@
 FROM node:22.12-alpine AS builder
 
-COPY src/everything /app
-COPY tsconfig.json /tsconfig.json
-
 WORKDIR /app
 
-RUN --mount=type=cache,target=/root/.npm npm install
+COPY package.json package-lock.json tsconfig.json ./
+COPY *.ts instructions.md ./
+
+RUN npm install
+RUN npm run build
 
 FROM node:22-alpine AS release
 
