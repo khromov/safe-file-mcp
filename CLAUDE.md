@@ -7,34 +7,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build, Test & Run Commands
 - Build: `npm run build` - Compiles TypeScript to JavaScript and copies instructions.md to dist/
 - Watch mode: `npm run watch` - Watches for changes and rebuilds automatically  
-- Run server: `npm run start` - Starts the MCP server using stdio transport (default)
-- Run SSE server: `npm run start:sse` - Starts the MCP server with SSE transport (deprecated)
-- Run streamable HTTP server: `npm run start:streamableHttp` - Starts the MCP server with streamable HTTP transport
+- Run server: `npm run start` - Starts the MCP server using streamable HTTP transport
 
 ## Architecture Overview
 
-This is a comprehensive MCP (Model Context Protocol) server that implements all protocol features for testing and demonstration purposes. The codebase follows a modular transport architecture:
+This is a comprehensive MCP (Model Context Protocol) server that implements all protocol features for testing and demonstration purposes. The server uses streamable HTTP transport exclusively.
 
 ### Core Components
 - `everything.ts` - Main server implementation with all MCP features (tools, resources, prompts, sampling)
-- `index.ts` - Entry point that routes to different transport implementations based on CLI args
-- `stdio.ts` - Standard I/O transport (default for Claude Desktop integration)
-- `sse.ts` - Server-Sent Events transport over HTTP (deprecated)
+- `index.ts` - Entry point that starts the streamable HTTP server
 - `streamableHttp.ts` - Streamable HTTP transport with session management
 
 ### Transport Architecture
-The server supports multiple transport protocols through a unified interface:
-- **STDIO**: Direct process communication (primary usage)
-- **SSE**: HTTP with Server-Sent Events (legacy)
-- **Streamable HTTP**: Modern HTTP with streaming and session resumability
+The server uses streamable HTTP transport providing:
+- Modern HTTP with streaming capabilities
+- Session resumability
+- WebSocket-like bidirectional communication over HTTP
 
 ### MCP Protocol Implementation
-- **Tools**: 8 tools demonstrating various MCP capabilities (echo, add, longRunningOperation, sampleLLM, etc.)
+- **Tools**: 8 tools demonstrating various MCP capabilities (echo, add, longRunningOperation, sampleLLM, getTinyImage, printEnv, annotatedMessage, getResourceReference)
 - **Resources**: 100 test resources (even IDs = text, odd IDs = binary) with pagination and subscriptions
-- **Prompts**: 3 prompts showcasing argument handling and resource embedding
-- **Sampling**: LLM sampling capability integration
+- **Prompts**: 3 prompts showcasing argument handling and resource embedding (simple_prompt, complex_prompt, resource_prompt)
+- **Sampling**: LLM sampling capability integration via sampleLLM tool
 - **Progress Notifications**: Long-running operation progress tracking
-- **Logging**: Automatic log message generation with level filtering
+- **Logging**: Automatic log message generation with level filtering every 15 seconds
 
 ## Code Style Guidelines
 - Use ES modules with `.js` extension in import paths
@@ -64,6 +60,13 @@ The server supports multiple transport protocols through a unified interface:
 
 ## Testing Notes
 - Even-numbered resources (2, 4, 6...) contain plaintext
-- Odd-numbered resources (1, 3, 5...) contain binary data
+- Odd-numbered resources (1, 3, 5...) contain binary data  
 - Resources support pagination (10 items per page)
 - All tools include comprehensive input validation via zod schemas
+- No formal test suite - this is a demo/testing server for MCP protocol features
+
+## Package Information
+- Published as `@modelcontextprotocol/server-everything`
+- Binary executable: `mcp-server-everything`
+- Can be run via npx without installation: `npx -y @modelcontextprotocol/server-everything`
+- Only supports streamable HTTP transport (runs on HTTP server by default)
