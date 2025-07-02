@@ -27,9 +27,7 @@ The server uses streamable HTTP transport providing:
 
 ### MCP Protocol Implementation
 - **Tools**: 1 tool - echo (echoes back input messages)
-- **Resources**: 100 test resources (even IDs = text, odd IDs = binary) with pagination and subscriptions
-- **Prompts**: 3 prompts showcasing argument handling and resource embedding (simple_prompt, complex_prompt, resource_prompt)
-- **Logging**: Automatic log message generation with level filtering every 15 seconds
+- **Prompts**: 1 prompt - complex_prompt (demonstrates argument handling)
 
 ## Code Style Guidelines
 - Use ES modules with `.js` extension in import paths
