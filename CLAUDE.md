@@ -25,11 +25,9 @@ The server uses streamable HTTP transport providing:
 - WebSocket-like bidirectional communication over HTTP
 
 ### MCP Protocol Implementation
-- **Tools**: 8 tools demonstrating various MCP capabilities (echo, add, longRunningOperation, sampleLLM, getTinyImage, printEnv, annotatedMessage, getResourceReference)
+- **Tools**: 1 tool - echo (echoes back input messages)
 - **Resources**: 100 test resources (even IDs = text, odd IDs = binary) with pagination and subscriptions
 - **Prompts**: 3 prompts showcasing argument handling and resource embedding (simple_prompt, complex_prompt, resource_prompt)
-- **Sampling**: LLM sampling capability integration via sampleLLM tool
-- **Progress Notifications**: Long-running operation progress tracking
 - **Logging**: Automatic log message generation with level filtering every 15 seconds
 
 ## Code Style Guidelines
