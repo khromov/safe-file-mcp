@@ -22,7 +22,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
       transport = transports.get(sessionId)!;
     } else if (!sessionId) {
 
-      const { server, cleanup } = createServer();
+      const { server, cleanup } = await createServer();
 
       // New initialization request
       const eventStore = new InMemoryEventStore();

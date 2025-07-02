@@ -98,25 +98,27 @@ const GetFileInfoArgsSchema = z.object({
   path: z.string(),
 });
 
-export interface ServerConfig {
-  allowedDirectories: string[];
-}
-
-export const createServer = async (config: ServerConfig) => {
-  // Normalize and resolve allowed directories
-  const allowedDirectories = await Promise.all(
-    config.allowedDirectories.map(async (dir) => {
-      const expanded = expandHome(dir);
-      const absolute = path.resolve(expanded);
-      try {
-        const resolved = await fs.realpath(absolute);
-        return normalizePath(resolved);
-      } catch (error) {
-        // If directory doesn't exist yet, use the normalized absolute path
-        return normalizePath(absolute);
-      }
-    })
-  );
+// No longer need ServerConfig interface since we're hardcoding the directory
+export const createServer = async () => {
+  // Hardcoded allowed directory
+  const ALLOWED_DIRECTORY = '/app/mount';
+  
+  // Normalize and resolve the allowed directory
+  let allowedDirectory: string;
+  try {
+    const expanded = expandHome(ALLOWED_DIRECTORY);
+    const absolute = path.resolve(expanded);
+    const resolved = await fs.realpath(absolute);
+    allowedDirectory = normalizePath(resolved);
+  } catch (error) {
+    // If directory doesn't exist yet, use the normalized absolute path
+    const expanded = expandHome(ALLOWED_DIRECTORY);
+    const absolute = path.resolve(expanded);
+    allowedDirectory = normalizePath(absolute);
+  }
+  
+  // For compatibility with existing validation functions that expect an array
+  const allowedDirectories = [allowedDirectory];
 
   const server = new Server(
     {
@@ -204,7 +206,7 @@ export const createServer = async (config: ServerConfig) => {
           "if the file cannot be read. Use this tool when you need to examine " +
           "the contents of a single file. Use the 'head' parameter to read only " +
           "the first N lines of a file, or the 'tail' parameter to read only " +
-          "the last N lines of a file. Only works within allowed directories.",
+          "the last N lines of a file. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
       },
       {
@@ -214,7 +216,7 @@ export const createServer = async (config: ServerConfig) => {
           "efficient than reading files one by one when you need to analyze " +
           "or compare multiple files. Each file's content is returned with its " +
           "path as a reference. Failed reads for individual files won't stop " +
-          "the entire operation. Only works within allowed directories.",
+          "the entire operation. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(ReadMultipleFilesArgsSchema) as ToolInput,
       },
       {
@@ -222,7 +224,7 @@ export const createServer = async (config: ServerConfig) => {
         description:
           "Create a new file or completely overwrite an existing file with new content. " +
           "Use with caution as it will overwrite existing files without warning. " +
-          "Handles text content with proper encoding. Only works within allowed directories.",
+          "Handles text content with proper encoding. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
       },
       {
@@ -230,7 +232,7 @@ export const createServer = async (config: ServerConfig) => {
         description:
           "Make line-based edits to a text file. Each edit replaces exact line sequences " +
           "with new content. Returns a git-style diff showing the changes made. " +
-          "Only works within allowed directories.",
+          "Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
       },
       {
@@ -239,7 +241,7 @@ export const createServer = async (config: ServerConfig) => {
           "Create a new directory or ensure a directory exists. Can create multiple " +
           "nested directories in one operation. If the directory already exists, " +
           "this operation will succeed silently. Perfect for setting up directory " +
-          "structures for projects or ensuring required paths exist. Only works within allowed directories.",
+          "structures for projects or ensuring required paths exist. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
       },
       {
@@ -248,7 +250,7 @@ export const createServer = async (config: ServerConfig) => {
           "Get a detailed listing of all files and directories in a specified path. " +
           "Results clearly distinguish between files and directories with [FILE] and [DIR] " +
           "prefixes. This tool is essential for understanding directory structure and " +
-          "finding specific files within a directory. Only works within allowed directories.",
+          "finding specific files within a directory. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
       },
       {
@@ -257,7 +259,7 @@ export const createServer = async (config: ServerConfig) => {
           "Get a detailed listing of all files and directories in a specified path, including sizes. " +
           "Results clearly distinguish between files and directories with [FILE] and [DIR] " +
           "prefixes. This tool is useful for understanding directory structure and " +
-          "finding specific files within a directory. Only works within allowed directories.",
+          "finding specific files within a directory. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(ListDirectoryWithSizesArgsSchema) as ToolInput,
       },
       {
@@ -266,7 +268,7 @@ export const createServer = async (config: ServerConfig) => {
             "Get a recursive tree view of files and directories as a JSON structure. " +
             "Each entry includes 'name', 'type' (file/directory), and 'children' for directories. " +
             "Files have no children array, while directories always have a children array (which may be empty). " +
-            "The output is formatted with 2-space indentation for readability. Only works within allowed directories.",
+            "The output is formatted with 2-space indentation for readability. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
       },
       {
@@ -275,7 +277,7 @@ export const createServer = async (config: ServerConfig) => {
           "Move or rename files and directories. Can move files between directories " +
           "and rename them in a single operation. If the destination exists, the " +
           "operation will fail. Works across different directories and can be used " +
-          "for simple renaming within the same directory. Both source and destination must be within allowed directories.",
+          "for simple renaming within the same directory. Both source and destination must be within /app/mount directory.",
         inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
       },
       {
@@ -285,7 +287,7 @@ export const createServer = async (config: ServerConfig) => {
           "Searches through all subdirectories from the starting path. The search " +
           "is case-insensitive and matches partial names. Returns full paths to all " +
           "matching items. Great for finding files when you don't know their exact location. " +
-          "Only searches within allowed directories.",
+          "Only searches within /app/mount directory.",
         inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
       },
       {
@@ -294,7 +296,7 @@ export const createServer = async (config: ServerConfig) => {
           "Retrieve detailed metadata about a file or directory. Returns comprehensive " +
           "information including size, creation time, last modified time, permissions, " +
           "and type. This tool is perfect for understanding file characteristics " +
-          "without reading the actual content. Only works within allowed directories.",
+          "without reading the actual content. Only works within /app/mount directory.",
         inputSchema: zodToJsonSchema(GetFileInfoArgsSchema) as ToolInput,
       },
       {
@@ -550,7 +552,7 @@ export const createServer = async (config: ServerConfig) => {
           return {
             content: [{
               type: "text",
-              text: `Allowed directories:\n${allowedDirectories.join('\n')}`
+              text: `Allowed directory:\n${ALLOWED_DIRECTORY}`
             }],
           };
         }
