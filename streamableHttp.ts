@@ -157,7 +157,7 @@ app.listen(PORT, () => {
 });
 
 // Handle server shutdown
-process.on('SIGINT', async () => {
+const gracefulShutdown = async () => {
   console.error('Shutting down server...');
 
   // Close all active transports to properly clean up resources
@@ -173,4 +173,8 @@ process.on('SIGINT', async () => {
 
   console.error('Server shutdown complete');
   process.exit(0);
-});
+};
+
+// Handle both SIGINT (Ctrl+C) and SIGTERM (Docker stop)
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

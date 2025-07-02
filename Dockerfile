@@ -10,6 +10,9 @@ RUN npm run build
 
 FROM node:22-alpine AS release
 
+# Install tini for proper signal handling
+RUN apk add --no-cache tini
+
 WORKDIR /app
 
 COPY --from=builder /app/dist /app/dist
@@ -20,4 +23,6 @@ ENV NODE_ENV=production
 
 RUN npm ci --ignore-scripts --omit-dev
 
+# Use tini as entrypoint for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/index.js"]
