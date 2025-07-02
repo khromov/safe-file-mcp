@@ -4,6 +4,7 @@ import os from 'os';
 import { randomBytes } from 'crypto';
 import { createTwoFilesPatch } from 'diff';
 import { minimatch } from 'minimatch';
+import { FileInfo, TreeEntry } from './types.js';
 
 // TODO
 const isPathWithinAllowedDirectories = (requestedPath: string, allowedDirectories: string[]): boolean => {
@@ -64,16 +65,6 @@ export async function validatePath(requestedPath: string, allowedDirectories: st
   }
 }
 
-// File info interface
-export interface FileInfo {
-  size: number;
-  created: Date;
-  modified: Date;
-  accessed: Date;
-  isDirectory: boolean;
-  isFile: boolean;
-  permissions: string;
-}
 
 // Get file statistics
 export async function getFileStats(filePath: string): Promise<FileInfo> {
@@ -350,12 +341,6 @@ export async function headFile(filePath: string, numLines: number): Promise<stri
   }
 }
 
-// Tree entry interface for directory tree
-export interface TreeEntry {
-  name: string;
-  type: 'file' | 'directory';
-  children?: TreeEntry[];
-}
 
 // Build directory tree recursively
 export async function buildTree(currentPath: string, allowedDirectories: string[]): Promise<TreeEntry[]> {
