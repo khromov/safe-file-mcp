@@ -9,4 +9,3 @@ services:
       - ./mount:/app/mount
     environment:
       - NODE_ENV=production
-    restart: unless-stopped
