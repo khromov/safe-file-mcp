@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
@@ -40,41 +38,6 @@ try {
 } catch (error) {
   console.error("Warning: instructions.md not found, continuing without instructions");
 }
-
-// Command line argument parsing for allowed directories
-const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.error("Usage: mcp-server-filesystem <allowed-directory> [additional-directories...]");
-  process.exit(1);
-}
-
-// Store allowed directories in normalized and resolved form
-const allowedDirectories = await Promise.all(
-  args.map(async (dir) => {
-    const expanded = expandHome(dir);
-    const absolute = path.resolve(expanded);
-    try {
-      const resolved = await fs.realpath(absolute);
-      return normalizePath(resolved);
-    } catch (error) {
-      return normalizePath(absolute);
-    }
-  })
-);
-
-// Validate that all directories exist and are accessible
-await Promise.all(args.map(async (dir) => {
-  try {
-    const stats = await fs.stat(expandHome(dir));
-    if (!stats.isDirectory()) {
-      console.error(`Error: ${dir} is not a directory`);
-      process.exit(1);
-    }
-  } catch (error) {
-    console.error(`Error accessing directory ${dir}:`, error);
-    process.exit(1);
-  }
-}));
 
 // File system schema definitions
 const ReadFileArgsSchema = z.object({
@@ -135,7 +98,26 @@ const GetFileInfoArgsSchema = z.object({
   path: z.string(),
 });
 
-export const createServer = () => {
+export interface ServerConfig {
+  allowedDirectories: string[];
+}
+
+export const createServer = async (config: ServerConfig) => {
+  // Normalize and resolve allowed directories
+  const allowedDirectories = await Promise.all(
+    config.allowedDirectories.map(async (dir) => {
+      const expanded = expandHome(dir);
+      const absolute = path.resolve(expanded);
+      try {
+        const resolved = await fs.realpath(absolute);
+        return normalizePath(resolved);
+      } catch (error) {
+        // If directory doesn't exist yet, use the normalized absolute path
+        return normalizePath(absolute);
+      }
+    })
+  );
+
   const server = new Server(
     {
       name: "secure-filesystem-server",
