@@ -5,10 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # MCP "Everything" Server - Development Guidelines
 
 ## Build, Test & Run Commands
-- Build: `npm run build` - Compiles TypeScript to JavaScript
-- Watch mode: `npm run watch` - Watches for changes and rebuilds automatically
-- Run server: `npm run start` - Starts the MCP server using stdio transport
-- Run SSE server: `npm run start:sse` - Starts the MCP server with SSE transport
+- Build: `npm run build` - Compiles TypeScript to JavaScript and copies instructions.md to dist/
+- Watch mode: `npm run watch` - Watches for changes and rebuilds automatically  
+- Run server: `npm run start` - Starts the MCP server using stdio transport (default)
+- Run SSE server: `npm run start:sse` - Starts the MCP server with SSE transport (deprecated)
 - Run streamable HTTP server: `npm run start:streamableHttp` - Starts the MCP server with streamable HTTP transport
 
 ## Architecture Overview
