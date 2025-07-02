@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
     "watch": "tsc --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "dev": "nodemon"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.3",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "nodemon": "^3.1.10",
     "shx": "^0.4.0",
     "typescript": "^5.6.2"
   }

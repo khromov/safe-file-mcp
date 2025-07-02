@@ -1,0 +1,11 @@
+{
+  "watch": ["*.ts", "**/*.ts"],
+  "ext": "ts,json,md",
+  "ignore": ["dist/**", "node_modules/**", "*.test.ts"],
+  "exec": "npm run build && node dist/index.js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "signal": "SIGTERM",
+  "delay": 500
+}

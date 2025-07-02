@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Build: `npm run build` - Compiles TypeScript to JavaScript and copies instructions.md to dist/
 - Watch mode: `npm run watch` - Watches for changes and rebuilds automatically  
 - Run server: `npm run start` - Starts the MCP server using streamable HTTP transport
+- Development: `npm run dev` - Starts the server with auto-restart on code changes (uses nodemon)
 
 ## Architecture Overview
 
