@@ -1,7 +1,7 @@
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js';
 import express, { Request, Response } from "express";
-import { createServer } from "./everything.js";
+import { createServer } from "./mcp.js";
 import { randomUUID } from 'node:crypto';
 
 console.error('Starting Streamable HTTP server...');
@@ -18,7 +18,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
     let transport: StreamableHTTPServerTransport;
 
     if (sessionId && transports.has(sessionId)) {
-      // Reuse existing transport
+      // Reuse existing transport 
       transport = transports.get(sessionId)!;
     } else if (!sessionId) {
 
