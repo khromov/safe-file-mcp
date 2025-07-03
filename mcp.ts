@@ -14,9 +14,6 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { z } from "zod";
 import {
-  normalizePath,
-  expandHome,
-  validatePath,
   getFileStats,
   searchFiles,
   applyFileEdits,
@@ -41,17 +38,17 @@ try {
 
 // File system schema definitions
 const ReadFileArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")'),
   tail: z.number().optional().describe('If provided, returns only the last N lines of the file'),
   head: z.number().optional().describe('If provided, returns only the first N lines of the file')
 });
 
 const ReadMultipleFilesArgsSchema = z.object({
-  paths: z.array(z.string()),
+  paths: z.array(z.string()).describe('Array of relative paths from root directory'),
 });
 
 const WriteFileArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
   content: z.string(),
 });
 
@@ -61,64 +58,75 @@ const EditOperation = z.object({
 });
 
 const EditFileArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
   edits: z.array(EditOperation),
   dryRun: z.boolean().default(false).describe('Preview changes using git-style diff format')
 });
 
 const CreateDirectoryArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
 });
 
 const ListDirectoryArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory (use "./" for root)'),
 });
 
 const ListDirectoryWithSizesArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
   sortBy: z.enum(['name', 'size']).optional().default('name').describe('Sort entries by name or size'),
 });
 
 const DirectoryTreeArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
 });
 
 const MoveFileArgsSchema = z.object({
-  source: z.string(),
-  destination: z.string(),
+  source: z.string().describe('Relative path from root directory'),
+  destination: z.string().describe('Relative path from root directory'),
 });
 
 const SearchFilesArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
   pattern: z.string(),
   excludePatterns: z.array(z.string()).optional().default([])
 });
 
 const GetFileInfoArgsSchema = z.object({
-  path: z.string(),
+  path: z.string().describe('Relative path from root directory'),
 });
 
-// No longer need ServerConfig interface since we're hardcoding the directory
-export const createServer = async () => {
-  // Use environment-based directory selection
-  const ALLOWED_DIRECTORY = process.env.NODE_ENV === 'development' ? './mount' : '/app/mount';
-  
-  // Normalize and resolve the allowed directory
-  let allowedDirectory: string;
-  try {
-    const expanded = expandHome(ALLOWED_DIRECTORY);
-    const absolute = path.resolve(expanded);
-    const resolved = await fs.realpath(absolute);
-    allowedDirectory = normalizePath(resolved);
-  } catch (error) {
-    // If directory doesn't exist yet, use the normalized absolute path
-    const expanded = expandHome(ALLOWED_DIRECTORY);
-    const absolute = path.resolve(expanded);
-    allowedDirectory = normalizePath(absolute);
+// Helper function to resolve relative paths to the actual file system location
+function resolveRelativePath(relativePath: string, rootDir: string): string {
+  // Ensure the path starts with ./
+  if (!relativePath.startsWith('./')) {
+    relativePath = './' + relativePath;
   }
   
-  // For compatibility with existing validation functions that expect an array
-  const allowedDirectories = [allowedDirectory];
+  // Remove ./ prefix and resolve against root directory
+  const cleanPath = relativePath.slice(2);
+  return path.join(rootDir, cleanPath);
+}
+
+// Validate that a path is relative and within bounds
+function validateRelativePath(relativePath: string): void {
+  // Must start with ./ or be exactly .
+  if (!relativePath.startsWith('./') && relativePath !== '.') {
+    throw new Error(`Path must be relative and start with "./" (got: ${relativePath})`);
+  }
+  
+  // Normalize the path and check for directory traversal
+  const normalized = path.normalize(relativePath);
+  if (normalized.includes('..')) {
+    throw new Error(`Path cannot contain parent directory references (got: ${relativePath})`);
+  }
+}
+
+export const createServer = async () => {
+  // Determine the root directory based on environment
+  const ROOT_DIR = process.env.NODE_ENV === 'development' ? './mount' : './';
+  
+  // Resolve to absolute path for internal use only
+  const absoluteRootDir = path.resolve(ROOT_DIR);
 
   const server = new Server(
     {
@@ -199,116 +207,104 @@ export const createServer = async () => {
         inputSchema: zodToJsonSchema(EchoSchema) as ToolInput,
       },
       {
+        name: "read_root_directory",
+        description:
+          "Read the contents of the root directory. This should be your first command when exploring the file system. " +
+          "After calling this, use relative paths starting with './' for all other file operations " +
+          "(e.g., './file.txt' for a file in root, './folder/file.txt' for a file in a subdirectory).",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+        },
+      },
+      {
         name: "read_file",
         description:
           "Read the complete contents of a file from the file system. " +
-          "Handles various text encodings and provides detailed error messages " +
-          "if the file cannot be read. Use this tool when you need to examine " +
-          "the contents of a single file. Use the 'head' parameter to read only " +
-          "the first N lines of a file, or the 'tail' parameter to read only " +
-          "the last N lines of a file. Only works within /app/mount directory.",
+          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt'). " +
+          "Use 'head' parameter to read only the first N lines, or 'tail' parameter to read only the last N lines.",
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
       },
       {
         name: "read_multiple_files",
         description:
-          "Read the contents of multiple files simultaneously. This is more " +
-          "efficient than reading files one by one when you need to analyze " +
-          "or compare multiple files. Each file's content is returned with its " +
-          "path as a reference. Failed reads for individual files won't stop " +
-          "the entire operation. Only works within /app/mount directory.",
+          "Read the contents of multiple files simultaneously. " +
+          "Use relative paths starting with './' for each file. " +
+          "More efficient than reading files one by one when you need to analyze or compare multiple files.",
         inputSchema: zodToJsonSchema(ReadMultipleFilesArgsSchema) as ToolInput,
       },
       {
         name: "write_file",
         description:
           "Create a new file or completely overwrite an existing file with new content. " +
-          "Use with caution as it will overwrite existing files without warning. " +
-          "Handles text content with proper encoding. Only works within /app/mount directory.",
+          "Use relative paths starting with './' (e.g., './newfile.txt', './folder/file.txt'). " +
+          "Use with caution as it will overwrite existing files without warning.",
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
       },
       {
         name: "edit_file",
         description:
-          "Make line-based edits to a text file. Each edit replaces exact line sequences " +
-          "with new content. Returns a git-style diff showing the changes made. " +
-          "Only works within /app/mount directory.",
+          "Make line-based edits to a text file. Each edit replaces exact line sequences with new content. " +
+          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt'). " +
+          "Returns a git-style diff showing the changes made.",
         inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
       },
       {
         name: "create_directory",
         description:
-          "Create a new directory or ensure a directory exists. Can create multiple " +
-          "nested directories in one operation. If the directory already exists, " +
-          "this operation will succeed silently. Perfect for setting up directory " +
-          "structures for projects or ensuring required paths exist. Only works within /app/mount directory.",
+          "Create a new directory or ensure a directory exists. " +
+          "Use relative paths starting with './' (e.g., './newfolder', './parent/child'). " +
+          "Can create multiple nested directories in one operation.",
         inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
       },
       {
         name: "list_directory",
         description:
           "Get a detailed listing of all files and directories in a specified path. " +
-          "Results clearly distinguish between files and directories with [FILE] and [DIR] " +
-          "prefixes. This tool is essential for understanding directory structure and " +
-          "finding specific files within a directory. Only works within /app/mount directory.",
+          "Use relative paths starting with './' (use './' for root directory). " +
+          "Results show [FILE] and [DIR] prefixes to distinguish between files and directories.",
         inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
       },
       {
         name: "list_directory_with_sizes",
         description:
-          "Get a detailed listing of all files and directories in a specified path, including sizes. " +
-          "Results clearly distinguish between files and directories with [FILE] and [DIR] " +
-          "prefixes. This tool is useful for understanding directory structure and " +
-          "finding specific files within a directory. Only works within /app/mount directory.",
+          "Get a detailed listing of all files and directories in a specified path, including file sizes. " +
+          "Use relative paths starting with './' (use './' for root directory). " +
+          "Results can be sorted by name or size.",
         inputSchema: zodToJsonSchema(ListDirectoryWithSizesArgsSchema) as ToolInput,
       },
       {
         name: "directory_tree",
         description:
             "Get a recursive tree view of files and directories as a JSON structure. " +
-            "Each entry includes 'name', 'type' (file/directory), and 'children' for directories. " +
-            "Files have no children array, while directories always have a children array (which may be empty). " +
-            "The output is formatted with 2-space indentation for readability. Only works within /app/mount directory.",
+            "Use relative paths starting with './' (use './' for root directory). " +
+            "Returns a structured view of the entire directory hierarchy.",
         inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
       },
       {
         name: "move_file",
         description:
-          "Move or rename files and directories. Can move files between directories " +
-          "and rename them in a single operation. If the destination exists, the " +
-          "operation will fail. Works across different directories and can be used " +
-          "for simple renaming within the same directory. Both source and destination must be within /app/mount directory.",
+          "Move or rename files and directories. " +
+          "Use relative paths starting with './' for both source and destination. " +
+          "Can move files between directories and rename them in a single operation.",
         inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
       },
       {
         name: "search_files",
         description:
           "Recursively search for files and directories matching a pattern. " +
-          "Searches through all subdirectories from the starting path. The search " +
-          "is case-insensitive and matches partial names. Returns full paths to all " +
-          "matching items. Great for finding files when you don't know their exact location. " +
-          "Only searches within /app/mount directory.",
+          "Use relative paths starting with './' for the search root. " +
+          "The search is case-insensitive and matches partial names.",
         inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
       },
       {
         name: "get_file_info",
         description:
-          "Retrieve detailed metadata about a file or directory. Returns comprehensive " +
-          "information including size, creation time, last modified time, permissions, " +
-          "and type. This tool is perfect for understanding file characteristics " +
-          "without reading the actual content. Only works within /app/mount directory.",
+          "Retrieve detailed metadata about a file or directory. " +
+          "Use relative paths starting with './' (e.g., './file.txt', './folder'). " +
+          "Returns information including size, timestamps, permissions, and type.",
         inputSchema: zodToJsonSchema(GetFileInfoArgsSchema) as ToolInput,
-      },
-      {
-        name: "list_allowed_directories",
-        description:
-          "Returns the list of directories that this server is allowed to access. " +
-          "Use this to understand which directories are available before trying to access files.",
-        inputSchema: {
-          type: "object",
-          properties: {},
-          required: [],
-        },
       },
     ];
 
@@ -329,32 +325,53 @@ export const createServer = async () => {
     // Handle file system tools
     try {
       switch (name) {
+        case "read_root_directory": {
+          try {
+            const entries = await fs.readdir(absoluteRootDir, { withFileTypes: true });
+            const formatted = entries
+              .map((entry) => `${entry.isDirectory() ? "[DIR]" : "[FILE]"} ${entry.name}`)
+              .join("\n");
+            
+            const instructions = "\n\nUse relative paths starting with './' for all file operations. " +
+              "For example: './file.txt' for files in root, './folder/file.txt' for files in subdirectories.";
+            
+            return {
+              content: [{ type: "text", text: formatted + instructions }],
+            };
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to read root directory: ${errorMessage}`);
+          }
+        }
+
         case "read_file": {
           const parsed = ReadFileArgsSchema.safeParse(args);
           if (!parsed.success) {
             throw new Error(`Invalid arguments for read_file: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
+          
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
           
           if (parsed.data.head && parsed.data.tail) {
             throw new Error("Cannot specify both head and tail parameters simultaneously");
           }
           
           if (parsed.data.tail) {
-            const tailContent = await tailFile(validPath, parsed.data.tail);
+            const tailContent = await tailFile(absolutePath, parsed.data.tail);
             return {
               content: [{ type: "text", text: tailContent }],
             };
           }
           
           if (parsed.data.head) {
-            const headContent = await headFile(validPath, parsed.data.head);
+            const headContent = await headFile(absolutePath, parsed.data.head);
             return {
               content: [{ type: "text", text: headContent }],
             };
           }
           
-          const content = await fs.readFile(validPath, "utf-8");
+          const content = await fs.readFile(absolutePath, "utf-8");
           return {
             content: [{ type: "text", text: content }],
           };
@@ -368,8 +385,9 @@ export const createServer = async () => {
           const results = await Promise.all(
             parsed.data.paths.map(async (filePath: string) => {
               try {
-                const validPath = await validatePath(filePath, allowedDirectories);
-                const content = await fs.readFile(validPath, "utf-8");
+                validateRelativePath(filePath);
+                const absolutePath = resolveRelativePath(filePath, absoluteRootDir);
+                const content = await fs.readFile(absolutePath, "utf-8");
                 return `${filePath}:\n${content}\n`;
               } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
@@ -387,8 +405,14 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for write_file: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          await writeFileSecure(validPath, parsed.data.content);
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          
+          // Ensure parent directory exists
+          const parentDir = path.dirname(absolutePath);
+          await fs.mkdir(parentDir, { recursive: true });
+          
+          await writeFileSecure(absolutePath, parsed.data.content);
           return {
             content: [{ type: "text", text: `Successfully wrote to ${parsed.data.path}` }],
           };
@@ -399,8 +423,9 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for edit_file: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          const result = await applyFileEdits(validPath, parsed.data.edits, parsed.data.dryRun);
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          const result = await applyFileEdits(absolutePath, parsed.data.edits, parsed.data.dryRun);
           return {
             content: [{ type: "text", text: result }],
           };
@@ -411,8 +436,9 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for create_directory: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          await fs.mkdir(validPath, { recursive: true });
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          await fs.mkdir(absolutePath, { recursive: true });
           return {
             content: [{ type: "text", text: `Successfully created directory ${parsed.data.path}` }],
           };
@@ -423,8 +449,9 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for list_directory: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          const entries = await fs.readdir(validPath, { withFileTypes: true });
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          const entries = await fs.readdir(absolutePath, { withFileTypes: true });
           const formatted = entries
             .map((entry) => `${entry.isDirectory() ? "[DIR]" : "[FILE]"} ${entry.name}`)
             .join("\n");
@@ -438,12 +465,13 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for list_directory_with_sizes: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          const entries = await fs.readdir(validPath, { withFileTypes: true });
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          const entries = await fs.readdir(absolutePath, { withFileTypes: true });
           
           const detailedEntries = await Promise.all(
             entries.map(async (entry) => {
-              const entryPath = path.join(validPath, entry.name);
+              const entryPath = path.join(absolutePath, entry.name);
               try {
                 const stats = await fs.stat(entryPath);
                 return {
@@ -499,8 +527,10 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for directory_tree: ${parsed.error}`);
           }
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
 
-          const treeData = await buildTree(parsed.data.path, allowedDirectories);
+          const treeData = await buildTree(absolutePath, [absoluteRootDir]);
           return {
             content: [{
               type: "text",
@@ -514,9 +544,16 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for move_file: ${parsed.error}`);
           }
-          const validSourcePath = await validatePath(parsed.data.source, allowedDirectories);
-          const validDestPath = await validatePath(parsed.data.destination, allowedDirectories);
-          await fs.rename(validSourcePath, validDestPath);
+          validateRelativePath(parsed.data.source);
+          validateRelativePath(parsed.data.destination);
+          const absoluteSource = resolveRelativePath(parsed.data.source, absoluteRootDir);
+          const absoluteDest = resolveRelativePath(parsed.data.destination, absoluteRootDir);
+          
+          // Ensure destination parent directory exists
+          const destParentDir = path.dirname(absoluteDest);
+          await fs.mkdir(destParentDir, { recursive: true });
+          
+          await fs.rename(absoluteSource, absoluteDest);
           return {
             content: [{ type: "text", text: `Successfully moved ${parsed.data.source} to ${parsed.data.destination}` }],
           };
@@ -527,10 +564,18 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for search_files: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          const results = await searchFiles(validPath, parsed.data.pattern, parsed.data.excludePatterns, allowedDirectories);
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          const results = await searchFiles(absolutePath, parsed.data.pattern, parsed.data.excludePatterns, [absoluteRootDir]);
+          
+          // Convert absolute paths back to relative paths for display
+          const relativePaths = results.map(absPath => {
+            const relPath = path.relative(absoluteRootDir, absPath);
+            return './' + relPath;
+          });
+          
           return {
-            content: [{ type: "text", text: results.length > 0 ? results.join("\n") : "No matches found" }],
+            content: [{ type: "text", text: relativePaths.length > 0 ? relativePaths.join("\n") : "No matches found" }],
           };
         }
 
@@ -539,21 +584,13 @@ export const createServer = async () => {
           if (!parsed.success) {
             throw new Error(`Invalid arguments for get_file_info: ${parsed.error}`);
           }
-          const validPath = await validatePath(parsed.data.path, allowedDirectories);
-          const info = await getFileStats(validPath);
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          const info = await getFileStats(absolutePath);
           return {
             content: [{ type: "text", text: Object.entries(info)
               .map(([key, value]) => `${key}: ${value}`)
               .join("\n") }],
-          };
-        }
-
-        case "list_allowed_directories": {
-          return {
-            content: [{
-              type: "text",
-              text: `Allowed directory:\n${ALLOWED_DIRECTORY}`
-            }],
           };
         }
 
