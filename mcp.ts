@@ -100,8 +100,8 @@ const GetFileInfoArgsSchema = z.object({
 
 // No longer need ServerConfig interface since we're hardcoding the directory
 export const createServer = async () => {
-  // Hardcoded allowed directory
-  const ALLOWED_DIRECTORY = '/app/mount';
+  // Use environment-based directory selection
+  const ALLOWED_DIRECTORY = process.env.NODE_ENV === 'development' ? './mount' : '/app/mount';
   
   // Normalize and resolve the allowed directory
   let allowedDirectory: string;

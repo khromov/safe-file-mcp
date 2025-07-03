@@ -17,7 +17,7 @@
     "build": "tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "dev": "nodemon"
+    "dev": "NODE_ENV=development nodemon"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.3",
