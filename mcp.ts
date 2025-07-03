@@ -477,7 +477,7 @@ export const createServer = async () => {
           validateRelativePath(parsed.data.path);
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
 
-          const treeData = await buildTree(absolutePath, [absoluteRootDir]);
+          const treeData = await buildTree(absolutePath, [absoluteRootDir], absoluteRootDir);
           return {
             content: [{
               type: "text",
