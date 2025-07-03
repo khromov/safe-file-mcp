@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   mcp-server:
     build: .
+    # image: ghcr.io/khromov/safe-file-mcp:main
     ports:
       - "3001:3001"
     volumes:
