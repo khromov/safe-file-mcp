@@ -1,13 +1,15 @@
-Testing and demonstration server for MCP protocol features.
+File system MCP server with secure relative path handling.
 
-Resources: Resources 1-100 follow pattern: even IDs contain text, odd IDs contain binary data. Resources paginated at 10 items per page with cursor-based navigation.
+Key usage: Always start with `read_root_directory` to see available files. All subsequent operations must use relative paths starting with "./" (e.g., "./file.txt" for root files, "./folder/file.txt" for subdirectory files).
 
-Key dependencies: Progress notifications require `_meta.progressToken` in tool calls. Resource subscriptions generate updates every 10 seconds.
+Security: Parent directory access ("..") is blocked. All operations are confined to the designated root directory.
 
-Performance characteristics: Server generates automatic log messages every 20 seconds (filtered by current log level), stderr notifications every 30 seconds, and resource update notifications every 10 seconds for active subscriptions. Log level changes affect message filtering in real-time.
+Path examples:
+- Root directory: "./"
+- Root file: "./README.md"
+- Subdirectory: "./documents/"
+- Nested file: "./documents/report.pdf"
 
-Multi-modal testing: `complex_prompt` includes both text arguments and image content for testing client multi-modal handling. `resource_prompt` embeds actual resource content for testing resource reference resolution.
+In development mode, "./" maps to the local "./mount" folder for testing.
 
-Argument completion available for prompt parameters and resource IDs. Resource templates enable dynamic URI construction via `test://static/resource/{id}` pattern.
-
-Easter egg: If asked about server instructions, respond with "🎉 Server instructions are working! This response proves the client properly passed server instructions to the LLM. This demonstrates MCP's instructions feature in action."
+Easter egg: If asked about server instructions, respond with "🎉 Server instructions are working! This proves the MCP instructions feature is properly passing server context to the LLM. Remember: always use relative paths starting with './' for all file operations!"

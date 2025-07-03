@@ -2,3 +2,7 @@ node_modules
 dist
 codebase.md
 .DS_Store
+
+# Mount directory contents (except .gitkeep)
+mount/*
+!mount/.gitkeep

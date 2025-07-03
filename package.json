@@ -1,14 +1,14 @@
 {
-  "name": "@modelcontextprotocol/server-everything",
-  "version": "0.6.2",
-  "description": "MCP server that exercises all the features of the MCP protocol",
+  "name": "@modelcontextprotocol/server-filesystem",
+  "version": "1.0.0",
+  "description": "MCP server providing secure file system operations with relative path handling",
   "license": "MIT",
   "author": "Anthropic, PBC (https://anthropic.com)",
   "homepage": "https://modelcontextprotocol.io",
   "bugs": "https://github.com/modelcontextprotocol/servers/issues",
   "type": "module",
   "bin": {
-    "mcp-server-everything": "dist/index.js"
+    "mcp-server-filesystem": "dist/index.js"
   },
   "files": [
     "dist"

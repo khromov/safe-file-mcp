@@ -566,7 +566,7 @@ export const createServer = async () => {
           }
           validateRelativePath(parsed.data.path);
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
-          const results = await searchFiles(absolutePath, parsed.data.pattern, parsed.data.excludePatterns, [absoluteRootDir]);
+          const results = await searchFiles(absolutePath, parsed.data.pattern, parsed.data.excludePatterns);
           
           // Convert absolute paths back to relative paths for display
           const relativePaths = results.map(absPath => {

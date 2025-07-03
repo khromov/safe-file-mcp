@@ -2,22 +2,7 @@
 
 _Work in progress_
 
-This MCP server attempts to exercise all the features of the MCP protocol. It is not intended to be a useful server, but rather a test server for builders of MCP clients. It implements prompts, tools, resources, sampling, and more to showcase MCP capabilities.
-
-## File System Access
-
-This server provides secure file system access using **relative paths only**. All file operations must use paths starting with `./` (e.g., `./file.txt`, `./folder/file.txt`).
-
-### Getting Started
-
-1. First, call `read_root_directory` to see what files and directories are available
-2. All subsequent file operations should use relative paths starting with `./`
-
-### Path Examples
-
-- `./hello.txt` - Access a file in the root directory
-- `./folder/document.txt` - Access a file in a subdirectory
-- `./data/` - Access a directory
+This MCP server provides secure file system operations with relative path handling. It implements a comprehensive set of file management tools while ensuring all operations are contained within a designated root directory.
 
 ## Components
 
@@ -30,171 +15,114 @@ This server provides secure file system access using **relative paths only**. Al
    - Returns: Text content with echoed message
 
 2. `read_root_directory`
-   - **Call this first!** Lists the contents of the root directory
+   - Read the contents of the root directory
+   - This should be your first command when exploring the file system
    - No inputs required
-   - Returns: List of files and directories with instructions to use relative paths
+   - Returns: List of files and directories in the root, with instructions to use relative paths
 
 3. `read_file`
    - Read the complete contents of a file
    - Inputs:
-     - `path` (string): Relative path starting with `./`
-     - `tail` (number, optional): Return only the last N lines
-     - `head` (number, optional): Return only the first N lines
-   - Returns: File contents
+     - `path` (string): Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")
+     - `tail` (number, optional): If provided, returns only the last N lines
+     - `head` (number, optional): If provided, returns only the first N lines
+   - Returns: File content as text
 
 4. `read_multiple_files`
-   - Read contents of multiple files simultaneously
-   - Inputs:
-     - `paths` (array): Array of relative paths starting with `./`
-   - Returns: Contents of all files
+   - Read the contents of multiple files simultaneously
+   - Input:
+     - `paths` (array of strings): Array of relative paths from root directory
+   - Returns: Combined content of all files with separators
 
 5. `write_file`
-   - Create or overwrite a file
+   - Create a new file or overwrite an existing file
    - Inputs:
-     - `path` (string): Relative path starting with `./`
-     - `content` (string): File content
-   - Returns: Success message
+     - `path` (string): Relative path from root directory
+     - `content` (string): Content to write to the file
+   - Returns: Success confirmation
 
 6. `edit_file`
    - Make line-based edits to a text file
    - Inputs:
-     - `path` (string): Relative path starting with `./`
-     - `edits` (array): Array of {oldText, newText} replacements
-     - `dryRun` (boolean): Preview changes without applying
-   - Returns: Git-style diff of changes
+     - `path` (string): Relative path from root directory
+     - `edits` (array): Array of edit operations with oldText and newText
+     - `dryRun` (boolean, default: false): Preview changes as diff without applying
+   - Returns: Git-style diff showing changes made
 
 7. `create_directory`
-   - Create a new directory
-   - Inputs:
-     - `path` (string): Relative path starting with `./`
-   - Returns: Success message
+   - Create a new directory or ensure a directory exists
+   - Input:
+     - `path` (string): Relative path from root directory
+   - Returns: Success confirmation
 
 8. `list_directory`
-   - List contents of a directory
-   - Inputs:
-     - `path` (string): Relative path starting with `./`
-   - Returns: List of files and directories
+   - Get a listing of files and directories
+   - Input:
+     - `path` (string): Relative path from root directory (use "./" for root)
+   - Returns: List with [FILE] and [DIR] prefixes
 
 9. `list_directory_with_sizes`
-   - List directory contents with file sizes
+   - Get a detailed listing including file sizes
    - Inputs:
-     - `path` (string): Relative path starting with `./`
-     - `sortBy` (string): Sort by "name" or "size"
-   - Returns: Detailed directory listing
+     - `path` (string): Relative path from root directory
+     - `sortBy` (string, optional): Sort by "name" or "size"
+   - Returns: Detailed listing with sizes and summary
 
 10. `directory_tree`
-    - Get recursive tree view as JSON
-    - Inputs:
-      - `path` (string): Relative path starting with `./`
-    - Returns: JSON tree structure
+    - Get a recursive tree view as JSON
+    - Input:
+      - `path` (string): Relative path from root directory
+    - Returns: JSON structure of the directory tree
 
 11. `move_file`
-    - Move or rename files/directories
+    - Move or rename files and directories
     - Inputs:
-      - `source` (string): Relative source path starting with `./`
-      - `destination` (string): Relative destination path starting with `./`
-    - Returns: Success message
+      - `source` (string): Source relative path
+      - `destination` (string): Destination relative path
+    - Returns: Success confirmation
 
 12. `search_files`
-    - Recursively search for files
+    - Recursively search for files matching a pattern
     - Inputs:
-      - `path` (string): Relative path to start search
-      - `pattern` (string): Search pattern
-      - `excludePatterns` (array): Patterns to exclude
+      - `path` (string): Starting directory (relative path)
+      - `pattern` (string): Search pattern (case-insensitive)
+      - `excludePatterns` (array, optional): Patterns to exclude
     - Returns: List of matching file paths
 
 13. `get_file_info`
-    - Get detailed file metadata
-    - Inputs:
-      - `path` (string): Relative path starting with `./`
-    - Returns: File statistics
-
-### Resources
-
-The server provides 100 test resources in two formats:
-
-- Even numbered resources:
-  - Plaintext format
-  - URI pattern: `test://static/resource/{even_number}`
-  - Content: Simple text description
-
-- Odd numbered resources:
-  - Binary blob format
-  - URI pattern: `test://static/resource/{odd_number}`
-  - Content: Base64 encoded binary data
-
-Resource features:
-- Supports pagination (10 items per page)
-- Allows subscribing to resource updates
-- Demonstrates resource templates
-- Auto-updates subscribed resources every 5 seconds
+    - Get detailed metadata about a file or directory
+    - Input:
+      - `path` (string): Relative path from root directory
+    - Returns: File statistics including size, dates, type, and permissions
 
 ### Prompts
 
-1. `simple_prompt`
-   - Basic prompt without arguments
-   - Returns: Single message exchange
-
-2. `complex_prompt`
+1. `complex_prompt`
    - Advanced prompt demonstrating argument handling
    - Required arguments:
      - `temperature` (number): Temperature setting
    - Optional arguments:
      - `style` (string): Output style preference
-   - Returns: Multi-turn conversation with images
+   - Returns: Multi-turn conversation demonstrating prompt capabilities
 
-3. `resource_prompt`
-   - Demonstrates embedding resource references in prompts
-   - Required arguments:
-     - `resourceId` (number): ID of the resource to embed (1-100)
-   - Returns: Multi-turn conversation with an embedded resource reference
-   - Shows how to include resources directly in prompt messages
+## Usage
 
-### Logging
+All file operations use relative paths starting with "./". The server operates within a designated root directory:
+- In development mode: Maps to the local `./mount` folder
+- In production mode: Maps to the current directory
 
-The server sends random-leveled log messages every 15 seconds, e.g.:
+### Path Examples
+- Root directory file: `./file.txt`
+- Subdirectory file: `./folder/file.txt`
+- Nested directory: `./parent/child/file.txt`
 
-```json
-{
-  "method": "notifications/message",
-  "params": {
-    "level": "info",
-    "data": "Info-level message"
-  }
-}
-```
+## Security Features
 
-## Usage with HTTP Clients
-
-This server only supports streamable HTTP transport. Start the server and connect via HTTP:
-
-```bash
-npm run start
-```
-
-The server will start on the default HTTP port and accept MCP connections via streamable HTTP protocol.
-
-## Running with Docker
-
-The server can be run in a Docker container with a mounted volume:
-
-```bash
-# Build the image
-docker build -t mcp-server .
-
-# Run with a mounted directory
-docker run -p 3001:3001 -v /path/to/your/files:/app/mount mcp-server
-```
-
-The mounted directory at `/app/mount` becomes the root directory for all file operations.
-
-## Development Mode
-
-In development mode, the `./mount` directory in the project is used as the root:
-
-```bash
-npm run dev
-```
+- All paths must be relative and start with "./"
+- Parent directory references ("..") are not allowed
+- Operations are confined to the designated root directory
+- Atomic file operations prevent race conditions
+- Secure file writing with exclusive creation flags
 
 ## Running from source
 
@@ -204,22 +132,18 @@ npm run build
 npm run start
 ```
 
-## Running as an installed package
-
-### Install
+## Development Mode
 
 ```shell
-npm install -g @modelcontextprotocol/server-everything@latest
+npm run dev
 ```
 
-### Run the server
+This starts the server with auto-restart on code changes and maps "./" to the local "./mount" directory.
+
+## Running with Docker
 
 ```shell
-npx @modelcontextprotocol/server-everything
+docker-compose up
 ```
 
-## Run MCP inspector
-
-```
-npx @modelcontextprotocol/inspector
-```
+The Docker container maps the local `./mount` directory to the container's root directory for file operations.

@@ -12,19 +12,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a comprehensive MCP (Model Context Protocol) server that implements all protocol features for testing and demonstration purposes. The server uses streamable HTTP transport exclusively.
+This is a comprehensive MCP (Model Context Protocol) server that implements file system operations with secure relative path handling. The server uses streamable HTTP transport exclusively.
 
 ### Core Components
-- `everything.ts` - Main server implementation with all MCP features (tools, resources, prompts, sampling)
+- `mcp.ts` - Main MCP server implementation with file system tools
 - `index.ts` - Entry point that starts the streamable HTTP server
 - `streamableHttp.ts` - Streamable HTTP transport with session management
-- `mcp.ts` - File system operations server with relative path support
-
-### File System Access
-- **All file operations use relative paths starting with `./`**
-- In development mode: `./` maps to the local `./mount` directory
-- In production (Docker): `./` maps to the mounted volume at `/app/mount`
-- First operation should always be `read_root_directory` to understand available files
+- `file-operations.ts` - File system utilities and operations
+- `types.ts` - TypeScript type definitions
 
 ### Transport Architecture
 The server uses streamable HTTP transport providing:
@@ -34,19 +29,17 @@ The server uses streamable HTTP transport providing:
 
 ### MCP Protocol Implementation
 - **Tools**: 13 file system tools + echo tool
-  - `read_root_directory` - Lists root directory contents (call this first!)
-  - `read_file` - Read file contents with optional head/tail
-  - `write_file` - Create or overwrite files
-  - `edit_file` - Make line-based edits with diff preview
-  - `create_directory` - Create directories
-  - `list_directory` - List directory contents
-  - `list_directory_with_sizes` - List with file sizes
-  - `directory_tree` - Get JSON tree structure
-  - `move_file` - Move or rename files
-  - `search_files` - Recursive file search
-  - `get_file_info` - Get file metadata
-  - And more...
 - **Prompts**: 1 prompt - complex_prompt (demonstrates argument handling)
+
+## File System Operations
+
+All file operations use relative paths starting with "./":
+- Root directory access: "./"
+- Files in root: "./file.txt"
+- Subdirectories: "./folder/file.txt"
+
+In development mode, "./" transparently maps to the local "./mount" folder.
+In production mode, "./" maps to the container's working directory.
 
 ## Code Style Guidelines
 - Use ES modules with `.js` extension in import paths
@@ -55,7 +48,7 @@ The server uses streamable HTTP transport providing:
 - Prefer async/await over callbacks and Promise chains
 - Place all imports at top of file, grouped by external then internal
 - Use descriptive variable names that clearly indicate purpose
-- Implement proper cleanup for timers and resources in server shutdown
+- Implement proper cleanup for resources in server shutdown
 - Follow camelCase for variables/functions, PascalCase for types/classes, UPPER_CASE for constants
 - Handle errors with try/catch blocks and provide clear error messages
 - Use consistent indentation (2 spaces) and trailing commas in multi-line objects
@@ -63,26 +56,25 @@ The server uses streamable HTTP transport providing:
 ## Key Dependencies
 - `@modelcontextprotocol/sdk` - Core MCP protocol implementation
 - `zod` - Schema validation for tool inputs
-- `express` - HTTP server for SSE and streamable HTTP transports
+- `express` - HTTP server for streamable HTTP transport
 - `zod-to-json-schema` - Convert zod schemas to JSON schema format
 - `diff` - Create unified diffs for file edits
 - `minimatch` - Pattern matching for file searches
 
 ## Server Features
-- Relative path enforcement (all paths must start with `./`)
-- Secure file operations with validation
-- Memory-efficient head/tail file reading
-- Atomic file writes to prevent corruption
-- Git-style diff generation for file edits
-- Recursive directory tree generation
-- Pattern-based file search with exclusions
-- Session management for HTTP transports
+- Secure relative path handling (no absolute paths or parent directory access)
+- Atomic file operations to prevent race conditions
+- Memory-efficient file reading with head/tail support
+- Directory tree visualization
+- File search with pattern matching and exclusions
+- Detailed file metadata retrieval
+- Git-style diff output for file edits
 
 ## Testing Notes
-- Development mode uses `./mount` directory as root
-- Production mode uses Docker mounted volume as root
-- All paths are validated to prevent directory traversal
-- No formal test suite - this is a demo/testing server for MCP protocol features
+- Start with `read_root_directory` to explore the file system
+- All paths must be relative and start with "./"
+- Parent directory references ("..") are blocked for security
+- File operations include proper error handling and validation
 
 ## Package Information
 - Published as `@modelcontextprotocol/server-everything`
