@@ -62,7 +62,7 @@ const ListDirectoryWithSizesArgsSchema = z.object({
 });
 
 const DirectoryTreeArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().optional().default('./').transform(p => p || './').describe('Relative path from root directory (defaults to root)'),
 });
 
 const MoveFileArgsSchema = z.object({
@@ -255,7 +255,7 @@ export const createServer = async () => {
         name: "directory_tree",
         description:
             "Get a recursive tree view of files and directories as a JSON structure. " +
-            "Use relative paths starting with './' (use './' for root directory). " +
+            "Path is optional - if not provided, shows the root directory. " +
             "Returns a structured view of the entire directory hierarchy.",
         inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
       },
@@ -470,7 +470,7 @@ export const createServer = async () => {
         }
 
         case "directory_tree": {
-          const parsed = DirectoryTreeArgsSchema.safeParse(args);
+          const parsed = DirectoryTreeArgsSchema.safeParse(args || {});
           if (!parsed.success) {
             throw new Error(`Invalid arguments for directory_tree: ${parsed.error}`);
           }

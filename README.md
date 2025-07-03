@@ -55,7 +55,7 @@ This MCP server provides secure file system operations with relative path handli
 8. `directory_tree`
     - Get a recursive tree view as JSON
     - Input:
-      - `path` (string): Relative path from root directory
+      - `path` (string, optional): Relative path from root directory (defaults to root)
     - Returns: JSON structure of the directory tree
 
 9. `move_file`
