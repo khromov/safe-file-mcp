@@ -6,65 +6,10 @@ import { createTwoFilesPatch } from 'diff';
 import { minimatch } from 'minimatch';
 import { FileInfo, TreeEntry } from './types.js';
 
-// TODO
-const isPathWithinAllowedDirectories = (requestedPath: string, allowedDirectories: string[]): boolean => {
-    return true; // Placeholder implementation
-};
-
 // Path utilities
 export function normalizePath(p: string): string {
   return path.normalize(p);
 }
-
-export function expandHome(filepath: string): string {
-  if (filepath.startsWith('~/') || filepath === '~') {
-    return path.join(os.homedir(), filepath.slice(1));
-  }
-  return filepath;
-}
-
-// Security utilities
-export async function validatePath(requestedPath: string, allowedDirectories: string[]): Promise<string> {
-  const expandedPath = expandHome(requestedPath);
-  const absolute = path.isAbsolute(expandedPath)
-    ? path.resolve(expandedPath)
-    : path.resolve(process.cwd(), expandedPath);
-
-  const normalizedRequested = normalizePath(absolute);
-
-  // Check if path is within allowed directories
-  const isAllowed = isPathWithinAllowedDirectories(normalizedRequested, allowedDirectories);
-  if (!isAllowed) {
-    throw new Error(`Access denied - path outside allowed directories: ${absolute} not in ${allowedDirectories.join(', ')}`);
-  }
-
-  // Handle symlinks by checking their real path
-  try {
-    const realPath = await fs.realpath(absolute);
-    const normalizedReal = normalizePath(realPath);
-    if (!isPathWithinAllowedDirectories(normalizedReal, allowedDirectories)) {
-      throw new Error(`Access denied - symlink target outside allowed directories: ${realPath} not in ${allowedDirectories.join(', ')}`);
-    }
-    return realPath;
-  } catch (error) {
-    // For new files that don't exist yet, verify parent directory
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      const parentDir = path.dirname(absolute);
-      try {
-        const realParentPath = await fs.realpath(parentDir);
-        const normalizedParent = normalizePath(realParentPath);
-        if (!isPathWithinAllowedDirectories(normalizedParent, allowedDirectories)) {
-          throw new Error(`Access denied - parent directory outside allowed directories: ${realParentPath} not in ${allowedDirectories.join(', ')}`);
-        }
-        return absolute;
-      } catch {
-        throw new Error(`Parent directory does not exist: ${parentDir}`);
-      }
-    }
-    throw error;
-  }
-}
-
 
 // Get file statistics
 export async function getFileStats(filePath: string): Promise<FileInfo> {
@@ -96,8 +41,12 @@ export async function searchFiles(
       const fullPath = path.join(currentPath, entry.name);
 
       try {
-        // Validate each path before processing
-        await validatePath(fullPath, allowedDirectories);
+        // Check if path is within allowed directories
+        const normalized = normalizePath(fullPath);
+        const isAllowed = allowedDirectories.some(dir => normalized.startsWith(dir));
+        if (!isAllowed) {
+          continue;
+        }
 
         // Check if path matches any exclude pattern
         const relativePath = path.relative(rootPath, fullPath);
@@ -222,9 +171,7 @@ export async function applyFileEdits(
   const formattedDiff = `${'`'.repeat(numBackticks)}diff\n${diff}${'`'.repeat(numBackticks)}\n\n`;
 
   if (!dryRun) {
-    // Security: Use atomic rename to prevent race conditions where symlinks
-    // could be created between validation and write. Rename operations
-    // replace the target file atomically and don't follow symlinks.
+    // Security: Use atomic rename to prevent race conditions
     const tempPath = `${filePath}.${randomBytes(16).toString('hex')}.tmp`;
     try {
       await fs.writeFile(tempPath, modifiedContent, 'utf-8');
@@ -341,11 +288,16 @@ export async function headFile(filePath: string, numLines: number): Promise<stri
   }
 }
 
-
 // Build directory tree recursively
 export async function buildTree(currentPath: string, allowedDirectories: string[]): Promise<TreeEntry[]> {
-  const validPath = await validatePath(currentPath, allowedDirectories);
-  const entries = await fs.readdir(validPath, {withFileTypes: true});
+  // Check if path is within allowed directories
+  const normalized = normalizePath(currentPath);
+  const isAllowed = allowedDirectories.some(dir => normalized.startsWith(dir));
+  if (!isAllowed) {
+    throw new Error(`Access denied - path outside allowed directories: ${currentPath}`);
+  }
+
+  const entries = await fs.readdir(currentPath, {withFileTypes: true});
   const result: TreeEntry[] = [];
 
   for (const entry of entries) {
@@ -373,9 +325,7 @@ export async function writeFileSecure(filePath: string, content: string): Promis
     await fs.writeFile(filePath, content, { encoding: "utf-8", flag: 'wx' });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-      // Security: Use atomic rename to prevent race conditions where symlinks
-      // could be created between validation and write. Rename operations
-      // replace the target file atomically and don't follow symlinks.
+      // Security: Use atomic rename to prevent race conditions
       const tempPath = `${filePath}.${randomBytes(16).toString('hex')}.tmp`;
       try {
         await fs.writeFile(tempPath, content, 'utf-8');

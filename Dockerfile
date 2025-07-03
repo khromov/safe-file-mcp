@@ -23,6 +23,9 @@ ENV NODE_ENV=production
 
 RUN npm ci --ignore-scripts --omit-dev
 
+# Set working directory to /app/mount for relative path operations
+WORKDIR /app/mount
+
 # Use tini as entrypoint for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "dist/index.js"]
+CMD ["node", "/app/dist/index.js"]
