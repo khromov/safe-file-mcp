@@ -97,10 +97,8 @@ const GetFileInfoArgsSchema = z.object({
 });
 
 const ExecuteCommandArgsSchema = z.object({
-  command: z.string().describe('The command to execute (e.g., "ls", "echo", "node")'),
-  args: z.array(z.string()).optional().default([]).describe('Array of command arguments'),
-  cwd: z.string().optional().describe('Working directory (relative path from root, e.g., "./folder")'),
-  timeout: z.number().optional().default(30000).describe('Command timeout in milliseconds (default: 30 seconds)'),
+  command: z.string().describe('The full command to execute (e.g., "npx -y ai-digest", "ls -la", "node script.js")'),
+  timeout: z.number().optional().default(60000).describe('Command timeout in milliseconds (default: 60 seconds)'),
   env: z.record(z.string()).optional().describe('Environment variables to set for the command')
 });
 
@@ -318,10 +316,9 @@ export const createServer = async () => {
       {
         name: "execute_command",
         description:
-          "Execute a shell command with controlled arguments and environment. " +
-          "Commands are executed with a timeout to prevent hanging. " +
-          "Use 'args' array for command arguments to prevent injection attacks. " +
-          "Working directory can be set relative to root (e.g., './folder'). " +
+          "Execute a shell command with controlled environment. " +
+          "Pass the full command as a string (e.g., 'npx -y ai-digest', 'ls -la'). " +
+          "Commands are executed with a 60-second timeout to prevent hanging. " +
           "Returns stdout, stderr, and exit code.",
         inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
       },
@@ -619,12 +616,10 @@ export const createServer = async () => {
             throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);
           }
 
-          // Resolve working directory if provided
-          let cwd = absoluteRootDir;
-          if (parsed.data.cwd) {
-            validateRelativePath(parsed.data.cwd);
-            cwd = resolveRelativePath(parsed.data.cwd, absoluteRootDir);
-          }
+          // Parse the command string into command and args
+          const commandParts = parsed.data.command.trim().split(/\s+/);
+          const command = commandParts[0];
+          const commandArgs = commandParts.slice(1);
 
           // Merge environment variables
           const env = {
@@ -637,8 +632,8 @@ export const createServer = async () => {
             const errorChunks: Buffer[] = [];
             
             // Spawn the child process
-            const child = spawn(parsed.data.command, parsed.data.args, {
-              cwd,
+            const child = spawn(command, commandArgs, {
+              cwd: absoluteRootDir,
               env,
               shell: false // Use false for security - prevents shell injection
             });
