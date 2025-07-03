@@ -13,6 +13,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { z } from "zod";
+import { spawn } from "child_process";
 import {
   getFileStats,
   searchFiles,
@@ -93,6 +94,14 @@ const SearchFilesArgsSchema = z.object({
 
 const GetFileInfoArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory'),
+});
+
+const ExecuteCommandArgsSchema = z.object({
+  command: z.string().describe('The command to execute (e.g., "ls", "echo", "node")'),
+  args: z.array(z.string()).optional().default([]).describe('Array of command arguments'),
+  cwd: z.string().optional().describe('Working directory (relative path from root, e.g., "./folder")'),
+  timeout: z.number().optional().default(30000).describe('Command timeout in milliseconds (default: 30 seconds)'),
+  env: z.record(z.string()).optional().describe('Environment variables to set for the command')
 });
 
 // Helper function to resolve relative paths to the actual file system location
@@ -305,6 +314,16 @@ export const createServer = async () => {
           "Use relative paths starting with './' (e.g., './file.txt', './folder'). " +
           "Returns information including size, timestamps, permissions, and type.",
         inputSchema: zodToJsonSchema(GetFileInfoArgsSchema) as ToolInput,
+      },
+      {
+        name: "execute_command",
+        description:
+          "Execute a shell command with controlled arguments and environment. " +
+          "Commands are executed with a timeout to prevent hanging. " +
+          "Use 'args' array for command arguments to prevent injection attacks. " +
+          "Working directory can be set relative to root (e.g., './folder'). " +
+          "Returns stdout, stderr, and exit code.",
+        inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
       },
     ];
 
@@ -592,6 +611,96 @@ export const createServer = async () => {
               .map(([key, value]) => `${key}: ${value}`)
               .join("\n") }],
           };
+        }
+
+        case "execute_command": {
+          const parsed = ExecuteCommandArgsSchema.safeParse(args);
+          if (!parsed.success) {
+            throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);
+          }
+
+          // Resolve working directory if provided
+          let cwd = absoluteRootDir;
+          if (parsed.data.cwd) {
+            validateRelativePath(parsed.data.cwd);
+            cwd = resolveRelativePath(parsed.data.cwd, absoluteRootDir);
+          }
+
+          // Merge environment variables
+          const env = {
+            ...process.env,
+            ...parsed.data.env
+          };
+
+          return new Promise((resolve) => {
+            const chunks: Buffer[] = [];
+            const errorChunks: Buffer[] = [];
+            
+            // Spawn the child process
+            const child = spawn(parsed.data.command, parsed.data.args, {
+              cwd,
+              env,
+              shell: false // Use false for security - prevents shell injection
+            });
+
+            // Set up timeout
+            const timeoutId = setTimeout(() => {
+              child.kill('SIGTERM');
+              setTimeout(() => {
+                if (!child.killed) {
+                  child.kill('SIGKILL');
+                }
+              }, 5000); // Give 5 seconds for graceful shutdown
+            }, parsed.data.timeout);
+
+            // Collect stdout
+            child.stdout.on('data', (data) => {
+              chunks.push(data);
+            });
+
+            // Collect stderr
+            child.stderr.on('data', (data) => {
+              errorChunks.push(data);
+            });
+
+            // Handle process exit
+            child.on('close', (code, signal) => {
+              clearTimeout(timeoutId);
+              
+              const stdout = Buffer.concat(chunks).toString('utf-8');
+              const stderr = Buffer.concat(errorChunks).toString('utf-8');
+              
+              let output = '';
+              
+              if (stdout) {
+                output += `=== stdout ===\n${stdout}\n`;
+              }
+              
+              if (stderr) {
+                output += `=== stderr ===\n${stderr}\n`;
+              }
+              
+              output += `=== exit code: ${code ?? 'null'} ===`;
+              
+              if (signal) {
+                output += `\n=== killed by signal: ${signal} ===`;
+              }
+
+              resolve({
+                content: [{ type: "text", text: output.trim() }],
+                isError: code !== 0
+              });
+            });
+
+            // Handle spawn errors
+            child.on('error', (error) => {
+              clearTimeout(timeoutId);
+              resolve({
+                content: [{ type: "text", text: `Failed to execute command: ${error.message}` }],
+                isError: true
+              });
+            });
+          });
         }
 
         default:
