@@ -24,7 +24,6 @@ export async function searchFiles(
   rootPath: string,
   pattern: string,
   excludePatterns: string[] = [],
-  allowedDirectories: string[] // kept for compatibility but not used
 ): Promise<string[]> {
   const results: string[] = [];
 
