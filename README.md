@@ -8,80 +8,64 @@ This MCP server provides secure file system operations with relative path handli
 
 ### Tools
 
-1. `echo`
-   - Simple tool to echo back input messages
-   - Input:
-     - `message` (string): Message to echo back
-   - Returns: Text content with echoed message
-
-2. `read_root_directory`
+1. `read_root_directory`
    - Read the contents of the root directory
    - This should be your first command when exploring the file system
    - No inputs required
    - Returns: List of files and directories in the root, with instructions to use relative paths
 
-3. `read_file`
+2. `read_file`
    - Read the complete contents of a file
-   - Inputs:
+   - Input:
      - `path` (string): Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")
-     - `tail` (number, optional): If provided, returns only the last N lines
-     - `head` (number, optional): If provided, returns only the first N lines
    - Returns: File content as text
 
-4. `read_multiple_files`
+3. `read_multiple_files`
    - Read the contents of multiple files simultaneously
    - Input:
      - `paths` (array of strings): Array of relative paths from root directory
    - Returns: Combined content of all files with separators
 
-5. `write_file`
+4. `write_file`
    - Create a new file or overwrite an existing file
    - Inputs:
      - `path` (string): Relative path from root directory
      - `content` (string): Content to write to the file
    - Returns: Success confirmation
 
-6. `edit_file`
-   - Make line-based edits to a text file
-   - Inputs:
-     - `path` (string): Relative path from root directory
-     - `edits` (array): Array of edit operations with oldText and newText
-     - `dryRun` (boolean, default: false): Preview changes as diff without applying
-   - Returns: Git-style diff showing changes made
-
-7. `create_directory`
+5. `create_directory`
    - Create a new directory or ensure a directory exists
    - Input:
      - `path` (string): Relative path from root directory
    - Returns: Success confirmation
 
-8. `list_directory`
+6. `list_directory`
    - Get a listing of files and directories
    - Input:
      - `path` (string): Relative path from root directory (use "./" for root)
    - Returns: List with [FILE] and [DIR] prefixes
 
-9. `list_directory_with_sizes`
+7. `list_directory_with_sizes`
    - Get a detailed listing including file sizes
    - Inputs:
      - `path` (string): Relative path from root directory
      - `sortBy` (string, optional): Sort by "name" or "size"
    - Returns: Detailed listing with sizes and summary
 
-10. `directory_tree`
+8. `directory_tree`
     - Get a recursive tree view as JSON
     - Input:
       - `path` (string): Relative path from root directory
     - Returns: JSON structure of the directory tree
 
-11. `move_file`
+9. `move_file`
     - Move or rename files and directories
     - Inputs:
       - `source` (string): Source relative path
       - `destination` (string): Destination relative path
     - Returns: Success confirmation
 
-12. `search_files`
+10. `search_files`
     - Recursively search for files matching a pattern
     - Inputs:
       - `path` (string): Starting directory (relative path)
@@ -89,11 +73,19 @@ This MCP server provides secure file system operations with relative path handli
       - `excludePatterns` (array, optional): Patterns to exclude
     - Returns: List of matching file paths
 
-13. `get_file_info`
+11. `get_file_info`
     - Get detailed metadata about a file or directory
     - Input:
       - `path` (string): Relative path from root directory
     - Returns: File statistics including size, dates, type, and permissions
+
+12. `execute_command`
+    - Execute a shell command with controlled environment
+    - Inputs:
+      - `command` (string): The full command to execute
+      - `timeout` (number, optional): Command timeout in milliseconds (default: 60 seconds)
+      - `env` (object, optional): Environment variables to set
+    - Returns: Command output (stdout, stderr) and exit code
 
 ### Prompts
 

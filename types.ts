@@ -23,12 +23,3 @@ export interface TreeEntry {
 const ToolInputSchema = ToolSchema.shape.inputSchema;
 export type ToolInput = z.infer<typeof ToolInputSchema>;
 
-// Tool input schemas
-export const EchoSchema = z.object({
-  message: z.string().describe("Message to echo"),
-});
-
-// Tool names enum
-export enum ToolName {
-  ECHO = "echo",
-}

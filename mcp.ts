@@ -17,14 +17,11 @@ import { spawn } from "child_process";
 import {
   getFileStats,
   searchFiles,
-  applyFileEdits,
   formatSize,
-  tailFile,
-  headFile,
   buildTree,
   writeFileSecure,
 } from './file-operations.js';
-import { ToolInput, EchoSchema, ToolName } from './types.js';
+import { ToolInput } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,9 +36,7 @@ try {
 
 // File system schema definitions
 const ReadFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")'),
-  tail: z.number().optional().describe('If provided, returns only the last N lines of the file'),
-  head: z.number().optional().describe('If provided, returns only the first N lines of the file')
+  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")')
 });
 
 const ReadMultipleFilesArgsSchema = z.object({
@@ -51,17 +46,6 @@ const ReadMultipleFilesArgsSchema = z.object({
 const WriteFileArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory'),
   content: z.string(),
-});
-
-const EditOperation = z.object({
-  oldText: z.string().describe('Text to search for - must match exactly'),
-  newText: z.string().describe('Text to replace with')
-});
-
-const EditFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
-  edits: z.array(EditOperation),
-  dryRun: z.boolean().default(false).describe('Preview changes using git-style diff format')
 });
 
 const CreateDirectoryArgsSchema = z.object({
@@ -209,11 +193,6 @@ export const createServer = async () => {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools: Tool[] = [
       {
-        name: ToolName.ECHO,
-        description: "Echoes back the input",
-        inputSchema: zodToJsonSchema(EchoSchema) as ToolInput,
-      },
-      {
         name: "read_root_directory",
         description:
           "Read the contents of the root directory. This should be your first command when exploring the file system. " +
@@ -229,8 +208,7 @@ export const createServer = async () => {
         name: "read_file",
         description:
           "Read the complete contents of a file from the file system. " +
-          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt'). " +
-          "Use 'head' parameter to read only the first N lines, or 'tail' parameter to read only the last N lines.",
+          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt').",
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
       },
       {
@@ -248,14 +226,6 @@ export const createServer = async () => {
           "Use relative paths starting with './' (e.g., './newfile.txt', './folder/file.txt'). " +
           "Use with caution as it will overwrite existing files without warning.",
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
-      },
-      {
-        name: "edit_file",
-        description:
-          "Make line-based edits to a text file. Each edit replaces exact line sequences with new content. " +
-          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt'). " +
-          "Returns a git-style diff showing the changes made.",
-        inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
       },
       {
         name: "create_directory",
@@ -330,14 +300,6 @@ export const createServer = async () => {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    // Handle echo tool
-    if (name === ToolName.ECHO) {
-      const validatedArgs = EchoSchema.parse(args);
-      return {
-        content: [{ type: "text", text: `Echo: ${validatedArgs.message}` }],
-      };
-    }
-
     // Handle file system tools
     try {
       switch (name) {
@@ -368,24 +330,6 @@ export const createServer = async () => {
           
           validateRelativePath(parsed.data.path);
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
-          
-          if (parsed.data.head && parsed.data.tail) {
-            throw new Error("Cannot specify both head and tail parameters simultaneously");
-          }
-          
-          if (parsed.data.tail) {
-            const tailContent = await tailFile(absolutePath, parsed.data.tail);
-            return {
-              content: [{ type: "text", text: tailContent }],
-            };
-          }
-          
-          if (parsed.data.head) {
-            const headContent = await headFile(absolutePath, parsed.data.head);
-            return {
-              content: [{ type: "text", text: headContent }],
-            };
-          }
           
           const content = await fs.readFile(absolutePath, "utf-8");
           return {
@@ -431,19 +375,6 @@ export const createServer = async () => {
           await writeFileSecure(absolutePath, parsed.data.content);
           return {
             content: [{ type: "text", text: `Successfully wrote to ${parsed.data.path}` }],
-          };
-        }
-
-        case "edit_file": {
-          const parsed = EditFileArgsSchema.safeParse(args);
-          if (!parsed.success) {
-            throw new Error(`Invalid arguments for edit_file: ${parsed.error}`);
-          }
-          validateRelativePath(parsed.data.path);
-          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
-          const result = await applyFileEdits(absolutePath, parsed.data.edits, parsed.data.dryRun);
-          return {
-            content: [{ type: "text", text: result }],
           };
         }
 
