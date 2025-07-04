@@ -24,11 +24,24 @@ docker-compose up
 
 The MCP endpoint will be available at `http://localhost:3001/mcp`.
 
-You should now add it to Claude Desktop or any other LLM tool you have. 
+### Claude Desktop Setup
 
-#### Claude Desktop instructions
+1. Open Claude Desktop, go to **Settings** → **Developer** → **Edit Config**
+2. Add this to your configuration file:
+```json
+{
+  "mcpServers": {
+    "coco": {
+      "url": "http://localhost:3001/mcp"
+    }
+  }
+}
+```
+3. Restart Claude Desktop
 
-TODO
+The config file location:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ## Configuration
 
