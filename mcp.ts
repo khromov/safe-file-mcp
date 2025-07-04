@@ -22,8 +22,7 @@ import {
   writeFileSecure,
 } from './file-operations.js';
 import { ToolInput } from './types.js';
-import aiDigestPkg from 'ai-digest';
-const { generateDigest } = aiDigestPkg;
+import aiDigest from 'ai-digest';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -89,8 +88,7 @@ const ExecuteCommandArgsSchema = z.object({
 });
 
 const GetCodebaseArgsSchema = z.object({
-  path: z.string().optional().default('./').describe('Relative path from root directory to analyze (defaults to root)'),
-  excludePatterns: z.array(z.string()).optional().default([]).describe('Patterns to exclude from the codebase digest')
+  path: z.string().optional().default('./').describe('Relative path from root directory to analyze (defaults to root)')
 });
 
 // Helper function to resolve relative paths to the actual file system location
@@ -304,8 +302,7 @@ export const createServer = async () => {
         description:
           "Generate a comprehensive digest of the codebase using ai-digest. " +
           "Returns a structured summary of all code files in the specified directory. " +
-          "Useful for understanding project structure and code content. " +
-          "Can exclude specific patterns from the digest.",
+          "Useful for understanding project structure and code content.",
         inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
     ];
@@ -568,11 +565,10 @@ export const createServer = async () => {
           
           try {
             // Generate the codebase digest
-            const content = await generateDigest({
+            const content = await aiDigest.generateDigest({
               inputDir: absolutePath,
               outputFile: null,  // Return as string instead of writing to file
-              silent: true,      // Suppress console output
-              exclude: parsed.data.excludePatterns
+              silent: true       // Suppress console output
             });
             
             return {
