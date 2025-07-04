@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { generateCodebaseDigest } from '../codebase-digest.js';
 import fs from 'fs/promises';
 import path from 'path';

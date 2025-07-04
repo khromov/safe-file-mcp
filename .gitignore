@@ -6,3 +6,7 @@ codebase.md
 # Mount directory contents (except .gitkeep)
 mount/*
 !mount/.gitkeep
+
+# Test directories
+src/__tests__/test-*-temp/
+**/test-*-temp/
