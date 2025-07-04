@@ -88,7 +88,8 @@ const ExecuteCommandArgsSchema = z.object({
 });
 
 const GetCodebaseArgsSchema = z.object({
-  path: z.string().optional().default('./').describe('Relative path from root directory to analyze (defaults to root)')
+  path: z.string().optional().default('./').describe('Relative path from root directory to analyze (defaults to root)'),
+  page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)')
 });
 
 // Helper function to resolve relative paths to the actual file system location
@@ -302,7 +303,8 @@ export const createServer = async () => {
         description:
           "Generate a comprehensive digest of the codebase using ai-digest. " +
           "Returns a structured summary of all code files in the specified directory. " +
-          "Useful for understanding project structure and code content.",
+          "Results are paginated (100,000 characters per page). " +
+          "If more content exists, a message will prompt to call again with the next page number.",
         inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
     ];
@@ -569,10 +571,48 @@ export const createServer = async () => {
               silent: true
             });
 
-            const content = files.map(file => file.content).join('');
+            const PAGE_SIZE = 100000; // 100,000 characters per page
+            const requestedPage = parsed.data.page;
+            
+            let currentPage = 1;
+            let currentPageContent = '';
+            let currentPageCharCount = 0;
+            let totalCharCount = 0;
+            
+            for (const file of files) {
+              const fileContent = file.content;
+              const fileCharCount = fileContent.length;
+              
+              // Check if adding this file would exceed the page size
+              if (currentPageCharCount + fileCharCount > PAGE_SIZE && currentPageCharCount > 0) {
+                // Move to next page
+                if (currentPage === requestedPage) {
+                  // We've collected the requested page, stop here
+                  break;
+                }
+                currentPage++;
+                currentPageContent = '';
+                currentPageCharCount = 0;
+              }
+              
+              // Add file to current page if we're on the requested page
+              if (currentPage === requestedPage) {
+                currentPageContent += fileContent;
+                currentPageCharCount += fileCharCount;
+              }
+              
+              totalCharCount += fileCharCount;
+            }
+            
+            // Check if there are more pages
+            const hasMorePages = totalCharCount > requestedPage * PAGE_SIZE;
+            
+            if (hasMorePages) {
+              currentPageContent += `\n\n---\nThis is page ${requestedPage}. To see more files, call this tool again with page: ${requestedPage + 1}\n`;
+            }
             
             return {
-              content: [{ type: "text", text: content }],
+              content: [{ type: "text", text: currentPageContent }],
             };
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
