@@ -1,6 +1,6 @@
 # 🥥 Coco - Context Coder MCP
 
-Coco provides secure file system access to AI models through the Model Context Protocol. It enables AI assistants to read, write, and analyze code within a designated directory while enforcing security boundaries.
+Coco provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Unlike traditional file-access tools that require reading files one by one, Coco's `get_codebase` command instantly digests and understands your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
 
 ## Installation
 
@@ -52,6 +52,7 @@ Environment variables:
 
 | Tool | Purpose |
 |------|---------|
+| **`get_codebase`** | **Generate AI-digestible summary of entire codebase (paginated)** |
 | `read_root_directory` | List contents of the root directory |
 | `read_file` | Read file contents |
 | `read_multiple_files` | Batch read multiple files |
@@ -64,7 +65,6 @@ Environment variables:
 | `search_files` | Search by pattern |
 | `get_file_info` | Get file metadata |
 | `execute_command` | Run shell commands |
-| `get_codebase` | Generate code summary (paginated) |
 
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
