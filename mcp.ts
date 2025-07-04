@@ -36,33 +36,33 @@ try {
 
 // File system schema definitions
 const ReadFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")')
+  path: z.string().describe('Relative path from root directory (e.g., "file.txt", "folder/file.txt", "./file.txt")')
 });
 
 const ReadMultipleFilesArgsSchema = z.object({
-  paths: z.array(z.string()).describe('Array of relative paths from root directory'),
+  paths: z.array(z.string()).describe('Array of relative paths from root directory (with or without "./" prefix)'),
 });
 
 const WriteFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   content: z.string(),
 });
 
 const CreateDirectoryArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
 });
 
 const ListDirectoryArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (use "./" for root)'),
+  path: z.string().describe('Relative path from root directory (use "./" or "." for root)'),
 });
 
 const ListDirectoryWithSizesArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   sortBy: z.enum(['name', 'size']).optional().default('name').describe('Sort entries by name or size'),
 });
 
 const DirectoryTreeArgsSchema = z.object({
-  path: z.string().optional().default('./').transform(p => p || './').describe('Relative path from root directory (defaults to root)'),
+  path: z.string().optional().default('./').transform(p => p || './').describe('Relative path from root directory, with or without "./" prefix (defaults to root)'),
 });
 
 const MoveFileArgsSchema = z.object({
@@ -71,13 +71,13 @@ const MoveFileArgsSchema = z.object({
 });
 
 const SearchFilesArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   pattern: z.string(),
   excludePatterns: z.array(z.string()).optional().default([])
 });
 
 const GetFileInfoArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory'),
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
 });
 
 const ExecuteCommandArgsSchema = z.object({
@@ -100,13 +100,13 @@ function resolveRelativePath(relativePath: string, rootDir: string): string {
 
 // Validate that a path is relative and within bounds
 function validateRelativePath(relativePath: string): void {
-  // Must start with ./ or be exactly .
-  if (!relativePath.startsWith('./') && relativePath !== '.') {
-    throw new Error(`Path must be relative and start with "./" (got: ${relativePath})`);
-  }
+  // Normalize the path (add ./ prefix if missing for consistency)
+  const pathToNormalize = relativePath.startsWith('./') || relativePath === '.' 
+    ? relativePath 
+    : './' + relativePath;
   
   // Normalize the path and check for directory traversal
-  const normalized = path.normalize(relativePath);
+  const normalized = path.normalize(pathToNormalize);
   if (normalized.includes('..')) {
     throw new Error(`Path cannot contain parent directory references (got: ${relativePath})`);
   }
@@ -196,8 +196,8 @@ export const createServer = async () => {
         name: "read_root_directory",
         description:
           "Read the contents of the root directory. This should be your first command when exploring the file system. " +
-          "After calling this, use relative paths starting with './' for all other file operations " +
-          "(e.g., './file.txt' for a file in root, './folder/file.txt' for a file in a subdirectory).",
+          "After calling this, use relative paths for all other file operations " +
+          "(e.g., 'file.txt' or './file.txt' for a file in root, 'folder/file.txt' or './folder/file.txt' for a file in a subdirectory).",
         inputSchema: {
           type: "object",
           properties: {},
@@ -208,14 +208,14 @@ export const createServer = async () => {
         name: "read_file",
         description:
           "Read the complete contents of a file from the file system. " +
-          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt').",
+          "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt').",
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
       },
       {
         name: "read_multiple_files",
         description:
           "Read the contents of multiple files simultaneously. " +
-          "Use relative paths starting with './' for each file. " +
+          "Use relative paths with or without './' prefix for each file. " +
           "More efficient than reading files one by one when you need to analyze or compare multiple files.",
         inputSchema: zodToJsonSchema(ReadMultipleFilesArgsSchema) as ToolInput,
       },
@@ -223,7 +223,7 @@ export const createServer = async () => {
         name: "write_file",
         description:
           "Create a new file or completely overwrite an existing file with new content. " +
-          "Use relative paths starting with './' (e.g., './newfile.txt', './folder/file.txt'). " +
+          "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
           "Use with caution as it will overwrite existing files without warning.",
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
       },
@@ -231,7 +231,7 @@ export const createServer = async () => {
         name: "create_directory",
         description:
           "Create a new directory or ensure a directory exists. " +
-          "Use relative paths starting with './' (e.g., './newfolder', './parent/child'). " +
+          "Use relative paths with or without './' prefix (e.g., 'newfolder', './parent/child'). " +
           "Can create multiple nested directories in one operation.",
         inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
       },
@@ -239,7 +239,7 @@ export const createServer = async () => {
         name: "list_directory",
         description:
           "Get a detailed listing of all files and directories in a specified path. " +
-          "Use relative paths starting with './' (use './' for root directory). " +
+          "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
           "Results show [FILE] and [DIR] prefixes to distinguish between files and directories.",
         inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
       },
@@ -247,7 +247,7 @@ export const createServer = async () => {
         name: "list_directory_with_sizes",
         description:
           "Get a detailed listing of all files and directories in a specified path, including file sizes. " +
-          "Use relative paths starting with './' (use './' for root directory). " +
+          "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
           "Results can be sorted by name or size.",
         inputSchema: zodToJsonSchema(ListDirectoryWithSizesArgsSchema) as ToolInput,
       },
@@ -263,7 +263,7 @@ export const createServer = async () => {
         name: "move_file",
         description:
           "Move or rename files and directories. " +
-          "Use relative paths starting with './' for both source and destination. " +
+          "Use relative paths with or without './' prefix for both source and destination. " +
           "Can move files between directories and rename them in a single operation.",
         inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
       },
@@ -271,7 +271,7 @@ export const createServer = async () => {
         name: "search_files",
         description:
           "Recursively search for files and directories matching a pattern. " +
-          "Use relative paths starting with './' for the search root. " +
+          "Use relative paths with or without './' prefix for the search root. " +
           "The search is case-insensitive and matches partial names.",
         inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
       },
@@ -279,7 +279,7 @@ export const createServer = async () => {
         name: "get_file_info",
         description:
           "Retrieve detailed metadata about a file or directory. " +
-          "Use relative paths starting with './' (e.g., './file.txt', './folder'). " +
+          "Use relative paths with or without './' prefix (e.g., 'file.txt', './folder'). " +
           "Returns information including size, timestamps, permissions, and type.",
         inputSchema: zodToJsonSchema(GetFileInfoArgsSchema) as ToolInput,
       },
@@ -310,8 +310,8 @@ export const createServer = async () => {
               .map((entry) => `${entry.isDirectory() ? "[DIR]" : "[FILE]"} ${entry.name}`)
               .join("\n");
             
-            const instructions = "\n\nUse relative paths starting with './' for all file operations. " +
-              "For example: './file.txt' for files in root, './folder/file.txt' for files in subdirectories.";
+            const instructions = "\n\nUse relative paths for all file operations (with or without './' prefix). " +
+              "For example: 'file.txt' or './file.txt' for files in root, 'folder/file.txt' or './folder/file.txt' for files in subdirectories.";
             
             return {
               content: [{ type: "text", text: formatted + instructions }],
