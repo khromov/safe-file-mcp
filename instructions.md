@@ -5,6 +5,7 @@ Key usage: Always start with `read_root_directory` to see available files. All s
 Security: Parent directory access ("..") is blocked. All operations are confined to the designated root directory.
 
 Path examples:
+
 - Root directory: "./"
 - Root file: "./README.md"
 - Subdirectory: "./documents/"

@@ -1,14 +1,17 @@
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js';
-import express, { Request, Response } from "express";
-import { createServer } from "./mcp.js";
+import express, { Request, Response } from 'express';
+import { createServer } from './mcp.js';
 import { randomUUID } from 'node:crypto';
 
 console.error('Starting 🥥 Coco MCP Server (Streamable HTTP)...');
 
 const app = express();
 
-const transports: Map<string, StreamableHTTPServerTransport> = new Map<string, StreamableHTTPServerTransport>();
+const transports: Map<string, StreamableHTTPServerTransport> = new Map<
+  string,
+  StreamableHTTPServerTransport
+>();
 
 app.post('/mcp', async (req: Request, res: Response) => {
   console.error('Received MCP POST request');
@@ -18,10 +21,9 @@ app.post('/mcp', async (req: Request, res: Response) => {
     let transport: StreamableHTTPServerTransport;
 
     if (sessionId && transports.has(sessionId)) {
-      // Reuse existing transport 
+      // Reuse existing transport
       transport = transports.get(sessionId)!;
     } else if (!sessionId) {
-
       const { server, cleanup } = await createServer();
 
       // New initialization request
@@ -34,9 +36,8 @@ app.post('/mcp', async (req: Request, res: Response) => {
           // This avoids race conditions where requests might come in before the session is stored
           console.error(`Session initialized with ID: ${sessionId}`);
           transports.set(sessionId, transport);
-        }
+        },
       });
-
 
       // Set up onclose handler to clean up transport when closed
       server.onclose = async () => {

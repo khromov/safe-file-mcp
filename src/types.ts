@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ToolSchema } from "@modelcontextprotocol/sdk/types.js";
+import { z } from 'zod';
+import { ToolSchema } from '@modelcontextprotocol/sdk/types.js';
 
 // File info interface
 export interface FileInfo {
@@ -22,4 +22,3 @@ export interface TreeEntry {
 // MCP tool types
 const ToolInputSchema = ToolSchema.shape.inputSchema;
 export type ToolInput = z.infer<typeof ToolInputSchema>;
-

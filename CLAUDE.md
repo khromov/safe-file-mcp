@@ -9,6 +9,7 @@ Coco MCP (Context Coder) is a secure file system access server implementing the 
 ## Essential Commands
 
 **Development:**
+
 ```bash
 npm run dev          # Start development server with auto-reload
 npm run build        # Compile TypeScript to dist/
@@ -16,6 +17,7 @@ npm start            # Run production server
 ```
 
 **Testing:**
+
 ```bash
 npm test             # Run all tests
 npm run test:watch   # Run tests in watch mode
@@ -31,6 +33,7 @@ The server follows a layered architecture:
 3. **File Operations** (`src/file-operations.ts`): Secure file system utilities with path validation
 
 **Key Design Decisions:**
+
 - All file paths must be relative (starting with "./")
 - Parent directory access ("../") is blocked for security
 - In development mode, operations are sandboxed to the `./mount` directory
@@ -48,6 +51,7 @@ When working on this codebase:
 ## Available Tools
 
 The server exposes 13 MCP tools for file operations:
+
 - File reading: `read_file`, `read_multiple_files`, `get_file_info`
 - Directory operations: `list_directory`, `directory_tree`, `create_directory`
 - File writing: `write_file`, `move_file`

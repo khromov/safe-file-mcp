@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 import { randomBytes } from 'crypto';
 import { minimatch } from 'minimatch';
 import ignore from 'ignore';
@@ -24,7 +24,7 @@ export async function getFileStats(filePath: string): Promise<FileInfo> {
 export async function searchFiles(
   rootPath: string,
   pattern: string,
-  excludePatterns: string[] = [],
+  excludePatterns: string[] = []
 ): Promise<string[]> {
   const results: string[] = [];
 
@@ -38,7 +38,7 @@ export async function searchFiles(
         try {
           // Check if path matches any exclude pattern
           const relativePath = path.relative(rootPath, fullPath);
-          const shouldExclude = excludePatterns.some(pattern => {
+          const shouldExclude = excludePatterns.some((pattern) => {
             const globPattern = pattern.includes('*') ? pattern : `**/${pattern}/**`;
             return minimatch(relativePath, globPattern, { dot: true });
           });
@@ -78,22 +78,25 @@ export function normalizeLineEndings(text: string): string {
 export function formatSize(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   if (bytes === 0) return '0 B';
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   if (i === 0) return `${bytes} ${units[i]}`;
-  
+
   return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
 }
 
-
 // Build directory tree recursively
-export async function buildTree(currentPath: string, allowedDirectories: string[], rootPath?: string): Promise<TreeEntry[]> {
-  const entries = await fs.readdir(currentPath, {withFileTypes: true});
+export async function buildTree(
+  currentPath: string,
+  allowedDirectories: string[],
+  rootPath?: string
+): Promise<TreeEntry[]> {
+  const entries = await fs.readdir(currentPath, { withFileTypes: true });
   const result: TreeEntry[] = [];
-  
+
   // Initialize ignore instance with default patterns
   const ig = ignore().add(DEFAULT_IGNORES);
-  
+
   // Determine the root path for relative path calculation
   const baseRootPath = rootPath || currentPath;
 
@@ -101,15 +104,15 @@ export async function buildTree(currentPath: string, allowedDirectories: string[
     // Calculate relative path from root for ignore checking
     const fullPath = path.join(currentPath, entry.name);
     const relativePath = path.relative(baseRootPath, fullPath);
-    
+
     // Check if this entry should be ignored
     if (ig.ignores(relativePath)) {
       continue;
     }
-    
+
     const entryData: TreeEntry = {
       name: entry.name,
-      type: entry.isDirectory() ? 'directory' : 'file'
+      type: entry.isDirectory() ? 'directory' : 'file',
     };
 
     if (entry.isDirectory()) {
@@ -126,7 +129,7 @@ export async function buildTree(currentPath: string, allowedDirectories: string[
 export async function writeFileSecure(filePath: string, content: string): Promise<void> {
   try {
     // 'wx' flag ensures exclusive creation - fails if file exists
-    await fs.writeFile(filePath, content, { encoding: "utf-8", flag: 'wx' });
+    await fs.writeFile(filePath, content, { encoding: 'utf-8', flag: 'wx' });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
       // Use atomic rename for existing files
