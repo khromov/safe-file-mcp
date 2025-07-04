@@ -3,6 +3,9 @@ dist
 codebase.md
 .DS_Store
 
+# Test coverage reports
+coverage/
+
 # Mount directory contents (except .gitkeep)
 mount/*
 !mount/.gitkeep

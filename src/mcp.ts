@@ -21,6 +21,11 @@ import {
   buildTree,
   writeFileSecure,
 } from './file-operations.js';
+import {
+  writeMultipleFiles,
+  validateRelativePath,
+  resolveRelativePath,
+} from './batch-file-operations.js';
 import { ToolInput } from './types.js';
 import { generateCodebaseDigest } from './codebase-digest.js';
 
@@ -53,6 +58,17 @@ const ReadMultipleFilesArgsSchema = z.object({
 const WriteFileArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   content: z.string(),
+});
+
+const WriteMultipleFilesArgsSchema = z.object({
+  files: z
+    .array(
+      z.object({
+        path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
+        content: z.string().describe('Content to write to the file'),
+      })
+    )
+    .describe('Array of file objects with path and content properties'),
 });
 
 const CreateDirectoryArgsSchema = z.object({
@@ -116,31 +132,6 @@ const GetCodebaseArgsSchema = z.object({
     .describe('Relative path from root directory to analyze (defaults to root)'),
   page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)'),
 });
-
-// Helper function to resolve relative paths to the actual file system location
-function resolveRelativePath(relativePath: string, rootDir: string): string {
-  // Ensure the path starts with ./
-  if (!relativePath.startsWith('./')) {
-    relativePath = './' + relativePath;
-  }
-
-  // Remove ./ prefix and resolve against root directory
-  const cleanPath = relativePath.slice(2);
-  return path.join(rootDir, cleanPath);
-}
-
-// Validate that a path is relative and within bounds
-function validateRelativePath(relativePath: string): void {
-  // Normalize the path (add ./ prefix if missing for consistency)
-  const pathToNormalize =
-    relativePath.startsWith('./') || relativePath === '.' ? relativePath : './' + relativePath;
-
-  // Normalize the path and check for directory traversal
-  const normalized = path.normalize(pathToNormalize);
-  if (normalized.includes('..')) {
-    throw new Error(`Path cannot contain parent directory references (got: ${relativePath})`);
-  }
-}
 
 export const createServer = async () => {
   // Determine the root directory based on environment
@@ -256,6 +247,16 @@ export const createServer = async () => {
           "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
           'Use with caution as it will overwrite existing files without warning.',
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
+      },
+      {
+        name: 'write_multiple_files',
+        description:
+          'Create or overwrite multiple files in a single operation. ' +
+          "Each file object should have 'path' and 'content' properties. " +
+          "Use relative paths with or without './' prefix for each file path. " +
+          'More efficient than writing files one by one. Creates parent directories as needed. ' +
+          'Use with caution as it will overwrite existing files without warning.',
+        inputSchema: zodToJsonSchema(WriteMultipleFilesArgsSchema) as ToolInput,
       },
       {
         name: 'create_directory',
@@ -415,6 +416,19 @@ export const createServer = async () => {
           await writeFileSecure(absolutePath, parsed.data.content);
           return {
             content: [{ type: 'text', text: `Successfully wrote to ${parsed.data.path}` }],
+          };
+        }
+
+        case 'write_multiple_files': {
+          const parsed = WriteMultipleFilesArgsSchema.safeParse(args);
+          if (!parsed.success) {
+            throw new Error(`Invalid arguments for write_multiple_files: ${parsed.error}`);
+          }
+
+          const result = await writeMultipleFiles(parsed.data.files, absoluteRootDir);
+          
+          return {
+            content: [{ type: 'text', text: result.summary }],
           };
         }
 
