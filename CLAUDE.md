@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Coco - Context Coder MCP Server - Development Guidelines
+# 🥥 Coco MCP Server - Development Guidelines
 
 ## Build, Test & Run Commands
 - Build: `npm run build` - Compiles TypeScript to JavaScript and copies instructions.md to dist/
@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-Coco (Context Coder) is a comprehensive MCP (Model Context Protocol) server that implements file system operations with secure relative path handling. The server uses streamable HTTP transport exclusively and is designed to provide AI models with safe, controlled access to file system context.
+🥥 Coco (Context Coder) is a comprehensive MCP (Model Context Protocol) server that implements file system operations with secure relative path handling. The server uses streamable HTTP transport exclusively and is designed to provide AI models with safe, controlled access to file system context.
 
 ### Core Components
 - `mcp.ts` - Main MCP server implementation with file system tools
@@ -86,5 +86,5 @@ In production mode, "./" maps to the container's working directory.
 - Can be run via npx without installation: `npx -y @modelcontextprotocol/coco-context-coder`
 - Only supports streamable HTTP transport (runs on HTTP server by default)
 
-## About Coco
+## About 🥥 Coco
 Coco (Context Coder) provides AI models with controlled, contextual access to codebases and file systems. The name reflects its dual purpose: providing rich context about code while maintaining security boundaries.

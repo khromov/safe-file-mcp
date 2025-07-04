@@ -1,152 +1,172 @@
-# Coco - Context Coder
+# 🥥 Coco - Context Coder
 
-_Work in progress_
+**Coco** (Context Coder) is an MCP server that provides secure file system operations and code analysis capabilities to AI models. It enables AI assistants to safely read, write, and analyze code within your project directory.
 
-Coco (Context Coder) is an MCP server that provides secure file system operations with relative path handling. It implements a comprehensive set of file management tools while ensuring all operations are contained within a designated root directory.
+## Quick Start
 
-## Components
+Add Coco to your project using Docker Compose:
 
-### Tools
+### 1. Create a `docker-compose.yml` file in your project root:
 
-1. `read_root_directory`
-   - Read the contents of the root directory
-   - This should be your first command when exploring the file system
-   - No inputs required
-   - Returns: List of files and directories in the root, with instructions to use relative paths
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco-context-coder:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+```
 
-2. `read_file`
-   - Read the complete contents of a file
-   - Input:
-     - `path` (string): Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")
-   - Returns: File content as text
+### 2. Start Coco:
 
-3. `read_multiple_files`
-   - Read the contents of multiple files simultaneously
-   - Input:
-     - `paths` (array of strings): Array of relative paths from root directory
-   - Returns: Combined content of all files with separators
+```bash
+docker-compose up -d coco
+```
 
-4. `write_file`
-   - Create a new file or overwrite an existing file
-   - Inputs:
-     - `path` (string): Relative path from root directory
-     - `content` (string): Content to write to the file
-   - Returns: Success confirmation
+### 3. Configure your AI tool to connect to Coco:
 
-5. `create_directory`
-   - Create a new directory or ensure a directory exists
-   - Input:
-     - `path` (string): Relative path from root directory
-   - Returns: Success confirmation
+The server will be available at `http://localhost:3001/mcp`
 
-6. `list_directory`
-   - Get a listing of files and directories
-   - Input:
-     - `path` (string): Relative path from root directory (use "./" for root)
-   - Returns: List with [FILE] and [DIR] prefixes
+## What Coco Provides
 
-7. `list_directory_with_sizes`
-   - Get a detailed listing including file sizes
-   - Inputs:
-     - `path` (string): Relative path from root directory
-     - `sortBy` (string, optional): Sort by "name" or "size"
-   - Returns: Detailed listing with sizes and summary
+Coco gives AI models the ability to:
 
-8. `directory_tree`
-    - Get a recursive tree view as JSON
-    - Input:
-      - `path` (string, optional): Relative path from root directory (defaults to root)
-    - Returns: JSON structure of the directory tree
-
-9. `move_file`
-    - Move or rename files and directories
-    - Inputs:
-      - `source` (string): Source relative path
-      - `destination` (string): Destination relative path
-    - Returns: Success confirmation
-
-10. `search_files`
-    - Recursively search for files matching a pattern
-    - Inputs:
-      - `path` (string): Starting directory (relative path)
-      - `pattern` (string): Search pattern (case-insensitive)
-      - `excludePatterns` (array, optional): Patterns to exclude
-    - Returns: List of matching file paths
-
-11. `get_file_info`
-    - Get detailed metadata about a file or directory
-    - Input:
-      - `path` (string): Relative path from root directory
-    - Returns: File statistics including size, dates, type, and permissions
-
-12. `execute_command`
-    - Execute a shell command with controlled environment
-    - Inputs:
-      - `command` (string): The full command to execute
-      - `timeout` (number, optional): Command timeout in milliseconds (default: 60 seconds)
-      - `env` (object, optional): Environment variables to set
-    - Returns: Command output (stdout, stderr) and exit code
-
-13. `get_codebase`
-    - Generate a comprehensive digest of the codebase using ai-digest
-    - Inputs:
-      - `path` (string, optional): Relative path from root directory to analyze (defaults to root)
-      - `page` (number, optional): Page number for pagination (defaults to 1)
-    - Returns: Structured summary of all code files (paginated at 100,000 characters per page)
-
-### Prompts
-
-1. `complex_prompt`
-   - Advanced prompt demonstrating argument handling
-   - Required arguments:
-     - `temperature` (number): Temperature setting
-   - Optional arguments:
-     - `style` (string): Output style preference
-   - Returns: Multi-turn conversation demonstrating prompt capabilities
-
-## Usage
-
-All file operations use relative paths starting with "./". The server operates within a designated root directory:
-- In development mode: Maps to the local `./mount` folder
-- In production mode: Maps to the current directory
-
-### Path Examples
-- Root directory file: `./file.txt`
-- Subdirectory file: `./folder/file.txt`
-- Nested directory: `./parent/child/file.txt`
+- 📁 **Browse files** - Navigate and explore your project structure
+- 📄 **Read files** - Access file contents individually or in batches
+- ✏️ **Write files** - Create or modify files with atomic operations
+- 🔍 **Search** - Find files matching patterns across your codebase
+- 📊 **Analyze code** - Generate comprehensive codebase summaries using ai-digest
+- 🖥️ **Execute commands** - Run shell commands with timeout protection
+- 📂 **Manage directories** - Create, move, and organize project structure
 
 ## Security Features
 
-- All paths must be relative and start with "./"
-- Parent directory references ("..") are not allowed
-- Operations are confined to the designated root directory
-- Atomic file operations prevent race conditions
-- Secure file writing with exclusive creation flags
+- 🔒 All operations are restricted to your mounted directory
+- 🚫 Parent directory access (`../`) is blocked
+- ⚛️ Atomic file operations prevent corruption
+- ⏱️ Command execution has built-in timeouts
 
-## Running from source
+## Available Tools
 
-```shell
-npm install
-npm run build
-npm run start
+| Tool | Description |
+|------|-------------|
+| `read_root_directory` | Start here - lists all files in your project |
+| `read_file` | Read a single file's contents |
+| `read_multiple_files` | Read multiple files efficiently |
+| `write_file` | Create or overwrite a file |
+| `create_directory` | Create new directories |
+| `list_directory` | List directory contents with type indicators |
+| `list_directory_with_sizes` | List with file sizes and sorting options |
+| `directory_tree` | Get full project structure as JSON |
+| `move_file` | Move or rename files and directories |
+| `search_files` | Search for files by pattern |
+| `get_file_info` | Get detailed file metadata |
+| `execute_command` | Run shell commands safely |
+| `get_codebase` | Generate AI-friendly codebase summary (paginated) |
+
+## Advanced Configuration
+
+### Custom Port
+
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco-context-coder:latest
+    ports:
+      - "8080:3001"  # Map to port 8080 on host
+    volumes:
+      - ./:/app
 ```
 
-## Development Mode
+### Mount Specific Directory
 
-```shell
-npm run dev
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco-context-coder:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src:/app  # Only mount src directory
+    working_dir: /app
 ```
 
-This starts the server with auto-restart on code changes and maps "./" to the local "./mount" directory.
+### With Other Services
 
-## Running with Docker
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco-context-coder:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app
+    networks:
+      - dev-network
 
-```shell
-docker-compose up
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: example
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
 ```
 
-The Docker container maps the local `./mount` directory to the container's root directory for file operations.
+## Usage Tips
 
-## About Coco
+1. **Always start with `read_root_directory`** to understand the project structure
+2. **Use relative paths** starting with `./` for all file operations
+3. **Use `get_codebase`** for comprehensive code analysis (results are paginated)
+4. **Batch operations** with `read_multiple_files` for better performance
 
-Coco (Context Coder) is designed to provide a secure and efficient way to interact with file systems through the Model Context Protocol. The name reflects its purpose: providing context about code and files to AI models while maintaining security and control over file system access.
+## Path Examples
+
+- Root directory: `./`
+- File in root: `./package.json`
+- Subdirectory: `./src/`
+- Nested file: `./src/components/Button.tsx`
+
+## Building Custom Image
+
+If you want to extend Coco:
+
+```dockerfile
+FROM ghcr.io/khromov/coco-context-coder:latest
+
+# Add your customizations here
+```
+
+## Troubleshooting
+
+### Permission Issues
+Ensure the mounted directory has appropriate read/write permissions:
+```bash
+chmod -R 755 ./your-project
+```
+
+### Connection Refused
+Check if the port is already in use:
+```bash
+lsof -i :3001
+```
+
+### View Logs
+```bash
+docker-compose logs -f coco
+```
+
+## About the Name
+
+**Coco** stands for **Co**ntext **Co**der - it provides rich context about your code to AI models while maintaining security and control over file system access.
+
+## License
+
+MIT License - See LICENSE file for details

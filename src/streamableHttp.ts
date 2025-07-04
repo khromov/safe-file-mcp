@@ -4,7 +4,7 @@ import express, { Request, Response } from "express";
 import { createServer } from "./mcp.js";
 import { randomUUID } from 'node:crypto';
 
-console.error('Starting Coco - Context Coder MCP Server (Streamable HTTP)...');
+console.error('Starting 🥥 Coco MCP Server (Streamable HTTP)...');
 
 const app = express();
 
@@ -153,12 +153,12 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.error(`Coco - Context Coder MCP Server listening on port ${PORT}`);
+  console.error(`🥥 Coco MCP Server listening on port ${PORT}`);
 });
 
 // Handle server shutdown
 const gracefulShutdown = async () => {
-  console.error('Shutting down Coco server...');
+  console.error('Shutting down 🥥 Coco server...');
 
   // Close all active transports to properly clean up resources
   for (const sessionId in transports) {
@@ -171,7 +171,7 @@ const gracefulShutdown = async () => {
     }
   }
 
-  console.error('Coco server shutdown complete');
+  console.error('🥥 Coco server shutdown complete');
   process.exit(0);
 };
 
