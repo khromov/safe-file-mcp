@@ -571,7 +571,7 @@ export const createServer = async () => {
               silent: true
             });
 
-            const PAGE_SIZE = 100000; // 100,000 characters per page
+            const PAGE_SIZE = 99000; // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
             const requestedPage = parsed.data.page;
             
             let currentPage = 1;
