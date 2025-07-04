@@ -22,7 +22,7 @@ import {
   writeFileSecure,
 } from './file-operations.js';
 import { ToolInput } from './types.js';
-import aiDigest from 'ai-digest';
+import { generateCodebaseDigest } from './codebase-digest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -566,60 +566,17 @@ export const createServer = async () => {
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
           
           try {
-            const { files } = await aiDigest.generateDigestFiles({
+            const result = await generateCodebaseDigest({
               inputDir: absolutePath,
-              silent: true
+              page: parsed.data.page,
+              pageSize: 99000 // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
             });
-
-            const PAGE_SIZE = 99000; // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
-            const requestedPage = parsed.data.page;
             
-            let currentPage = 1;
-            let currentPageContent = '';
-            let currentPageCharCount = 0;
-            let totalCharCount = 0;
-            
-            for (const file of files) {
-              let fileContent = file.content;
-              let fileCharCount = fileContent.length;
-              
-              // If file is larger than page size, replace with omission message
-              if (fileCharCount > PAGE_SIZE) {
-                const omissionMessage = `# ${file.fileName}\nFile omitted due to large size (${fileCharCount.toLocaleString()} characters)\n`;
-                fileContent = omissionMessage;
-                fileCharCount = omissionMessage.length;
-              }
-              
-              // Check if adding this file would exceed the page size
-              if (currentPageCharCount + fileCharCount > PAGE_SIZE && currentPageCharCount > 0) {
-                // Move to next page
-                if (currentPage === requestedPage) {
-                  // We've collected the requested page, stop here
-                  break;
-                }
-                currentPage++;
-                currentPageContent = '';
-                currentPageCharCount = 0;
-              }
-              
-              // Add file to current page if we're on the requested page
-              if (currentPage === requestedPage) {
-                currentPageContent += fileContent;
-                currentPageCharCount += fileCharCount;
-              }
-              
-              totalCharCount += fileCharCount;
-            }
-            
-            // Check if there are more pages
-            const hasMorePages = totalCharCount > requestedPage * PAGE_SIZE;
-            
-            if (hasMorePages) {
-              currentPageContent += `\n\n---\nThis is page ${requestedPage}. To see more files, call this tool again with page: ${requestedPage + 1}\n`;
-            }
+            // The message is already in the correct format from codebase-digest.ts
+            let content = result.content;
             
             return {
-              content: [{ type: "text", text: currentPageContent }],
+              content: [{ type: "text", text: content }],
             };
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);

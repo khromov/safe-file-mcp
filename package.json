@@ -19,7 +19,8 @@
     "start": "node dist/index.js",
     "dev": "PORT=3002 NODE_ENV=development nodemon",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
-    "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch"
+    "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
+    "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
