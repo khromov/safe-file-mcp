@@ -22,6 +22,8 @@ import {
   writeFileSecure,
 } from './file-operations.js';
 import { ToolInput } from './types.js';
+import aiDigestPkg from 'ai-digest';
+const { generateDigest } = aiDigestPkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -84,6 +86,11 @@ const ExecuteCommandArgsSchema = z.object({
   command: z.string().describe('The full command to execute (e.g., "npx -y ai-digest", "ls -la", "node script.js")'),
   timeout: z.number().optional().default(60000).describe('Command timeout in milliseconds (default: 60 seconds)'),
   env: z.record(z.string()).optional().describe('Environment variables to set for the command')
+});
+
+const GetCodebaseArgsSchema = z.object({
+  path: z.string().optional().default('./').describe('Relative path from root directory to analyze (defaults to root)'),
+  excludePatterns: z.array(z.string()).optional().default([]).describe('Patterns to exclude from the codebase digest')
 });
 
 // Helper function to resolve relative paths to the actual file system location
@@ -291,6 +298,15 @@ export const createServer = async () => {
           "Commands are executed with a 60-second timeout to prevent hanging. " +
           "Returns stdout, stderr, and exit code.",
         inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
+      },
+      {
+        name: "get_codebase",
+        description:
+          "Generate a comprehensive digest of the codebase using ai-digest. " +
+          "Returns a structured summary of all code files in the specified directory. " +
+          "Useful for understanding project structure and code content. " +
+          "Can exclude specific patterns from the digest.",
+        inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
     ];
 
@@ -539,6 +555,33 @@ export const createServer = async () => {
               .map(([key, value]) => `${key}: ${value}`)
               .join("\n") }],
           };
+        }
+
+        case "get_codebase": {
+          const parsed = GetCodebaseArgsSchema.safeParse(args);
+          if (!parsed.success) {
+            throw new Error(`Invalid arguments for get_codebase: ${parsed.error}`);
+          }
+          
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+          
+          try {
+            // Generate the codebase digest
+            const content = await generateDigest({
+              inputDir: absolutePath,
+              outputFile: null,  // Return as string instead of writing to file
+              silent: true,      // Suppress console output
+              exclude: parsed.data.excludePatterns
+            });
+            
+            return {
+              content: [{ type: "text", text: content }],
+            };
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to generate codebase digest: ${errorMessage}`);
+          }
         }
 
         case "execute_command": {
