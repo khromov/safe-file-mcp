@@ -1,12 +1,11 @@
 services:
   mcp-server:
-    build: .
-    # image: ghcr.io/khromov/safe-file-mcp:main
+    # build: .
+    image: ghcr.io/khromov/safe-file-mcp:main
     ports:
       - "3001:3001"
     volumes:
-      # Map local mount directory to container's working directory
-      - ./mount:/app
+      - ./:/app
     working_dir: /app
     environment:
       - NODE_ENV=production
