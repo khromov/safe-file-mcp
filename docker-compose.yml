@@ -1,5 +1,5 @@
 services:
-  mcp-server:
+  coco-mcp:
     # build: .
     image: ghcr.io/khromov/safe-file-mcp:main
     ports:
