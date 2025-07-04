@@ -26,6 +26,9 @@ import { ToolInput } from './types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Pagination constants
+const MAX_CHARS_PER_PAGE = 99000;
+
 // Try to read instructions file, but don't fail if it doesn't exist
 let instructions = "";
 try {
@@ -36,7 +39,8 @@ try {
 
 // File system schema definitions
 const ReadFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")')
+  path: z.string().describe('Relative path from root directory (e.g., "./file.txt", "./folder/file.txt")'),
+  page: z.number().int().positive().optional().default(1).describe('Page number to read (1-based indexing) for large files')
 });
 
 const ReadMultipleFilesArgsSchema = z.object({
@@ -208,7 +212,9 @@ export const createServer = async () => {
         name: "read_file",
         description:
           "Read the complete contents of a file from the file system. " +
-          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt').",
+          "Use relative paths starting with './' (e.g., './file.txt', './folder/file.txt'). " +
+          "For large files (>99,000 characters), content is automatically paginated. " +
+          "Use the 'page' parameter to navigate through pages (page=1, page=2, etc.).",
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
       },
       {
@@ -332,8 +338,39 @@ export const createServer = async () => {
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
           
           const content = await fs.readFile(absolutePath, "utf-8");
+          
+          // Check if pagination is needed
+          if (content.length <= MAX_CHARS_PER_PAGE) {
+            // File fits in one page, return as before
+            return {
+              content: [{ type: "text", text: content }],
+            };
+          }
+          
+          // File needs pagination
+          const totalPages = Math.ceil(content.length / MAX_CHARS_PER_PAGE);
+          const requestedPage = parsed.data.page;
+          
+          // Validate page number
+          if (requestedPage > totalPages) {
+            throw new Error(`Page ${requestedPage} does not exist. File has ${totalPages} pages.`);
+          }
+          
+          // Extract page content
+          const startIndex = (requestedPage - 1) * MAX_CHARS_PER_PAGE;
+          const endIndex = Math.min(startIndex + MAX_CHARS_PER_PAGE, content.length);
+          const pageContent = content.slice(startIndex, endIndex);
+          
+          // Add pagination note
+          let paginationNote;
+          if (requestedPage < totalPages) {
+            paginationNote = `\n\n--- Page ${requestedPage} of ${totalPages} ---\nTo read the next page, call read_file with page=${requestedPage + 1}`;
+          } else {
+            paginationNote = `\n\n--- Page ${requestedPage} of ${totalPages} (End of file) ---`;
+          }
+          
           return {
-            content: [{ type: "text", text: content }],
+            content: [{ type: "text", text: pageContent + paginationNote }],
           };
         }
 
