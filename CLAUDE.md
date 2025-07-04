@@ -2,89 +2,57 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# 🥥 Coco MCP Server - Development Guidelines
+## Project Overview
 
-## Build, Test & Run Commands
-- Build: `npm run build` - Compiles TypeScript to JavaScript and copies instructions.md to dist/
-- Watch mode: `npm run watch` - Watches for changes and rebuilds automatically  
-- Run server: `npm run start` - Starts the MCP server using streamable HTTP transport
-- Development: `npm run dev` - Starts the server with auto-restart on code changes (uses nodemon)
+Coco MCP (Context Coder) is a secure file system access server implementing the Model Context Protocol. It provides AI models with controlled file operations within designated directories.
 
-## Architecture Overview
+## Essential Commands
 
-🥥 Coco (Context Coder) is a comprehensive MCP (Model Context Protocol) server that implements file system operations with secure relative path handling. The server uses streamable HTTP transport exclusively and is designed to provide AI models with safe, controlled access to file system context.
+**Development:**
+```bash
+npm run dev          # Start development server with auto-reload
+npm run build        # Compile TypeScript to dist/
+npm start            # Run production server
+```
 
-### Core Components
-- `mcp.ts` - Main MCP server implementation with file system tools
-- `index.ts` - Entry point that starts the streamable HTTP server
-- `streamableHttp.ts` - Streamable HTTP transport with session management
-- `file-operations.ts` - File system utilities and operations
-- `types.ts` - TypeScript type definitions
-- `codebase-digest.ts` - AI-digest integration for codebase summarization
+**Testing:**
+```bash
+npm test             # Run all tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Generate coverage report
+```
 
-### Transport Architecture
-The server uses streamable HTTP transport providing:
-- Modern HTTP with streaming capabilities
-- Session resumability
-- WebSocket-like bidirectional communication over HTTP
+## Architecture
 
-### MCP Protocol Implementation
-- **Tools**: 13 file system tools + get_codebase tool
-- **Prompts**: 1 prompt - complex_prompt (demonstrates argument handling)
+The server follows a layered architecture:
 
-## File System Operations
+1. **Transport Layer** (`src/streamableHttp.ts`): Handles HTTP/SSE communication with session management
+2. **MCP Layer** (`src/mcp.ts`): Implements the Model Context Protocol server with 13 file operation tools
+3. **File Operations** (`src/file-operations.ts`): Secure file system utilities with path validation
 
-All file operations use relative paths starting with "./":
-- Root directory access: "./"
-- Files in root: "./file.txt"
-- Subdirectories: "./folder/file.txt"
+**Key Design Decisions:**
+- All file paths must be relative (starting with "./")
+- Parent directory access ("../") is blocked for security
+- In development mode, operations are sandboxed to the `./mount` directory
+- The server validates all paths to prevent directory traversal attacks
 
-In development mode, "./" transparently maps to the local "./mount" folder.
-In production mode, "./" maps to the container's working directory.
+## Development Notes
 
-## Code Style Guidelines
-- Use ES modules with `.js` extension in import paths
-- Strictly type all functions and variables with TypeScript
-- Follow zod schema patterns for tool input validation
-- Prefer async/await over callbacks and Promise chains
-- Place all imports at top of file, grouped by external then internal
-- Use descriptive variable names that clearly indicate purpose
-- Implement proper cleanup for resources in server shutdown
-- Follow camelCase for variables/functions, PascalCase for types/classes, UPPER_CASE for constants
-- Handle errors with try/catch blocks and provide clear error messages
-- Use consistent indentation (2 spaces) and trailing commas in multi-line objects
+When working on this codebase:
 
-## Key Dependencies
-- `@modelcontextprotocol/sdk` - Core MCP protocol implementation
-- `zod` - Schema validation for tool inputs
-- `express` - HTTP server for streamable HTTP transport
-- `zod-to-json-schema` - Convert zod schemas to JSON schema format
-- `minimatch` - Pattern matching for file searches
-- `ignore` - Gitignore-style pattern matching
-- `ai-digest` - Generate comprehensive codebase summaries
+1. **Path Handling**: Always use the `validatePath()` function from file-operations.ts when dealing with user-provided paths
+2. **Error Messages**: Include the actual error details in responses to help with debugging
+3. **Testing**: Add tests in `src/__tests__/` following the existing Jest/TypeScript setup
+4. **Docker**: The Dockerfile uses a multi-stage build. Test Docker changes with `docker-compose up --build`
 
-## Server Features
-- Secure relative path handling (no absolute paths or parent directory access)
-- Atomic file operations to prevent race conditions
-- Memory-efficient file reading with paginated codebase digest
-- Directory tree visualization
-- File search with pattern matching and exclusions
-- Detailed file metadata retrieval
-- Command execution with timeout and environment control
-- AI-digest integration for codebase understanding
+## Available Tools
 
-## Testing Notes
-- Start with `read_root_directory` to explore the file system
-- All paths must be relative and start with "./"
-- Parent directory references ("..") are blocked for security
-- File operations include proper error handling and validation
-- Use `get_codebase` for comprehensive code analysis
+The server exposes 13 MCP tools for file operations:
+- File reading: `read_file`, `read_multiple_files`, `get_file_info`
+- Directory operations: `list_directory`, `directory_tree`, `create_directory`
+- File writing: `write_file`, `move_file`
+- Search: `search_files`
+- Code analysis: `get_codebase` (paginated summary)
+- Command execution: `execute_command`
 
-## Package Information
-- Published as `@modelcontextprotocol/coco-context-coder`
-- Binary executable: `coco-mcp-server`
-- Can be run via npx without installation: `npx -y @modelcontextprotocol/coco-context-coder`
-- Only supports streamable HTTP transport (runs on HTTP server by default)
-
-## About 🥥 Coco
-Coco (Context Coder) provides AI models with controlled, contextual access to codebases and file systems. The name reflects its dual purpose: providing rich context about code while maintaining security boundaries.
+See `src/mcp.ts` for the complete tool implementations.
