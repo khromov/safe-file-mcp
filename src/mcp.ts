@@ -127,8 +127,8 @@ export const createServer = async () => {
 
   const server = new Server(
     {
-      name: "secure-filesystem-server",
-      version: "0.3.0",
+      name: "coco-context-coder",
+      version: "1.0.0",
     },
     {
       capabilities: {

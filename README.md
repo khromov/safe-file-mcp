@@ -1,8 +1,8 @@
-# safe-file-mcp
+# Coco - Context Coder
 
 _Work in progress_
 
-This MCP server provides secure file system operations with relative path handling. It implements a comprehensive set of file management tools while ensuring all operations are contained within a designated root directory.
+Coco (Context Coder) is an MCP server that provides secure file system operations with relative path handling. It implements a comprehensive set of file management tools while ensuring all operations are contained within a designated root directory.
 
 ## Components
 
@@ -87,6 +87,13 @@ This MCP server provides secure file system operations with relative path handli
       - `env` (object, optional): Environment variables to set
     - Returns: Command output (stdout, stderr) and exit code
 
+13. `get_codebase`
+    - Generate a comprehensive digest of the codebase using ai-digest
+    - Inputs:
+      - `path` (string, optional): Relative path from root directory to analyze (defaults to root)
+      - `page` (number, optional): Page number for pagination (defaults to 1)
+    - Returns: Structured summary of all code files (paginated at 100,000 characters per page)
+
 ### Prompts
 
 1. `complex_prompt`
@@ -139,3 +146,7 @@ docker-compose up
 ```
 
 The Docker container maps the local `./mount` directory to the container's root directory for file operations.
+
+## About Coco
+
+Coco (Context Coder) is designed to provide a secure and efficient way to interact with file systems through the Model Context Protocol. The name reflects its purpose: providing context about code and files to AI models while maintaining security and control over file system access.

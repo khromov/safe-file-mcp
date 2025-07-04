@@ -11,6 +11,11 @@ RUN npm run build
 
 FROM node:22-alpine AS release
 
+# Add metadata labels
+LABEL org.opencontainers.image.title="Coco - Context Coder"
+LABEL org.opencontainers.image.description="MCP server providing secure file system operations with relative path handling for AI context management"
+LABEL org.opencontainers.image.vendor="Model Context Protocol"
+
 # Install tini for proper signal handling
 RUN apk add --no-cache tini
 
