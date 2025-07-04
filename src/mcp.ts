@@ -564,12 +564,12 @@ export const createServer = async () => {
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
           
           try {
-            // Generate the codebase digest
-            const content = await aiDigest.generateDigest({
+            const { files } = await aiDigest.generateDigestFiles({
               inputDir: absolutePath,
-              outputFile: null,  // Return as string instead of writing to file
-              silent: true       // Suppress console output
+              silent: true
             });
+
+            const content = files.map(file => file.content).join('');
             
             return {
               content: [{ type: "text", text: content }],
