@@ -580,8 +580,15 @@ export const createServer = async () => {
             let totalCharCount = 0;
             
             for (const file of files) {
-              const fileContent = file.content;
-              const fileCharCount = fileContent.length;
+              let fileContent = file.content;
+              let fileCharCount = fileContent.length;
+              
+              // If file is larger than page size, replace with omission message
+              if (fileCharCount > PAGE_SIZE) {
+                const omissionMessage = `# ${file.fileName}\nFile omitted due to large size (${fileCharCount.toLocaleString()} characters)\n`;
+                fileContent = omissionMessage;
+                fileCharCount = omissionMessage.length;
+              }
               
               // Check if adding this file would exceed the page size
               if (currentPageCharCount + fileCharCount > PAGE_SIZE && currentPageCharCount > 0) {

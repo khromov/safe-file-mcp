@@ -17,7 +17,9 @@
     "build": "tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "dev": "PORT=3002 NODE_ENV=development nodemon"
+    "dev": "PORT=3002 NODE_ENV=development nodemon",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
+    "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
@@ -30,8 +32,12 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.10",
+    "jest": "^30.0.4",
     "nodemon": "^3.1.10",
     "shx": "^0.4.0",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   }
 }
