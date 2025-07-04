@@ -1,172 +1,114 @@
-# 🥥 Coco - Context Coder
+# 🥥 Coco - Context Coder MCP
 
-**Coco** (Context Coder) is an MCP server that provides secure file system operations and code analysis capabilities to AI models. It enables AI assistants to safely read, write, and analyze code within your project directory.
+Coco provides secure file system access to AI models through the Model Context Protocol. It enables AI assistants to read, write, and analyze code within a designated directory while enforcing security boundaries.
 
-## Quick Start
+## Installation
 
-Add Coco to your project using Docker Compose:
-
-### 1. Create a `docker-compose.yml` file in your project root:
+Run Coco using Docker Compose by adding this to a `docker-compose.yml` file:
 
 ```yaml
 services:
   coco:
-    image: ghcr.io/khromov/coco-context-coder:latest
+    image: ghcr.io/khromov/coco:latest
     ports:
       - "3001:3001"
     volumes:
       - ./:/app
     working_dir: /app
-    environment:
-      - NODE_ENV=production
 ```
 
-### 2. Start Coco:
-
+Start the service:
 ```bash
-docker-compose up -d coco
+docker-compose up
 ```
 
-### 3. Configure your AI tool to connect to Coco:
+The MCP endpoint will be available at `http://localhost:3001/mcp`.
 
-The server will be available at `http://localhost:3001/mcp`
+You should now add it to Claude Desktop or any other LLM tool you have. 
 
-## What Coco Provides
+#### Claude Desktop instructions
 
-Coco gives AI models the ability to:
+TODO
 
-- 📁 **Browse files** - Navigate and explore your project structure
-- 📄 **Read files** - Access file contents individually or in batches
-- ✏️ **Write files** - Create or modify files with atomic operations
-- 🔍 **Search** - Find files matching patterns across your codebase
-- 📊 **Analyze code** - Generate comprehensive codebase summaries using ai-digest
-- 🖥️ **Execute commands** - Run shell commands with timeout protection
-- 📂 **Manage directories** - Create, move, and organize project structure
+## Configuration
 
-## Security Features
+Mount a specific directory:
+```yaml
+volumes:
+  - ./src:/app  # Only expose src directory
+```
 
-- 🔒 All operations are restricted to your mounted directory
-- 🚫 Parent directory access (`../`) is blocked
-- ⚛️ Atomic file operations prevent corruption
-- ⏱️ Command execution has built-in timeouts
+Use a different port:
+```yaml
+ports:
+  - "8080:3001"  # Available at localhost:8080
+```
+
+Environment variables:
+- `NODE_ENV`: Set to `production` (default) or `development`
+- `PORT`: Override default port 3001
 
 ## Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `read_root_directory` | Start here - lists all files in your project |
-| `read_file` | Read a single file's contents |
-| `read_multiple_files` | Read multiple files efficiently |
-| `write_file` | Create or overwrite a file |
-| `create_directory` | Create new directories |
-| `list_directory` | List directory contents with type indicators |
-| `list_directory_with_sizes` | List with file sizes and sorting options |
-| `directory_tree` | Get full project structure as JSON |
-| `move_file` | Move or rename files and directories |
-| `search_files` | Search for files by pattern |
-| `get_file_info` | Get detailed file metadata |
-| `execute_command` | Run shell commands safely |
-| `get_codebase` | Generate AI-friendly codebase summary (paginated) |
+| Tool | Purpose |
+|------|---------|
+| `read_root_directory` | List contents of the root directory |
+| `read_file` | Read file contents |
+| `read_multiple_files` | Batch read multiple files |
+| `write_file` | Create or overwrite files |
+| `create_directory` | Create directories |
+| `list_directory` | List directory contents |
+| `list_directory_with_sizes` | List with file sizes |
+| `directory_tree` | Get directory structure as JSON |
+| `move_file` | Move or rename files |
+| `search_files` | Search by pattern |
+| `get_file_info` | Get file metadata |
+| `execute_command` | Run shell commands |
+| `get_codebase` | Generate code summary (paginated) |
 
-## Advanced Configuration
+All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
-### Custom Port
+## Development
 
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco-context-coder:latest
-    ports:
-      - "8080:3001"  # Map to port 8080 on host
-    volumes:
-      - ./:/app
+Clone and install dependencies:
+```bash
+npm install
 ```
 
-### Mount Specific Directory
-
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco-context-coder:latest
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./src:/app  # Only mount src directory
-    working_dir: /app
+Build and run:
+```bash
+npm run build
+npm start
 ```
 
-### With Other Services
-
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco-context-coder:latest
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./:/app
-    networks:
-      - dev-network
-
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_PASSWORD: example
-    networks:
-      - dev-network
-
-networks:
-  dev-network:
-    driver: bridge
+Development mode with auto-reload:
+```bash
+npm run dev
 ```
 
-## Usage Tips
+In development mode, file operations are sandboxed to the `./mount` directory.
 
-1. **Always start with `read_root_directory`** to understand the project structure
-2. **Use relative paths** starting with `./` for all file operations
-3. **Use `get_codebase`** for comprehensive code analysis (results are paginated)
-4. **Batch operations** with `read_multiple_files` for better performance
+## Docker Build
 
-## Path Examples
-
-- Root directory: `./`
-- File in root: `./package.json`
-- Subdirectory: `./src/`
-- Nested file: `./src/components/Button.tsx`
-
-## Building Custom Image
-
-If you want to extend Coco:
-
+Build a custom image:
 ```dockerfile
-FROM ghcr.io/khromov/coco-context-coder:latest
-
-# Add your customizations here
+FROM ghcr.io/khromov/coco:latest
+# Add customizations
 ```
 
-## Troubleshooting
-
-### Permission Issues
-Ensure the mounted directory has appropriate read/write permissions:
+Or build from source:
 ```bash
-chmod -R 755 ./your-project
+docker build -t my-coco .
 ```
 
-### Connection Refused
-Check if the port is already in use:
-```bash
-lsof -i :3001
-```
+## Protocol
 
-### View Logs
-```bash
-docker-compose logs -f coco
-```
+Coco implements the MCP specification using streamable HTTP transport. Sessions are maintained via the `mcp-session-id` header. The server supports request/response patterns, server-sent events for streaming, and session resumability.
 
-## About the Name
+## Security
 
-**Coco** stands for **Co**ntext **Co**der - it provides rich context about your code to AI models while maintaining security and control over file system access.
+File system access is restricted to the mounted directory. Operations that would escape the sandbox are rejected. The server validates all paths and blocks directory traversal attempts.
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT

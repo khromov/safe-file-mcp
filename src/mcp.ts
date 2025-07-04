@@ -127,7 +127,7 @@ export const createServer = async () => {
 
   const server = new Server(
     {
-      name: "coco-context-coder",
+      name: "coco",
       version: "1.0.0",
     },
     {
