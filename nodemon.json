@@ -1,5 +1,5 @@
 {
-  "watch": ["*.ts", "**/*.ts"],
+  "watch": ["src/**/*.ts"],
   "ext": "ts,json,md",
   "ignore": ["dist/**", "node_modules/**", "*.test.ts", "mount/**"],
   "exec": "npm run build && node dist/index.js",
