@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
-    "ai-digest": "^1.2.3",
+    "ai-digest": "^1.2.4",
     "express": "^4.21.1",
     "ignore": "^7.0.5",
     "minimatch": "^10.0.3",
