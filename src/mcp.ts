@@ -163,6 +163,7 @@ export const createServer = async () => {
     }
   );
 
+  /*
   server.setRequestHandler(ListPromptsRequestSchema, async () => {
     return {
       prompts: [
@@ -185,6 +186,7 @@ export const createServer = async () => {
       ],
     };
   });
+  */
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
