@@ -163,65 +163,6 @@ export const createServer = async () => {
     }
   );
 
-  /*
-  server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    return {
-      prompts: [
-        {
-          name: 'complex_prompt',
-          description: 'A prompt with arguments',
-          arguments: [
-            {
-              name: 'temperature',
-              description: 'Temperature setting',
-              required: true,
-            },
-            {
-              name: 'style',
-              description: 'Output style',
-              required: false,
-            },
-          ],
-        },
-      ],
-    };
-  });
-  */
-
-  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
-
-    if (name === 'complex_prompt') {
-      return {
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `This is a complex prompt with arguments: temperature=${args?.temperature}, style=${args?.style}`,
-            },
-          },
-          {
-            role: 'assistant',
-            content: {
-              type: 'text',
-              text: "I understand. You've provided a complex prompt with temperature and style arguments. How would you like me to proceed?",
-            },
-          },
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: 'Please generate an image with the following parameters.',
-            },
-          },
-        ],
-      };
-    }
-
-    throw new Error(`Unknown prompt: ${name}`);
-  });
-
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools: Tool[] = [
       {
