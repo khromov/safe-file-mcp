@@ -151,7 +151,7 @@ export const createServer = async () => {
 
   const server = new Server(
     {
-      name: 'coco',
+      name: 'coco-mcp',
       version: '1.0.0',
     },
     {
