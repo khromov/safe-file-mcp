@@ -1,7 +1,7 @@
 services:
   coco-mcp:
     # build: .
-    image: ghcr.io/khromov/safe-file-mcp:main
+    image: ghcr.io/khromov/coco:main
     ports:
       - "3001:3001"
     volumes:
