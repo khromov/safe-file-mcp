@@ -376,11 +376,13 @@ export const createServer = async () => {
           const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
 
           try {
+            console.log(`Generating codebase digest for path: ${absolutePath}`);
             const result = await generateCodebaseDigest({
               inputDir: absolutePath,
               page: parsed.data.page,
               pageSize: 99000, // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
             });
+            console.log(`Generated codebase digest with length: ${result.content.length}`);
 
             // The message is already in the correct format from codebase-digest.ts
             let content = result.content;
