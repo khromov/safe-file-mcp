@@ -217,7 +217,9 @@ export const createServer = async () => {
           'Execute a shell command with controlled environment. ' +
           "Pass the full command as a string (e.g., 'npx -y ai-digest', 'ls -la'). " +
           'Commands are executed with a 60-second timeout to prevent hanging. ' +
-          'Returns stdout, stderr, and exit code.',
+          'Returns stdout, stderr, and exit code. ' +
+          'Available CLI tools include: fzf (fuzzy finder), gh (GitHub CLI), jq (JSON processor), ' +
+          'dig/nslookup (DNS tools), iptables/ipset (network tools), claude-code (Claude CLI).',
         inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
       },
     ];
