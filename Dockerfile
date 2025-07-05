@@ -16,8 +16,23 @@ LABEL org.opencontainers.image.title="🥥 Coco - Context Coder"
 LABEL org.opencontainers.image.description="MCP server providing secure file system operations with relative path handling for AI context management"
 LABEL org.opencontainers.image.vendor="Model Context Protocol"
 
-# Install tini for proper signal handling
-RUN apk add --no-cache tini
+# Install tini for proper signal handling and development tools
+RUN apk add --no-cache tini \
+  less \
+  git \
+  procps \
+  sudo \
+  fzf \
+  zsh \
+  man-db \
+  unzip \
+  gnupg \
+  github-cli \
+  iptables \
+  ipset \
+  iproute2 \
+  bind-tools \
+  jq
 
 # Install the application in /opt/mcp-server
 WORKDIR /opt/mcp-server
