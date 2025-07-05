@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from '@jest/globals';
 import {
-  getFileStats,
   searchFiles,
   normalizeLineEndings,
-  formatSize,
   buildTree,
   writeFileSecure,
 } from '../file-operations.js';
@@ -30,96 +28,6 @@ describe('file-operations', () => {
     } catch (error) {
       console.error('Failed to clean up test directory:', error);
     }
-  });
-
-  describe('getFileStats', () => {
-    let testFile: string;
-    let testDir: string;
-
-    beforeEach(async () => {
-      testFile = path.join(TEST_DIR, 'test-stats.txt');
-      testDir = path.join(TEST_DIR, 'test-stats-dir');
-
-      await fs.writeFile(testFile, 'Hello, World!');
-      await fs.mkdir(testDir, { recursive: true });
-    });
-
-    afterEach(async () => {
-      try {
-        await fs.unlink(testFile);
-        await fs.rmdir(testDir);
-      } catch (error) {
-        // Ignore cleanup errors
-      }
-    });
-
-    it('should return correct stats for a file', async () => {
-      const stats = await getFileStats(testFile);
-
-      expect(stats.size).toBe(13); // "Hello, World!" is 13 bytes
-      expect(stats.isFile).toBe(true);
-      expect(stats.isDirectory).toBe(false);
-      
-      // Check dates are valid and are either Date objects or can be converted to valid dates
-      expect(typeof stats.created).toBeDefined();
-      expect(typeof stats.modified).toBeDefined();
-      expect(typeof stats.accessed).toBeDefined();
-      
-      // Check that we can get a valid timestamp from them
-      const createdTime = new Date(stats.created).getTime();
-      const modifiedTime = new Date(stats.modified).getTime();
-      const accessedTime = new Date(stats.accessed).getTime();
-      
-      expect(createdTime).toBeGreaterThan(0);
-      expect(modifiedTime).toBeGreaterThan(0);
-      expect(accessedTime).toBeGreaterThan(0);
-      
-      expect(typeof stats.permissions).toBe('string');
-      expect(stats.permissions).toMatch(/^\d{3}$/); // Should be 3 digit octal
-    });
-
-    it('should return correct stats for a directory', async () => {
-      const stats = await getFileStats(testDir);
-
-      expect(stats.isFile).toBe(false);
-      expect(stats.isDirectory).toBe(true);
-      
-      // Check dates are valid and can be converted to valid dates
-      expect(typeof stats.created).toBeDefined();
-      expect(typeof stats.modified).toBeDefined();
-      expect(typeof stats.accessed).toBeDefined();
-      
-      const createdTime = new Date(stats.created).getTime();
-      const modifiedTime = new Date(stats.modified).getTime();
-      const accessedTime = new Date(stats.accessed).getTime();
-      
-      expect(createdTime).toBeGreaterThan(0);
-      expect(modifiedTime).toBeGreaterThan(0);
-      expect(accessedTime).toBeGreaterThan(0);
-    });
-
-    it('should throw error for non-existent file', async () => {
-      const nonExistentFile = path.join(TEST_DIR, 'does-not-exist.txt');
-      await expect(getFileStats(nonExistentFile)).rejects.toThrow();
-    });
-
-    it('should handle files with different sizes', async () => {
-      const smallFile = path.join(TEST_DIR, 'small.txt');
-      const largeFile = path.join(TEST_DIR, 'large.txt');
-
-      await fs.writeFile(smallFile, '');
-      await fs.writeFile(largeFile, 'x'.repeat(1000));
-
-      const smallStats = await getFileStats(smallFile);
-      const largeStats = await getFileStats(largeFile);
-
-      expect(smallStats.size).toBe(0);
-      expect(largeStats.size).toBe(1000);
-
-      // Cleanup
-      await fs.unlink(smallFile);
-      await fs.unlink(largeFile);
-    });
   });
 
   describe('searchFiles', () => {
@@ -244,45 +152,6 @@ describe('file-operations', () => {
       const expected = '\n\n\n';
       
       expect(normalizeLineEndings(input)).toBe(expected);
-    });
-  });
-
-  describe('formatSize', () => {
-    it('should format bytes correctly', () => {
-      expect(formatSize(0)).toBe('0 B');
-      expect(formatSize(1)).toBe('1 B');
-      expect(formatSize(999)).toBe('999 B');
-    });
-
-    it('should format kilobytes correctly', () => {
-      expect(formatSize(1024)).toBe('1.00 KB');
-      expect(formatSize(1536)).toBe('1.50 KB'); // 1.5 KB
-      expect(formatSize(2048)).toBe('2.00 KB');
-    });
-
-    it('should format megabytes correctly', () => {
-      expect(formatSize(1024 * 1024)).toBe('1.00 MB');
-      expect(formatSize(1024 * 1024 * 2.5)).toBe('2.50 MB');
-    });
-
-    it('should format gigabytes correctly', () => {
-      expect(formatSize(1024 * 1024 * 1024)).toBe('1.00 GB');
-      expect(formatSize(1024 * 1024 * 1024 * 5.25)).toBe('5.25 GB');
-    });
-
-    it('should format terabytes correctly', () => {
-      expect(formatSize(1024 * 1024 * 1024 * 1024)).toBe('1.00 TB');
-      expect(formatSize(1024 * 1024 * 1024 * 1024 * 3.75)).toBe('3.75 TB');
-    });
-
-    it('should handle very large numbers gracefully', async () => {
-      // First check what formatSize actually returns for very large numbers
-      const veryLarge = 1024 * 1024 * 1024 * 1024 * 1024;
-      const result = formatSize(veryLarge);
-      
-      // The function should at least return a string and handle the calculation
-      expect(typeof result).toBe('string');
-      expect(result).toMatch(/^\d+\.\d{2}/); // Should start with number and two decimal places
     });
   });
 
@@ -517,7 +386,7 @@ describe('file-operations', () => {
       }
     });
 
-    it('should work together: write file, get stats, search, and build tree', async () => {
+    it('should work together: write file, search, and build tree', async () => {
       // Write a file
       const testFile = path.join(integrationTestDir, 'integration.txt');
       const content = 'Integration test content\r\nWith multiple lines\r\n';
@@ -526,15 +395,6 @@ describe('file-operations', () => {
       // Normalize and write normalized content
       const normalizedContent = normalizeLineEndings(content);
       await writeFileSecure(testFile, normalizedContent);
-
-      // Get file stats
-      const stats = await getFileStats(testFile);
-      expect(stats.isFile).toBe(true);
-      expect(stats.size).toBe(normalizedContent.length);
-
-      // Format the size
-      const formattedSize = formatSize(stats.size);
-      expect(formattedSize).toContain('B');
 
       // Search for the file
       const searchResults = await searchFiles(integrationTestDir, 'integration');
@@ -570,14 +430,6 @@ describe('file-operations', () => {
       const jsFiles = await searchFiles(integrationTestDir, '.js');
       const actualJsFiles = jsFiles.filter(file => file.endsWith('.js'));
       expect(actualJsFiles).toHaveLength(3);
-
-      // Get stats for each file
-      for (const file of files) {
-        const fullPath = path.join(integrationTestDir, file.path);
-        const stats = await getFileStats(fullPath);
-        expect(stats.isFile).toBe(true);
-        expect(stats.size).toBe(file.content.length);
-      }
 
       // Build complete tree
       const tree = await buildTree(integrationTestDir, [integrationTestDir]);

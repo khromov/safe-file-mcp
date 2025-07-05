@@ -1,17 +1,6 @@
 import { z } from 'zod';
 import { ToolSchema } from '@modelcontextprotocol/sdk/types.js';
 
-// File info interface
-export interface FileInfo {
-  size: number;
-  created: Date;
-  modified: Date;
-  accessed: Date;
-  isDirectory: boolean;
-  isFile: boolean;
-  permissions: string;
-}
-
 // Tree entry interface for directory tree
 export interface TreeEntry {
   name: string;

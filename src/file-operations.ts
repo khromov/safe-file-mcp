@@ -3,22 +3,8 @@ import path from 'path';
 import { randomBytes } from 'crypto';
 import { minimatch } from 'minimatch';
 import ignore from 'ignore';
-import { FileInfo, TreeEntry } from './types.js';
+import { TreeEntry } from './types.js';
 import { DEFAULT_IGNORES } from './constants.js';
-
-// Get file statistics
-export async function getFileStats(filePath: string): Promise<FileInfo> {
-  const stats = await fs.stat(filePath);
-  return {
-    size: stats.size,
-    created: stats.birthtime,
-    modified: stats.mtime,
-    accessed: stats.atime,
-    isDirectory: stats.isDirectory(),
-    isFile: stats.isFile(),
-    permissions: stats.mode.toString(8).slice(-3),
-  };
-}
 
 // Search files recursively
 export async function searchFiles(
@@ -72,17 +58,6 @@ export async function searchFiles(
 // Line ending normalization
 export function normalizeLineEndings(text: string): string {
   return text.replace(/\r\n/g, '\n');
-}
-
-// Format file size
-export function formatSize(bytes: number): string {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  if (bytes === 0) return '0 B';
-
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  if (i === 0) return `${bytes} ${units[i]}`;
-
-  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
 }
 
 // Build directory tree recursively

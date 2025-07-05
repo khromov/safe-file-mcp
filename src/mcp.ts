@@ -15,9 +15,7 @@ import { dirname, join } from 'path';
 import { z } from 'zod';
 import { spawn } from 'child_process';
 import {
-  getFileStats,
   searchFiles,
-  formatSize,
   buildTree,
   writeFileSecure,
 } from './file-operations.js';
@@ -44,12 +42,6 @@ const ReadFileArgsSchema = z.object({
     ),
 });
 
-const ReadMultipleFilesArgsSchema = z.object({
-  paths: z
-    .array(z.string())
-    .describe('Array of relative paths from root directory (with or without "./" prefix)'),
-});
-
 const WriteFileArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   content: z.string(),
@@ -61,15 +53,6 @@ const CreateDirectoryArgsSchema = z.object({
 
 const ListDirectoryArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (use "./" or "." for root)'),
-});
-
-const ListDirectoryWithSizesArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
-  sortBy: z
-    .enum(['name', 'size'])
-    .optional()
-    .default('name')
-    .describe('Sort entries by name or size'),
 });
 
 const DirectoryTreeArgsSchema = z.object({
@@ -90,10 +73,6 @@ const SearchFilesArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   pattern: z.string(),
   excludePatterns: z.array(z.string()).optional().default([]),
-});
-
-const GetFileInfoArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
 });
 
 const ExecuteCommandArgsSchema = z.object({
@@ -166,38 +145,28 @@ export const createServer = async () => {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools: Tool[] = [
       {
-        name: 'read_root_directory',
+        name: 'get_codebase',
         description:
-          'Read the contents of the root directory. This should be your first command when exploring the file system. ' +
-          'After calling this, use relative paths for all other file operations ' +
-          "(e.g., 'file.txt' or './file.txt' for a file in root, 'folder/file.txt' or './folder/file.txt' for a file in a subdirectory).",
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: [],
-        },
+          'Generate a a merged markdown file of the entire codebase.' +
+          'Results are paginated.' +
+          'If more content exists, a message will prompt to call again with the next page number. ' +
+          'IMPORTANT: You should start each new conversation by calling get_codebase first to get the code into the context.',
+        inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
       {
         name: 'read_file',
         description:
           'Read the complete contents of a file from the file system. ' +
-          "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt').",
+          "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt'). " +
+          'IMPORTANT: You should NEVER call this unless the user specifically asks to re-read a file OR you get stuck and need it to debug something.',
         inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
-      },
-      {
-        name: 'read_multiple_files',
-        description:
-          'Read the contents of multiple files simultaneously. ' +
-          "Use relative paths with or without './' prefix for each file. " +
-          'More efficient than reading files one by one when you need to analyze or compare multiple files.',
-        inputSchema: zodToJsonSchema(ReadMultipleFilesArgsSchema) as ToolInput,
       },
       {
         name: 'write_file',
         description:
           'Create a new file or completely overwrite an existing file with new content. ' +
           "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
-          'Use with caution as it will overwrite existing files without warning.',
+          'You must write out the file in full each time you call write_file.',
         inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
       },
       {
@@ -213,23 +182,17 @@ export const createServer = async () => {
         description:
           'Get a detailed listing of all files and directories in a specified path. ' +
           "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
-          'Results show [FILE] and [DIR] prefixes to distinguish between files and directories.',
+          'Results show [FILE] and [DIR] prefixes to distinguish between files and directories. ' +
+          'IMPORTANT: You should NEVER call this unless the user specifically asks to find all the files in a directory or use this tool OR you get stuck and need it to debug something.',
         inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
-      },
-      {
-        name: 'list_directory_with_sizes',
-        description:
-          'Get a detailed listing of all files and directories in a specified path, including file sizes. ' +
-          "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
-          'Results can be sorted by name or size.',
-        inputSchema: zodToJsonSchema(ListDirectoryWithSizesArgsSchema) as ToolInput,
       },
       {
         name: 'directory_tree',
         description:
           'Get a recursive tree view of files and directories as a JSON structure. ' +
           'Path is optional - if not provided, shows the root directory. ' +
-          'Returns a structured view of the entire directory hierarchy.',
+          'Returns a structured view of the entire directory hierarchy. ' +
+          'IMPORTANT: You should NEVER call this UNLESS the user specifically asks for it OR you get stuck and need it to debug something.',
         inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
       },
       {
@@ -249,14 +212,6 @@ export const createServer = async () => {
         inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
       },
       {
-        name: 'get_file_info',
-        description:
-          'Retrieve detailed metadata about a file or directory. ' +
-          "Use relative paths with or without './' prefix (e.g., 'file.txt', './folder'). " +
-          'Returns information including size, timestamps, permissions, and type.',
-        inputSchema: zodToJsonSchema(GetFileInfoArgsSchema) as ToolInput,
-      },
-      {
         name: 'execute_command',
         description:
           'Execute a shell command with controlled environment. ' +
@@ -264,15 +219,6 @@ export const createServer = async () => {
           'Commands are executed with a 60-second timeout to prevent hanging. ' +
           'Returns stdout, stderr, and exit code.',
         inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
-      },
-      {
-        name: 'get_codebase',
-        description:
-          'Generate a comprehensive digest of the codebase using ai-digest. ' +
-          'Returns a structured summary of all code files in the specified directory. ' +
-          'Results are paginated (100,000 characters per page). ' +
-          'If more content exists, a message will prompt to call again with the next page number.',
-        inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
     ];
 
@@ -285,26 +231,6 @@ export const createServer = async () => {
     // Handle file system tools
     try {
       switch (name) {
-        case 'read_root_directory': {
-          try {
-            const entries = await fs.readdir(absoluteRootDir, { withFileTypes: true });
-            const formatted = entries
-              .map((entry) => `${entry.isDirectory() ? '[DIR]' : '[FILE]'} ${entry.name}`)
-              .join('\n');
-
-            const instructions =
-              "\n\nUse relative paths for all file operations (with or without './' prefix). " +
-              "For example: 'file.txt' or './file.txt' for files in root, 'folder/file.txt' or './folder/file.txt' for files in subdirectories.";
-
-            return {
-              content: [{ type: 'text', text: formatted + instructions }],
-            };
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to read root directory: ${errorMessage}`);
-          }
-        }
-
         case 'read_file': {
           const parsed = ReadFileArgsSchema.safeParse(args);
           if (!parsed.success) {
@@ -317,29 +243,6 @@ export const createServer = async () => {
           const content = await fs.readFile(absolutePath, 'utf-8');
           return {
             content: [{ type: 'text', text: content }],
-          };
-        }
-
-        case 'read_multiple_files': {
-          const parsed = ReadMultipleFilesArgsSchema.safeParse(args);
-          if (!parsed.success) {
-            throw new Error(`Invalid arguments for read_multiple_files: ${parsed.error}`);
-          }
-          const results = await Promise.all(
-            parsed.data.paths.map(async (filePath: string) => {
-              try {
-                validateRelativePath(filePath);
-                const absolutePath = resolveRelativePath(filePath, absoluteRootDir);
-                const content = await fs.readFile(absolutePath, 'utf-8');
-                return `${filePath}:\n${content}\n`;
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                return `${filePath}: Error - ${errorMessage}`;
-              }
-            })
-          );
-          return {
-            content: [{ type: 'text', text: results.join('\n---\n') }],
           };
         }
 
@@ -387,74 +290,6 @@ export const createServer = async () => {
             .join('\n');
           return {
             content: [{ type: 'text', text: formatted }],
-          };
-        }
-
-        case 'list_directory_with_sizes': {
-          const parsed = ListDirectoryWithSizesArgsSchema.safeParse(args);
-          if (!parsed.success) {
-            throw new Error(`Invalid arguments for list_directory_with_sizes: ${parsed.error}`);
-          }
-          validateRelativePath(parsed.data.path);
-          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
-          const entries = await fs.readdir(absolutePath, { withFileTypes: true });
-
-          const detailedEntries = await Promise.all(
-            entries.map(async (entry) => {
-              const entryPath = path.join(absolutePath, entry.name);
-              try {
-                const stats = await fs.stat(entryPath);
-                return {
-                  name: entry.name,
-                  isDirectory: entry.isDirectory(),
-                  size: stats.size,
-                  mtime: stats.mtime,
-                };
-              } catch (error) {
-                return {
-                  name: entry.name,
-                  isDirectory: entry.isDirectory(),
-                  size: 0,
-                  mtime: new Date(0),
-                };
-              }
-            })
-          );
-
-          const sortedEntries = [...detailedEntries].sort((a, b) => {
-            if (parsed.data.sortBy === 'size') {
-              return b.size - a.size;
-            }
-            return a.name.localeCompare(b.name);
-          });
-
-          const formattedEntries = sortedEntries.map(
-            (entry) =>
-              `${entry.isDirectory ? '[DIR]' : '[FILE]'} ${entry.name.padEnd(30)} ${
-                entry.isDirectory ? '' : formatSize(entry.size).padStart(10)
-              }`
-          );
-
-          const totalFiles = detailedEntries.filter((e) => !e.isDirectory).length;
-          const totalDirs = detailedEntries.filter((e) => e.isDirectory).length;
-          const totalSize = detailedEntries.reduce(
-            (sum, entry) => sum + (entry.isDirectory ? 0 : entry.size),
-            0
-          );
-
-          const summary = [
-            '',
-            `Total: ${totalFiles} files, ${totalDirs} directories`,
-            `Combined size: ${formatSize(totalSize)}`,
-          ];
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: [...formattedEntries, ...summary].join('\n'),
-              },
-            ],
           };
         }
 
@@ -526,26 +361,6 @@ export const createServer = async () => {
               {
                 type: 'text',
                 text: relativePaths.length > 0 ? relativePaths.join('\n') : 'No matches found',
-              },
-            ],
-          };
-        }
-
-        case 'get_file_info': {
-          const parsed = GetFileInfoArgsSchema.safeParse(args);
-          if (!parsed.success) {
-            throw new Error(`Invalid arguments for get_file_info: ${parsed.error}`);
-          }
-          validateRelativePath(parsed.data.path);
-          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
-          const info = await getFileStats(absolutePath);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: Object.entries(info)
-                  .map(([key, value]) => `${key}: ${value}`)
-                  .join('\n'),
               },
             ],
           };

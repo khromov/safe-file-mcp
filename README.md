@@ -70,21 +70,17 @@ Environment variables:
 
 ## Available Tools
 
-| Tool                        | Purpose                                                           |
-| --------------------------- | ----------------------------------------------------------------- |
-| **`get_codebase`**          | **Generate AI-digestible summary of entire codebase (paginated)** |
-| `read_root_directory`       | List contents of the root directory                               |
-| `read_file`                 | Read file contents                                                |
-| `read_multiple_files`       | Batch read multiple files                                         |
-| `write_file`                | Create or overwrite files                                         |
-| `create_directory`          | Create directories                                                |
-| `list_directory`            | List directory contents                                           |
-| `list_directory_with_sizes` | List with file sizes                                              |
-| `directory_tree`            | Get directory structure as JSON                                   |
-| `move_file`                 | Move or rename files                                              |
-| `search_files`              | Search by pattern                                                 |
-| `get_file_info`             | Get file metadata                                                 |
-| `execute_command`           | Run shell commands                                                |
+| Tool                | Purpose                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| **`get_codebase`**  | **Generate AI-digestible summary of entire codebase (paginated) - CALL THIS FIRST**              |
+| `read_file`         | Read file contents (only use when specifically asked to re-read or for debugging)                |
+| `write_file`        | Create or overwrite files                                                                        |
+| `create_directory`  | Create directories                                                                               |
+| `list_directory`    | List directory contents (only use when specifically asked or for debugging)                      |
+| `directory_tree`    | Get directory structure as JSON (only use when specifically asked or for debugging)              |
+| `move_file`         | Move or rename files                                                                             |
+| `search_files`      | Search by pattern                                                                                |
+| `execute_command`   | Run shell commands                                                                               |
 
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
