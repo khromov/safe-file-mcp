@@ -21,6 +21,7 @@ import {
 } from './file-operations.js';
 import { ToolInput } from './types.js';
 import { generateCodebaseDigest } from './codebase-digest.js';
+import aiDigest from 'ai-digest';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -96,6 +97,14 @@ const GetCodebaseArgsSchema = z.object({
   page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)'),
 });
 
+const GetCodebaseSizeArgsSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .default('./')
+    .describe('Relative path from root directory to analyze (defaults to root)'),
+});
+
 // Helper function to resolve relative paths to the actual file system location
 function resolveRelativePath(relativePath: string, rootDir: string): string {
   // Ensure the path starts with ./
@@ -145,12 +154,21 @@ export const createServer = async () => {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     const tools: Tool[] = [
       {
+        name: 'get_codebase_size',
+        description:
+          'Check the codebase size and token counts before processing. ' +
+          'Returns token counts for Claude and ChatGPT, warns if the codebase is too large, ' +
+          'and shows the largest files. ' +
+          'IMPORTANT: You should ALWAYS run this tool FIRST before any other operations. ' +
+          'After running this tool, you should then call get_codebase to retrieve the actual code.',
+        inputSchema: zodToJsonSchema(GetCodebaseSizeArgsSchema) as ToolInput,
+      },
+      {
         name: 'get_codebase',
         description:
           'Generate a a merged markdown file of the entire codebase.' +
           'Results are paginated.' +
-          'If more content exists, a message will prompt to call again with the next page number. ' +
-          'IMPORTANT: You should start each new conversation by calling get_codebase first to get the code into the context.',
+          'If more content exists, a message will prompt to call again with the next page number.',
         inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
       },
       {
@@ -233,6 +251,99 @@ export const createServer = async () => {
     // Handle file system tools
     try {
       switch (name) {
+        case 'get_codebase_size': {
+          const parsed = GetCodebaseSizeArgsSchema.safeParse(args);
+          if (!parsed.success) {
+            throw new Error(`Invalid arguments for get_codebase_size: ${parsed.error}`);
+          }
+
+          validateRelativePath(parsed.data.path);
+          const absolutePath = resolveRelativePath(parsed.data.path, absoluteRootDir);
+
+          try {
+            console.log(`Getting file statistics for path: ${absolutePath}`);
+            
+            // Get file statistics without content
+            const stats = await aiDigest.getFileStats({
+              inputDir: absolutePath,
+              silent: true
+            });
+
+            console.log(`Total Claude tokens: ${stats.totalClaudeTokens}, Total GPT tokens: ${stats.totalGptTokens}`);
+
+            // Sort files by size (largest first) - they should already be sorted by ai-digest
+            const sortedFiles = stats.files || [];
+            
+            let output = '';
+            
+            // Check token counts and provide warnings
+            const claudeTokenLimit = 150000;
+            const gptTokenLimit = 128000;
+            
+            let hasWarning = false;
+            
+            if (stats.totalClaudeTokens > claudeTokenLimit) {
+              hasWarning = true;
+              output += `⚠️ **WARNING: Large Codebase Detected for Claude**\n\n`;
+              output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
+              output += `This may cause issues with Claude's context window. You should create a \`.aidigestignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
+            }
+            
+            if (stats.totalGptTokens > gptTokenLimit) {
+              if (!hasWarning) {
+                output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
+              }
+              output += `Note: The codebase also contains ${stats.totalGptTokens.toLocaleString()} ChatGPT tokens (limit: ${gptTokenLimit.toLocaleString()}).\n\n`;
+            }
+            
+            // Show token summary
+            output += `## Token Summary\n\n`;
+            output += `- **Claude tokens**: ${stats.totalClaudeTokens.toLocaleString()}\n`;
+            output += `- **ChatGPT tokens**: ${stats.totalGptTokens.toLocaleString()}\n`;
+            output += `- **Total files**: ${sortedFiles.length}\n\n`;
+            
+            // Show top 10 largest files
+            if (sortedFiles.length > 0) {
+              output += `## Top 10 Largest Files\n\n`;
+              output += `Consider adding some of these to your \`.aidigestignore\` file:\n\n`;
+              
+              const top10Files = sortedFiles.slice(0, 10);
+              top10Files.forEach((file, index) => {
+                const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
+                const relativePath = path.relative(absolutePath, file.path);
+                output += `${index + 1}. \`./${relativePath}\` - ${sizeInKB} KB\n`;
+              });
+              
+              if (sortedFiles.length > 10) {
+                output += `\n... and ${sortedFiles.length - 10} more files.\n`;
+              }
+            }
+            
+            // Add instruction to run get_codebase next
+            output += `\n## Next Step\n\n`;
+            output += `Now run \`get_codebase\` to retrieve the actual codebase content.`;
+            
+            // Store the top 100 files in case user asks for more
+            const top100Files = sortedFiles.slice(0, 100).map((file, index) => {
+              const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
+              const relativePath = path.relative(absolutePath, file.path);
+              return `${index + 1}. ./${relativePath} - ${sizeInKB} KB`;
+            });
+            
+            // Add hidden comment with top 100 for potential follow-up
+            if (sortedFiles.length > 10) {
+              output += `\n\n<!-- Top 100 files (hidden):\n${top100Files.join('\n')}\n-->`;
+            }
+            
+            return {
+              content: [{ type: 'text', text: output }],
+            };
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to get codebase statistics: ${errorMessage}`);
+          }
+        }
+
         case 'read_file': {
           const parsed = ReadFileArgsSchema.safeParse(args);
           if (!parsed.success) {
