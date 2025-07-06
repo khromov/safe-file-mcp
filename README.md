@@ -72,7 +72,8 @@ Environment variables:
 
 | Tool                | Purpose                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------ |
-| **`get_codebase`**  | **Generate AI-digestible summary of entire codebase (paginated) - CALL THIS FIRST**              |
+| **`get_codebase_size`** | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
+| **`get_codebase`**  | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**      |
 | `read_file`         | Read file contents (only use when specifically asked to re-read or for debugging)                |
 | `write_file`        | Create or overwrite files                                                                        |
 | `create_directory`  | Create directories                                                                               |
