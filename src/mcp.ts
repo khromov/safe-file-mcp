@@ -69,6 +69,11 @@ const MoveFileArgsSchema = z.object({
   destination: z.string().describe('Relative path from root directory'),
 });
 
+const GitMoveFileArgsSchema = z.object({
+  source: z.string().describe('Relative path from root directory'),
+  destination: z.string().describe('Relative path from root directory'),
+});
+
 const SearchFilesArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   pattern: z.string(),
@@ -119,6 +124,56 @@ function validateRelativePath(relativePath: string): void {
   if (normalized.includes('..')) {
     throw new Error(`Path cannot contain parent directory references (got: ${relativePath})`);
   }
+}
+
+// Helper function to execute a command and return the result
+async function executeShellCommand(
+  command: string,
+  args: string[],
+  cwd: string,
+  timeout: number = 60000
+): Promise<{ stdout: string; stderr: string; code: number | null; signal: string | null }> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const errorChunks: Buffer[] = [];
+
+    const child = spawn(command, args, {
+      cwd,
+      shell: false,
+    });
+
+    const timeoutId = setTimeout(() => {
+      child.kill('SIGTERM');
+      setTimeout(() => {
+        if (!child.killed) {
+          child.kill('SIGKILL');
+        }
+      }, 5000);
+    }, timeout);
+
+    child.stdout.on('data', (data) => {
+      chunks.push(data);
+    });
+
+    child.stderr.on('data', (data) => {
+      errorChunks.push(data);
+    });
+
+    child.on('close', (code, signal) => {
+      clearTimeout(timeoutId);
+      resolve({
+        stdout: Buffer.concat(chunks).toString('utf-8'),
+        stderr: Buffer.concat(errorChunks).toString('utf-8'),
+        code,
+        signal,
+      });
+    });
+
+    child.on('error', (error) => {
+      clearTimeout(timeoutId);
+      reject(error);
+    });
+  });
 }
 
 export const createServer = async () => {
@@ -202,6 +257,15 @@ export const createServer = async () => {
           "Use relative paths with or without './' prefix for both source and destination. " +
           'Can move files between directories and rename them in a single operation.',
         inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
+      },
+      {
+        name: 'git_move_file',
+        description:
+          'Move or rename files using git mv command to preserve Git history. ' +
+          "Use relative paths with or without './' prefix for both source and destination. " +
+          'This tool uses "git mv" which stages the move/rename for the next commit. ' +
+          'The directory must be a Git repository for this to work.',
+        inputSchema: zodToJsonSchema(GitMoveFileArgsSchema) as ToolInput,
       },
       {
         name: 'search_files',
@@ -337,6 +401,49 @@ export const createServer = async () => {
               },
             ],
           };
+        }
+
+        case 'git_move_file': {
+          const parsed = GitMoveFileArgsSchema.safeParse(args);
+          if (!parsed.success) {
+            throw new Error(`Invalid arguments for git_move_file: ${parsed.error}`);
+          }
+          validateRelativePath(parsed.data.source);
+          validateRelativePath(parsed.data.destination);
+
+          // Convert to clean relative paths for git command
+          const cleanSource = parsed.data.source.startsWith('./') 
+            ? parsed.data.source.slice(2) 
+            : parsed.data.source;
+          const cleanDest = parsed.data.destination.startsWith('./') 
+            ? parsed.data.destination.slice(2) 
+            : parsed.data.destination;
+
+          try {
+            // Execute git mv command
+            const result = await executeShellCommand(
+              'git',
+              ['mv', cleanSource, cleanDest],
+              absoluteRootDir,
+              30000 // 30 second timeout for git operations
+            );
+
+            if (result.code !== 0) {
+              throw new Error(`Git move failed:\n${result.stderr || result.stdout}`);
+            }
+
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `Successfully moved ${parsed.data.source} to ${parsed.data.destination} using git mv`,
+                },
+              ],
+            };
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to execute git mv: ${errorMessage}`);
+          }
         }
 
         case 'search_files': {
