@@ -79,7 +79,6 @@ Environment variables:
 | `list_directory`    | List directory contents (only use when specifically asked or for debugging)                      |
 | `directory_tree`    | Get directory structure as JSON (only use when specifically asked or for debugging)              |
 | `move_file`         | Move or rename files                                                                             |
-| `git_move_file`     | Move or rename files using git mv to preserve Git history (requires Git repository)              |
 | `search_files`      | Search by pattern                                                                                |
 | `execute_command`   | Run shell commands                                                                               |
 
