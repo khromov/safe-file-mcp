@@ -158,7 +158,7 @@ export const createServer = async () => {
           'Check the codebase size and token counts before processing. ' +
           'Returns token counts for Claude and ChatGPT, warns if the codebase is too large, ' +
           'and shows the largest files. ' +
-          'IMPORTANT: You should ALWAYS run this tool FIRST before any other operations. ' +
+          'IMPORTANT: You should ALWAYS run this tool at the start of EVERY NEW CONVERSATION before any other operations. ' +
           'After running this tool, you should then call get_codebase to retrieve the actual code.',
         inputSchema: zodToJsonSchema(GetCodebaseSizeArgsSchema) as ToolInput,
       },
