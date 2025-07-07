@@ -3,7 +3,10 @@ import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import fs from 'fs/promises';
 
-export async function handleCreateDirectory(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleCreateDirectory(
+  args: any,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   const parsed = CreateDirectoryArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for create_directory: ${parsed.error}`);

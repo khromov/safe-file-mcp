@@ -63,6 +63,7 @@ The server exposes 14 MCP tools for file operations:
 - Command execution: `execute_command`
 
 **Important Workflow:**
+
 1. Always run `get_codebase_size` FIRST to check if the codebase is within token limits
 2. Then run `get_codebase` to get the actual code content
 3. Use other tools only when specifically needed

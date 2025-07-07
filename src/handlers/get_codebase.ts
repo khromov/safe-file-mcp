@@ -3,7 +3,10 @@ import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import { generateCodebaseDigest } from '../codebase-digest.js';
 
-export async function handleGetCodebase(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleGetCodebase(
+  args: any,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   const parsed = GetCodebaseArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for get_codebase: ${parsed.error}`);

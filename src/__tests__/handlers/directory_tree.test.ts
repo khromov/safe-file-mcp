@@ -26,21 +26,21 @@ describe('handleDirectoryTree', () => {
     const result = await handleDirectoryTree({ path: './' }, context);
 
     const tree = JSON.parse(result.content[0].text);
-    
+
     // Check root level
     expect(tree).toHaveLength(3); // index.js, src, empty-dir
-    
+
     const indexFile = tree.find((item: any) => item.name === 'index.js');
     expect(indexFile?.type).toBe('file');
-    
+
     const srcDir = tree.find((item: any) => item.name === 'src');
     expect(srcDir?.type).toBe('directory');
     expect(srcDir?.children).toBeDefined();
-    
+
     // Check nested structure
     const appFile = srcDir.children.find((item: any) => item.name === 'app.js');
     expect(appFile?.type).toBe('file');
-    
+
     const utilsDir = srcDir.children.find((item: any) => item.name === 'utils');
     expect(utilsDir?.type).toBe('directory');
     expect(utilsDir?.children).toHaveLength(1);

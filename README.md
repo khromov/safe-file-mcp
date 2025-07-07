@@ -70,18 +70,18 @@ Environment variables:
 
 ## Available Tools
 
-| Tool                | Purpose                                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------------------ |
+| Tool                    | Purpose                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- |
 | **`get_codebase_size`** | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
-| **`get_codebase`**  | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**      |
-| `read_file`         | Read file contents (only use when specifically asked to re-read or for debugging)                |
-| `write_file`        | Create or overwrite files                                                                        |
-| `create_directory`  | Create directories                                                                               |
-| `list_directory`    | List directory contents (only use when specifically asked or for debugging)                      |
-| `directory_tree`    | Get directory structure as JSON (only use when specifically asked or for debugging)              |
-| `move_file`         | Move or rename files                                                                             |
-| `search_files`      | Search by pattern                                                                                |
-| `execute_command`   | Run shell commands                                                                               |
+| **`get_codebase`**      | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**              |
+| `read_file`             | Read file contents (only use when specifically asked to re-read or for debugging)                         |
+| `write_file`            | Create or overwrite files                                                                                 |
+| `create_directory`      | Create directories                                                                                        |
+| `list_directory`        | List directory contents (only use when specifically asked or for debugging)                               |
+| `directory_tree`        | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
+| `move_file`             | Move or rename files                                                                                      |
+| `search_files`          | Search by pattern                                                                                         |
+| `execute_command`       | Run shell commands                                                                                        |
 
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 

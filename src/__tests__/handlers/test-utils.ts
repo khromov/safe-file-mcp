@@ -11,7 +11,10 @@ const __dirname = dirname(__filename);
 export const TEST_BASE_DIR = path.join(__dirname, 'test-handlers-temp');
 
 export async function setupTestDir(): Promise<string> {
-  const testDir = path.join(TEST_BASE_DIR, `test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const testDir = path.join(
+    TEST_BASE_DIR,
+    `test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   await fs.mkdir(testDir, { recursive: true });
   return testDir;
 }
@@ -31,7 +34,11 @@ export function createTestContext(testDir: string): HandlerContext {
 }
 
 // Helper to create test files
-export async function createTestFile(testDir: string, relativePath: string, content: string): Promise<void> {
+export async function createTestFile(
+  testDir: string,
+  relativePath: string,
+  content: string
+): Promise<void> {
   const fullPath = path.join(testDir, relativePath);
   await fs.mkdir(path.dirname(fullPath), { recursive: true });
   await fs.writeFile(fullPath, content);

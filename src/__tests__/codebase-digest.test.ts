@@ -215,18 +215,15 @@ describe('getCodebaseSize', () => {
   it('should return token counts for a simple directory', async () => {
     const SIMPLE_DIR = path.join(__dirname, 'test-simple-size-temp');
     await fs.mkdir(SIMPLE_DIR, { recursive: true });
-    
+
     // Create just one small file
-    await fs.writeFile(
-      path.join(SIMPLE_DIR, 'test.js'),
-      'console.log("hello world");'
-    );
+    await fs.writeFile(path.join(SIMPLE_DIR, 'test.js'), 'console.log("hello world");');
 
     try {
       const result = await getCodebaseSize({
-        inputDir: SIMPLE_DIR
+        inputDir: SIMPLE_DIR,
       });
-      
+
       expect(result.content).toBeDefined();
       expect(result.totalClaudeTokens).toBeGreaterThan(0);
       expect(result.totalGptTokens).toBeGreaterThan(0);
@@ -244,9 +241,9 @@ describe('getCodebaseSize', () => {
 
     try {
       const result = await getCodebaseSize({
-        inputDir: EMPTY_DIR
+        inputDir: EMPTY_DIR,
       });
-      
+
       expect(result.totalFiles).toBe(0);
       expect(result.hasWarning).toBe(false);
       expect(result.content).toContain('**Total files**: 0');
@@ -258,24 +255,21 @@ describe('getCodebaseSize', () => {
   it('should format output with markdown correctly', async () => {
     const MARKDOWN_DIR = path.join(__dirname, 'test-markdown-temp');
     await fs.mkdir(MARKDOWN_DIR, { recursive: true });
-    
-    await fs.writeFile(
-      path.join(MARKDOWN_DIR, 'readme.md'),
-      '# Test\n\nHello world'
-    );
+
+    await fs.writeFile(path.join(MARKDOWN_DIR, 'readme.md'), '# Test\n\nHello world');
 
     try {
       const result = await getCodebaseSize({
-        inputDir: MARKDOWN_DIR
+        inputDir: MARKDOWN_DIR,
       });
-      
+
       const output = result.content;
-      
+
       // Check markdown formatting
       expect(output).toMatch(/##\s+Token Summary/);
       expect(output).toMatch(/##\s+Top 10 Largest Files/);
       expect(output).toMatch(/##\s+Next Step/);
-      
+
       // Check bold formatting
       expect(output).toContain('**Claude tokens**:');
       expect(output).toContain('**ChatGPT tokens**:');

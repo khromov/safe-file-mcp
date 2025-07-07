@@ -1,8 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   CallToolRequestSchema,
-  GetPromptRequestSchema,
-  ListPromptsRequestSchema,
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
@@ -55,7 +53,7 @@ export const createServer = async () => {
     const { name, arguments: args } = request.params;
 
     // Find the tool by name
-    const tool = tools.find(t => t.name === name);
+    const tool = tools.find((t) => t.name === name);
     if (!tool) {
       return {
         content: [{ type: 'text', text: `Error: Unknown tool: ${name}` }],

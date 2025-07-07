@@ -2,7 +2,10 @@ import { ExecuteCommandArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { spawn } from 'child_process';
 
-export async function handleExecuteCommand(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleExecuteCommand(
+  args: any,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   const parsed = ExecuteCommandArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);

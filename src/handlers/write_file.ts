@@ -5,7 +5,10 @@ import { writeFileSecure } from '../file-operations.js';
 import fs from 'fs/promises';
 import path from 'path';
 
-export async function handleWriteFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleWriteFile(
+  args: any,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   const parsed = WriteFileArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for write_file: ${parsed.error}`);

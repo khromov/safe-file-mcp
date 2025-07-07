@@ -27,15 +27,15 @@ describe('handleReadFile', () => {
 
   it('should handle file not found error', async () => {
     const context = createTestContext(testDir);
-    
-    await expect(handleReadFile({ path: './nonexistent.txt' }, context))
-      .rejects.toThrow('ENOENT');
+
+    await expect(handleReadFile({ path: './nonexistent.txt' }, context)).rejects.toThrow('ENOENT');
   });
 
   it('should reject parent directory access', async () => {
     const context = createTestContext(testDir);
-    
-    await expect(handleReadFile({ path: '../outside.txt' }, context))
-      .rejects.toThrow('Path cannot contain parent directory references');
+
+    await expect(handleReadFile({ path: '../outside.txt' }, context)).rejects.toThrow(
+      'Path cannot contain parent directory references'
+    );
   });
 });

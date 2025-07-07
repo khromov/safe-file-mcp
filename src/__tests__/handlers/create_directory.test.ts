@@ -20,7 +20,7 @@ describe('handleCreateDirectory', () => {
     const result = await handleCreateDirectory({ path: './newdir' }, context);
 
     expect(result.content[0].text).toBe('Successfully created directory ./newdir');
-    
+
     const stats = await fs.stat(path.join(testDir, 'newdir'));
     expect(stats.isDirectory()).toBe(true);
   });
@@ -30,7 +30,7 @@ describe('handleCreateDirectory', () => {
     const result = await handleCreateDirectory({ path: './parent/child/grandchild' }, context);
 
     expect(result.content[0].text).toBe('Successfully created directory ./parent/child/grandchild');
-    
+
     const stats = await fs.stat(path.join(testDir, 'parent/child/grandchild'));
     expect(stats.isDirectory()).toBe(true);
   });

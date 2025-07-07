@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { handleMoveFile } from '../../handlers/move_file.js';
-import { setupTestDir, cleanupTestDir, createTestContext, createTestFile, fileExists, readTestFile } from './test-utils.js';
+import {
+  setupTestDir,
+  cleanupTestDir,
+  createTestContext,
+  createTestFile,
+  fileExists,
+  readTestFile,
+} from './test-utils.js';
 
 describe('handleMoveFile', () => {
   let testDir: string;
@@ -18,10 +25,13 @@ describe('handleMoveFile', () => {
     await createTestFile(testDir, 'source.txt', content);
 
     const context = createTestContext(testDir);
-    const result = await handleMoveFile({ 
-      source: './source.txt', 
-      destination: './moved/target.txt' 
-    }, context);
+    const result = await handleMoveFile(
+      {
+        source: './source.txt',
+        destination: './moved/target.txt',
+      },
+      context
+    );
 
     expect(result.content[0].text).toBe('Successfully moved ./source.txt to ./moved/target.txt');
     expect(await fileExists(testDir, 'source.txt')).toBe(false);
@@ -34,10 +44,13 @@ describe('handleMoveFile', () => {
     await createTestFile(testDir, 'oldname.txt', content);
 
     const context = createTestContext(testDir);
-    const result = await handleMoveFile({ 
-      source: './oldname.txt', 
-      destination: './newname.txt' 
-    }, context);
+    const result = await handleMoveFile(
+      {
+        source: './oldname.txt',
+        destination: './newname.txt',
+      },
+      context
+    );
 
     expect(result.content[0].text).toBe('Successfully moved ./oldname.txt to ./newname.txt');
     expect(await fileExists(testDir, 'oldname.txt')).toBe(false);
@@ -47,10 +60,15 @@ describe('handleMoveFile', () => {
 
   it('should fail when source file does not exist', async () => {
     const context = createTestContext(testDir);
-    
-    await expect(handleMoveFile({ 
-      source: './nonexistent.txt', 
-      destination: './target.txt' 
-    }, context)).rejects.toThrow('ENOENT');
+
+    await expect(
+      handleMoveFile(
+        {
+          source: './nonexistent.txt',
+          destination: './target.txt',
+        },
+        context
+      )
+    ).rejects.toThrow('ENOENT');
   });
 });

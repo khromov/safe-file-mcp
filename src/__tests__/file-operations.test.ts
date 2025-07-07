@@ -63,16 +63,16 @@ describe('file-operations', () => {
       const results = await searchFiles(searchTestDir, 'test');
 
       expect(results).toHaveLength(2);
-      expect(results.some(result => result.includes('test.txt'))).toBe(true);
-      expect(results.some(result => result.includes('test.js'))).toBe(true);
+      expect(results.some((result) => result.includes('test.txt'))).toBe(true);
+      expect(results.some((result) => result.includes('test.js'))).toBe(true);
     });
 
     it('should search case-insensitively', async () => {
       const results = await searchFiles(searchTestDir, 'TEST');
 
       expect(results).toHaveLength(2);
-      expect(results.some(result => result.includes('test.txt'))).toBe(true);
-      expect(results.some(result => result.includes('test.js'))).toBe(true);
+      expect(results.some((result) => result.includes('test.txt'))).toBe(true);
+      expect(results.some((result) => result.includes('test.js'))).toBe(true);
     });
 
     it('should find nested files', async () => {
@@ -99,8 +99,8 @@ describe('file-operations', () => {
       const results = await searchFiles(searchTestDir, '.js', ['**/node_modules/**']);
 
       expect(results).toHaveLength(2);
-      expect(results.some(result => result.includes('test.js'))).toBe(true);
-      expect(results.some(result => result.includes('another.js'))).toBe(true);
+      expect(results.some((result) => result.includes('test.js'))).toBe(true);
+      expect(results.some((result) => result.includes('another.js'))).toBe(true);
     });
 
     it('should return empty array when no matches found', async () => {
@@ -121,20 +121,20 @@ describe('file-operations', () => {
     it('should convert CRLF to LF', () => {
       const input = 'line1\r\nline2\r\nline3';
       const expected = 'line1\nline2\nline3';
-      
+
       expect(normalizeLineEndings(input)).toBe(expected);
     });
 
     it('should leave LF unchanged', () => {
       const input = 'line1\nline2\nline3';
-      
+
       expect(normalizeLineEndings(input)).toBe(input);
     });
 
     it('should handle mixed line endings', () => {
       const input = 'line1\r\nline2\nline3\r\nline4';
       const expected = 'line1\nline2\nline3\nline4';
-      
+
       expect(normalizeLineEndings(input)).toBe(expected);
     });
 
@@ -150,7 +150,7 @@ describe('file-operations', () => {
     it('should handle string with only line endings', () => {
       const input = '\r\n\r\n\r\n';
       const expected = '\n\n\n';
-      
+
       expect(normalizeLineEndings(input)).toBe(expected);
     });
   });
@@ -189,18 +189,18 @@ describe('file-operations', () => {
       const tree = await buildTree(treeTestDir, [treeTestDir]);
 
       expect(tree).toHaveLength(4); // package.json, README.md, src, lib (node_modules should be ignored)
-      
-      const srcEntry = tree.find(entry => entry.name === 'src');
+
+      const srcEntry = tree.find((entry) => entry.name === 'src');
       expect(srcEntry).toBeDefined();
       expect(srcEntry!.type).toBe('directory');
       expect(srcEntry!.children).toHaveLength(2); // index.ts and components
 
-      const componentsEntry = srcEntry!.children!.find(entry => entry.name === 'components');
+      const componentsEntry = srcEntry!.children!.find((entry) => entry.name === 'components');
       expect(componentsEntry).toBeDefined();
       expect(componentsEntry!.type).toBe('directory');
       expect(componentsEntry!.children).toHaveLength(1); // Button.tsx
 
-      const packageJsonEntry = tree.find(entry => entry.name === 'package.json');
+      const packageJsonEntry = tree.find((entry) => entry.name === 'package.json');
       expect(packageJsonEntry).toBeDefined();
       expect(packageJsonEntry!.type).toBe('file');
       expect(packageJsonEntry!.children).toBeUndefined();
@@ -210,7 +210,7 @@ describe('file-operations', () => {
       const tree = await buildTree(treeTestDir, [treeTestDir]);
 
       // node_modules should be ignored
-      const nodeModulesEntry = tree.find(entry => entry.name === 'node_modules');
+      const nodeModulesEntry = tree.find((entry) => entry.name === 'node_modules');
       expect(nodeModulesEntry).toBeUndefined();
     });
 
@@ -361,7 +361,7 @@ describe('file-operations', () => {
 
       // Check that no temp files are left behind
       const files = await fs.readdir(writeTestDir);
-      const tempFiles = files.filter(file => file.includes('.tmp'));
+      const tempFiles = files.filter((file) => file.includes('.tmp'));
       expect(tempFiles).toHaveLength(0);
 
       // Verify content was written correctly
@@ -428,17 +428,17 @@ describe('file-operations', () => {
 
       // Search for .js files specifically
       const jsFiles = await searchFiles(integrationTestDir, '.js');
-      const actualJsFiles = jsFiles.filter(file => file.endsWith('.js'));
+      const actualJsFiles = jsFiles.filter((file) => file.endsWith('.js'));
       expect(actualJsFiles).toHaveLength(3);
 
       // Build complete tree
       const tree = await buildTree(integrationTestDir, [integrationTestDir]);
       expect(tree).toHaveLength(3); // package.json, src, tests
 
-      const srcEntry = tree.find(entry => entry.name === 'src');
+      const srcEntry = tree.find((entry) => entry.name === 'src');
       expect(srcEntry!.children).toHaveLength(2); // index.js, utils
 
-      const utilsEntry = srcEntry!.children!.find(entry => entry.name === 'utils');
+      const utilsEntry = srcEntry!.children!.find((entry) => entry.name === 'utils');
       expect(utilsEntry!.children).toHaveLength(1); // helper.js
     });
   });
