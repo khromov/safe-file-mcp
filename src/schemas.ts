@@ -1,0 +1,72 @@
+import { z } from 'zod';
+
+// File system schema definitions
+export const ReadFileArgsSchema = z.object({
+  path: z
+    .string()
+    .describe(
+      'Relative path from root directory (e.g., "file.txt", "folder/file.txt", "./file.txt")'
+    ),
+});
+
+export const WriteFileArgsSchema = z.object({
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
+  content: z.string(),
+});
+
+export const CreateDirectoryArgsSchema = z.object({
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
+});
+
+export const ListDirectoryArgsSchema = z.object({
+  path: z.string().describe('Relative path from root directory (use "./" or "." for root)'),
+});
+
+export const DirectoryTreeArgsSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .default('./')
+    .transform((p) => p || './')
+    .describe('Relative path from root directory, with or without "./" prefix (defaults to root)'),
+});
+
+export const MoveFileArgsSchema = z.object({
+  source: z.string().describe('Relative path from root directory'),
+  destination: z.string().describe('Relative path from root directory'),
+});
+
+export const SearchFilesArgsSchema = z.object({
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
+  pattern: z.string(),
+  excludePatterns: z.array(z.string()).optional().default([]),
+});
+
+export const ExecuteCommandArgsSchema = z.object({
+  command: z
+    .string()
+    .describe('The full command to execute (e.g., "npx -y ai-digest", "ls -la", "node script.js")'),
+  timeout: z
+    .number()
+    .optional()
+    .default(60000)
+    .describe('Command timeout in milliseconds (default: 60 seconds)'),
+  env: z.record(z.string()).optional().describe('Environment variables to set for the command'),
+});
+
+export const GetCodebaseArgsSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .default('./')
+    .describe('Relative path from root directory to analyze (defaults to root)'),
+  page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)'),
+});
+
+export const GetCodebaseSizeArgsSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .default('./')
+    .describe('Relative path from root directory to analyze (defaults to root)'),
+});

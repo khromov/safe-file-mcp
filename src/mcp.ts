@@ -4,23 +4,32 @@ import {
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
   ListToolsRequestSchema,
-  Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { readFileSync } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { z } from 'zod';
 import { spawn } from 'child_process';
 import {
   searchFiles,
   buildTree,
   writeFileSecure,
 } from './file-operations.js';
-import { ToolInput } from './types.js';
 import { generateCodebaseDigest, getCodebaseSize } from './codebase-digest.js';
+import { tools } from './tools.js';
+import {
+  ReadFileArgsSchema,
+  WriteFileArgsSchema,
+  CreateDirectoryArgsSchema,
+  ListDirectoryArgsSchema,
+  DirectoryTreeArgsSchema,
+  MoveFileArgsSchema,
+  SearchFilesArgsSchema,
+  ExecuteCommandArgsSchema,
+  GetCodebaseArgsSchema,
+  GetCodebaseSizeArgsSchema,
+} from './schemas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,77 +41,6 @@ try {
 } catch (error) {
   console.error('Warning: instructions.md not found, continuing without instructions');
 }
-
-// File system schema definitions
-const ReadFileArgsSchema = z.object({
-  path: z
-    .string()
-    .describe(
-      'Relative path from root directory (e.g., "file.txt", "folder/file.txt", "./file.txt")'
-    ),
-});
-
-const WriteFileArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
-  content: z.string(),
-});
-
-const CreateDirectoryArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
-});
-
-const ListDirectoryArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (use "./" or "." for root)'),
-});
-
-const DirectoryTreeArgsSchema = z.object({
-  path: z
-    .string()
-    .optional()
-    .default('./')
-    .transform((p) => p || './')
-    .describe('Relative path from root directory, with or without "./" prefix (defaults to root)'),
-});
-
-const MoveFileArgsSchema = z.object({
-  source: z.string().describe('Relative path from root directory'),
-  destination: z.string().describe('Relative path from root directory'),
-});
-
-const SearchFilesArgsSchema = z.object({
-  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
-  pattern: z.string(),
-  excludePatterns: z.array(z.string()).optional().default([]),
-});
-
-const ExecuteCommandArgsSchema = z.object({
-  command: z
-    .string()
-    .describe('The full command to execute (e.g., "npx -y ai-digest", "ls -la", "node script.js")'),
-  timeout: z
-    .number()
-    .optional()
-    .default(60000)
-    .describe('Command timeout in milliseconds (default: 60 seconds)'),
-  env: z.record(z.string()).optional().describe('Environment variables to set for the command'),
-});
-
-const GetCodebaseArgsSchema = z.object({
-  path: z
-    .string()
-    .optional()
-    .default('./')
-    .describe('Relative path from root directory to analyze (defaults to root)'),
-  page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)'),
-});
-
-const GetCodebaseSizeArgsSchema = z.object({
-  path: z
-    .string()
-    .optional()
-    .default('./')
-    .describe('Relative path from root directory to analyze (defaults to root)'),
-});
 
 // Helper function to resolve relative paths to the actual file system location
 function resolveRelativePath(relativePath: string, rootDir: string): string {
@@ -151,96 +89,6 @@ export const createServer = async () => {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools: Tool[] = [
-      {
-        name: 'get_codebase_size',
-        description:
-          'Check the codebase size and token counts before processing. ' +
-          'Returns token counts for Claude and ChatGPT, warns if the codebase is too large, ' +
-          'and shows the largest files. ' +
-          'IMPORTANT: You should ALWAYS run this tool at the start of EVERY NEW CONVERSATION before any other operations. ' +
-          'After running this tool, you should then call get_codebase to retrieve the actual code.',
-        inputSchema: zodToJsonSchema(GetCodebaseSizeArgsSchema) as ToolInput,
-      },
-      {
-        name: 'get_codebase',
-        description:
-          'Generate a a merged markdown file of the entire codebase.' +
-          'Results are paginated.' +
-          'If more content exists, a message will prompt to call again with the next page number.',
-        inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
-      },
-      {
-        name: 'read_file',
-        description:
-          'Read the complete contents of a file from the file system. ' +
-          "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt'). " +
-          'IMPORTANT: You should NEVER call this unless the user specifically asks to re-read a file OR you get stuck and need it to debug something.',
-        inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
-      },
-      {
-        name: 'write_file',
-        description:
-          'Create a new file or completely overwrite an existing file with new content. ' +
-          "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
-          'You must write out the file in full each time you call write_file.',
-        inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
-      },
-      {
-        name: 'create_directory',
-        description:
-          'Create a new directory or ensure a directory exists. ' +
-          "Use relative paths with or without './' prefix (e.g., 'newfolder', './parent/child'). " +
-          'Can create multiple nested directories in one operation.',
-        inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
-      },
-      {
-        name: 'list_directory',
-        description:
-          'Get a detailed listing of all files and directories in a specified path. ' +
-          "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
-          'Results show [FILE] and [DIR] prefixes to distinguish between files and directories. ' +
-          'IMPORTANT: You should NEVER call this unless the user specifically asks to find all the files in a directory or use this tool OR you get stuck and need it to debug something.',
-        inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
-      },
-      {
-        name: 'directory_tree',
-        description:
-          'Get a recursive tree view of files and directories as a JSON structure. ' +
-          'Path is optional - if not provided, shows the root directory. ' +
-          'Returns a structured view of the entire directory hierarchy. ' +
-          'IMPORTANT: You should NEVER call this UNLESS the user specifically asks for it OR you get stuck and need it to debug something.',
-        inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
-      },
-      {
-        name: 'move_file',
-        description:
-          'Move or rename files and directories. ' +
-          "Use relative paths with or without './' prefix for both source and destination. " +
-          'Can move files between directories and rename them in a single operation.',
-        inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
-      },
-      {
-        name: 'search_files',
-        description:
-          'Recursively search for files and directories matching a pattern. ' +
-          "Use relative paths with or without './' prefix for the search root. " +
-          'The search is case-insensitive and matches partial names.',
-        inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
-      },
-      {
-        name: 'execute_command',
-        description:
-          'Execute a shell command with controlled environment. ' +
-          "Pass the full command as a string (e.g., 'npx -y ai-digest', 'ls -la'). " +
-          'Commands are executed with a 60-second timeout to prevent hanging. ' +
-          'Returns stdout, stderr, and exit code. ' +
-          'Available CLI tools include: fzf (fuzzy finder), gh (GitHub CLI), jq (JSON processor), ' +
-          'dig/nslookup (DNS tools), iptables/ipset (network tools), claude-code (Claude CLI).',
-        inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
-      },
-    ];
-
     return { tools };
   });
 
