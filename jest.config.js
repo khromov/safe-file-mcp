@@ -17,4 +17,5 @@ export default {
   testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
   collectCoverageFrom: ['src/**/*.ts'],
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/'],
+  globalTeardown: '<rootDir>/src/jest.teardown.js',
 };
