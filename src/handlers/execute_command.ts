@@ -1,0 +1,91 @@
+import { ExecuteCommandArgsSchema } from '../schemas.js';
+import { HandlerContext, HandlerResponse } from '../types.js';
+import { spawn } from 'child_process';
+
+export async function handleExecuteCommand(args: any, context: HandlerContext): Promise<HandlerResponse> {
+  const parsed = ExecuteCommandArgsSchema.safeParse(args);
+  if (!parsed.success) {
+    throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);
+  }
+
+  // Parse the command string into command and args
+  const commandParts = parsed.data.command.trim().split(/\s+/);
+  const command = commandParts[0];
+  const commandArgs = commandParts.slice(1);
+
+  // Merge environment variables
+  const env = {
+    ...process.env,
+    ...parsed.data.env,
+  };
+
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    const errorChunks: Buffer[] = [];
+
+    // Spawn the child process
+    const child = spawn(command, commandArgs, {
+      cwd: context.absoluteRootDir,
+      env,
+      shell: false, // Use false for security - prevents shell injection
+    });
+
+    // Set up timeout
+    const timeoutId = setTimeout(() => {
+      child.kill('SIGTERM');
+      setTimeout(() => {
+        if (!child.killed) {
+          child.kill('SIGKILL');
+        }
+      }, 5000); // Give 5 seconds for graceful shutdown
+    }, parsed.data.timeout);
+
+    // Collect stdout
+    child.stdout.on('data', (data) => {
+      chunks.push(data);
+    });
+
+    // Collect stderr
+    child.stderr.on('data', (data) => {
+      errorChunks.push(data);
+    });
+
+    // Handle process exit
+    child.on('close', (code, signal) => {
+      clearTimeout(timeoutId);
+
+      const stdout = Buffer.concat(chunks).toString('utf-8');
+      const stderr = Buffer.concat(errorChunks).toString('utf-8');
+
+      let output = '';
+
+      if (stdout) {
+        output += `=== stdout ===\n${stdout}\n`;
+      }
+
+      if (stderr) {
+        output += `=== stderr ===\n${stderr}\n`;
+      }
+
+      output += `=== exit code: ${code ?? 'null'} ===`;
+
+      if (signal) {
+        output += `\n=== killed by signal: ${signal} ===`;
+      }
+
+      resolve({
+        content: [{ type: 'text', text: output.trim() }],
+        isError: code !== 0,
+      });
+    });
+
+    // Handle spawn errors
+    child.on('error', (error) => {
+      clearTimeout(timeoutId);
+      resolve({
+        content: [{ type: 'text', text: `Failed to execute command: ${error.message}` }],
+        isError: true,
+      });
+    });
+  });
+}

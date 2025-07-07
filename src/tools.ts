@@ -12,9 +12,26 @@ import {
   SearchFilesArgsSchema,
   ExecuteCommandArgsSchema,
 } from './schemas.js';
-import { ToolInput } from './types.js';
+import { ToolInput, ToolHandler } from './types.js';
 
-export const tools: Tool[] = [
+// Import handlers
+import { handleGetCodebaseSize } from './handlers/get_codebase_size.js';
+import { handleGetCodebase } from './handlers/get_codebase.js';
+import { handleReadFile } from './handlers/read_file.js';
+import { handleWriteFile } from './handlers/write_file.js';
+import { handleCreateDirectory } from './handlers/create_directory.js';
+import { handleListDirectory } from './handlers/list_directory.js';
+import { handleDirectoryTree } from './handlers/directory_tree.js';
+import { handleMoveFile } from './handlers/move_file.js';
+import { handleSearchFiles } from './handlers/search_files.js';
+import { handleExecuteCommand } from './handlers/execute_command.js';
+
+// Extend Tool type to include handler
+export interface ToolWithHandler extends Tool {
+  handler: ToolHandler;
+}
+
+export const tools: ToolWithHandler[] = [
   {
     name: 'get_codebase_size',
     description:
@@ -24,6 +41,7 @@ export const tools: Tool[] = [
       'IMPORTANT: You should ALWAYS run this tool at the start of EVERY NEW CONVERSATION before any other operations. ' +
       'After running this tool, you should then call get_codebase to retrieve the actual code.',
     inputSchema: zodToJsonSchema(GetCodebaseSizeArgsSchema) as ToolInput,
+    handler: handleGetCodebaseSize,
   },
   {
     name: 'get_codebase',
@@ -32,6 +50,7 @@ export const tools: Tool[] = [
       'Results are paginated.' +
       'If more content exists, a message will prompt to call again with the next page number.',
     inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
+    handler: handleGetCodebase,
   },
   {
     name: 'read_file',
@@ -40,6 +59,7 @@ export const tools: Tool[] = [
       "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt'). " +
       'IMPORTANT: You should NEVER call this unless the user specifically asks to re-read a file OR you get stuck and need it to debug something.',
     inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
+    handler: handleReadFile,
   },
   {
     name: 'write_file',
@@ -48,6 +68,7 @@ export const tools: Tool[] = [
       "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
       'You must write out the file in full each time you call write_file.',
     inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
+    handler: handleWriteFile,
   },
   {
     name: 'create_directory',
@@ -56,6 +77,7 @@ export const tools: Tool[] = [
       "Use relative paths with or without './' prefix (e.g., 'newfolder', './parent/child'). " +
       'Can create multiple nested directories in one operation.',
     inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
+    handler: handleCreateDirectory,
   },
   {
     name: 'list_directory',
@@ -65,6 +87,7 @@ export const tools: Tool[] = [
       'Results show [FILE] and [DIR] prefixes to distinguish between files and directories. ' +
       'IMPORTANT: You should NEVER call this unless the user specifically asks to find all the files in a directory or use this tool OR you get stuck and need it to debug something.',
     inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
+    handler: handleListDirectory,
   },
   {
     name: 'directory_tree',
@@ -74,6 +97,7 @@ export const tools: Tool[] = [
       'Returns a structured view of the entire directory hierarchy. ' +
       'IMPORTANT: You should NEVER call this UNLESS the user specifically asks for it OR you get stuck and need it to debug something.',
     inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
+    handler: handleDirectoryTree,
   },
   {
     name: 'move_file',
@@ -82,6 +106,7 @@ export const tools: Tool[] = [
       "Use relative paths with or without './' prefix for both source and destination. " +
       'Can move files between directories and rename them in a single operation.',
     inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
+    handler: handleMoveFile,
   },
   {
     name: 'search_files',
@@ -90,6 +115,7 @@ export const tools: Tool[] = [
       "Use relative paths with or without './' prefix for the search root. " +
       'The search is case-insensitive and matches partial names.',
     inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
+    handler: handleSearchFiles,
   },
   {
     name: 'execute_command',
@@ -101,5 +127,6 @@ export const tools: Tool[] = [
       'Available CLI tools include: fzf (fuzzy finder), gh (GitHub CLI), jq (JSON processor), ' +
       'dig/nslookup (DNS tools), iptables/ipset (network tools), claude-code (Claude CLI).',
     inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
+    handler: handleExecuteCommand,
   },
 ];
