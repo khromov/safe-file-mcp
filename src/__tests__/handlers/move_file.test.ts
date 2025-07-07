@@ -1,0 +1,56 @@
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { handleMoveFile } from '../../handlers/move_file.js';
+import { setupTestDir, cleanupTestDir, createTestContext, createTestFile, fileExists, readTestFile } from './test-utils.js';
+
+describe('handleMoveFile', () => {
+  let testDir: string;
+
+  beforeEach(async () => {
+    testDir = await setupTestDir();
+  });
+
+  afterEach(async () => {
+    await cleanupTestDir(testDir);
+  });
+
+  it('should move file to different directory', async () => {
+    const content = 'File content to move';
+    await createTestFile(testDir, 'source.txt', content);
+
+    const context = createTestContext(testDir);
+    const result = await handleMoveFile({ 
+      source: './source.txt', 
+      destination: './moved/target.txt' 
+    }, context);
+
+    expect(result.content[0].text).toBe('Successfully moved ./source.txt to ./moved/target.txt');
+    expect(await fileExists(testDir, 'source.txt')).toBe(false);
+    expect(await fileExists(testDir, 'moved/target.txt')).toBe(true);
+    expect(await readTestFile(testDir, 'moved/target.txt')).toBe(content);
+  });
+
+  it('should rename file in same directory', async () => {
+    const content = 'File to rename';
+    await createTestFile(testDir, 'oldname.txt', content);
+
+    const context = createTestContext(testDir);
+    const result = await handleMoveFile({ 
+      source: './oldname.txt', 
+      destination: './newname.txt' 
+    }, context);
+
+    expect(result.content[0].text).toBe('Successfully moved ./oldname.txt to ./newname.txt');
+    expect(await fileExists(testDir, 'oldname.txt')).toBe(false);
+    expect(await fileExists(testDir, 'newname.txt')).toBe(true);
+    expect(await readTestFile(testDir, 'newname.txt')).toBe(content);
+  });
+
+  it('should fail when source file does not exist', async () => {
+    const context = createTestContext(testDir);
+    
+    await expect(handleMoveFile({ 
+      source: './nonexistent.txt', 
+      destination: './target.txt' 
+    }, context)).rejects.toThrow('ENOENT');
+  });
+});
