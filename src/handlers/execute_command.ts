@@ -10,6 +10,8 @@ export async function handleExecuteCommand(
   if (!parsed.success) {
     throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);
   }
+  
+  console.log(`⚡ execute_command handler started: ${parsed.data.command}`);
 
   // Parse the command string into command and args
   const commandParts = parsed.data.command.trim().split(/\s+/);
@@ -76,15 +78,23 @@ export async function handleExecuteCommand(
         output += `\n=== killed by signal: ${signal} ===`;
       }
 
-      resolve({
+      const result = {
         content: [{ type: 'text', text: output.trim() }],
         isError: code !== 0,
-      });
+      };
+      
+      if (code !== 0) {
+        console.error(`⏱️ execute_command handler finished with error: ${parsed.data.command} (exit code: ${code})`);
+      } else {
+        console.log(`⏱️ execute_command handler finished: ${parsed.data.command} (exit code: ${code})`);
+      }
+      resolve(result);
     });
 
     // Handle spawn errors
     child.on('error', (error) => {
       clearTimeout(timeoutId);
+      console.error(`⏱️ execute_command handler finished with spawn error: ${parsed.data.command} (${error.message})`);
       resolve({
         content: [{ type: 'text', text: `Failed to execute command: ${error.message}` }],
         isError: true,

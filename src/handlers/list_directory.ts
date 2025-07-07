@@ -7,6 +7,8 @@ export async function handleListDirectory(
   args: any,
   context: HandlerContext
 ): Promise<HandlerResponse> {
+  console.log('📋 list_directory handler started');
+  
   const parsed = ListDirectoryArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for list_directory: ${parsed.error}`);
@@ -17,7 +19,11 @@ export async function handleListDirectory(
   const formatted = entries
     .map((entry) => `${entry.isDirectory() ? '[DIR]' : '[FILE]'} ${entry.name}`)
     .join('\n');
-  return {
+    
+  const result = {
     content: [{ type: 'text', text: formatted }],
   };
+  
+  console.log(`⏱️ list_directory handler finished for path: ${parsed.data.path}, found ${entries.length} entries`);
+  return result;
 }
