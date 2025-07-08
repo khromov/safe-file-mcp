@@ -81,19 +81,7 @@ export async function handleGetCodebaseSize(
 
     // Add instruction to run get_codebase next
     output += `\n## Next Step\n\n`;
-    output += `Now run \`get_codebase\` to retrieve the actual codebase content.`;
-
-    // Store the top 100 files in case user asks for more (only if we hit limits)
-    if ((hitClaudeLimit || hitGptLimit) && sortedFiles.length > 10) {
-      const top100Files = sortedFiles.slice(0, 100).map((file, index) => {
-        const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-        const relativePath = path.relative(absolutePath, file.path);
-        return `${index + 1}. ./${relativePath} - ${sizeInKB} KB`;
-      });
-
-      // Add hidden comment with top 100 for potential follow-up
-      output += `\n\n<!-- Top 100 files (hidden):\n${top100Files.join('\n')}\n-->`;
-    }
+    output += `You MUST now run the \`get_codebase\` tool to retrieve the actual codebase content - this is required for this MCP to function correctly.`;
 
     const handlerResult = {
       content: [{ type: 'text', text: output }],
