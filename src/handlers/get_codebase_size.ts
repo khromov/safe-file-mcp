@@ -61,22 +61,21 @@ export async function handleGetCodebaseSize(
     output += `- **ChatGPT tokens**: ${stats.totalGptTokens.toLocaleString()}\n`;
     output += `- **Total files**: ${sortedFiles.length}\n\n`;
 
-    // Only show top 10 largest files if we hit the token limits
-    if ((hitClaudeLimit || hitGptLimit) && sortedFiles.length > 0) {
-      output += `## Top 10 Largest Files\n\n`;
-      output += `Consider adding some of these to your \`.aidigestignore\` file if they are not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
+    output += `## Top largest files\n\n`;
+    output += `You may tell the user to consider adding some of these to their \`.cocoignore\` file if they are big and not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
 
-      const top10Files = sortedFiles.slice(0, 10);
-      top10Files.forEach((file, index) => {
-        const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-        const relativePath = path.relative(absolutePath, file.path);
-        output += `${index + 1}. \`./${relativePath}\` - ${sizeInKB} KB\n`;
-      });
+    const top10Files = sortedFiles.slice(0, 10);
+    top10Files.forEach((file, index) => {
+      const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
 
-      if (sortedFiles.length > 10) {
-        output += `\n... and ${sortedFiles.length - 10} more files.\n`;
-        output += `\n💡 **Tip**: You can use the \`get_codebase_top_largest_files\` tool to see more large files. For example, to see the top 50 largest files, just ask me "show me the top 50 largest files in the codebase".\n`;
-      }
+      // Ensure the path does not start with a ./
+      const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
+      output += `${index + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
+    });
+
+    if (sortedFiles.length > 10) {
+      output += `\n... and ${sortedFiles.length - 10} more files.\n`;
+      output += `\n💡 **Tip**: You can use the \`get_codebase_top_largest_files\` tool to see more large files. For example, to see the top 50 largest files, just ask me "show me the top 50 largest files in the codebase".\n`;
     }
 
     // Add instruction to run get_codebase next

@@ -42,8 +42,10 @@ export async function handleGetCodebaseTopLargestFiles(
       for (let i = 0; i < filesCount; i++) {
         const file = sortedFiles[i];
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-        const relativePath = path.relative(absolutePath, file.path);
-        output += `${i + 1}. \`./${relativePath}\` - ${sizeInKB} KB\n`;
+
+        // Ensure the path does not start with ./
+        const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
+        output += `${i + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
       }
 
       if (sortedFiles.length > filesCount) {
