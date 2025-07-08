@@ -2,7 +2,6 @@ import { GetCodebaseTopLargestFilesArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import aiDigest from 'ai-digest';
-import path from 'path';
 
 export async function handleGetCodebaseTopLargestFiles(
   args: any,

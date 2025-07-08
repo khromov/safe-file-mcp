@@ -46,7 +46,7 @@ describe('handleGetCodebaseSize', () => {
     const context = createTestContext(testDir);
     const result = await handleGetCodebaseSize({ path: './' }, context);
 
-    expect(result.content[0].text).toContain('## Top 10 Largest Files');
+    expect(result.content[0].text).toContain('## Top largest files');
     expect(result.content[0].text).toContain('large.js');
     expect(result.content[0].text).toContain('medium.js');
     expect(result.content[0].text).toContain('small.js');
