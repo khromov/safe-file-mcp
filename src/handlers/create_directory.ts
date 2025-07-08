@@ -8,7 +8,7 @@ export async function handleCreateDirectory(
   context: HandlerContext
 ): Promise<HandlerResponse> {
   console.log('📁 create_directory handler started');
-  
+
   const parsed = CreateDirectoryArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for create_directory: ${parsed.error}`);
@@ -16,11 +16,11 @@ export async function handleCreateDirectory(
   validateRelativePath(parsed.data.path);
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
   await fs.mkdir(absolutePath, { recursive: true });
-  
+
   const result = {
     content: [{ type: 'text', text: `Successfully created directory ${parsed.data.path}` }],
   };
-  
+
   console.log(`⏱️ create_directory handler finished for path: ${parsed.data.path}`);
   return result;
 }

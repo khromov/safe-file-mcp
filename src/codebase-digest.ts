@@ -99,7 +99,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
 
   // Add hidden comment with top 100 for potential follow-up
   if (sortedFiles.length > 10) {
-    output += `\n\n<!-- Top 100 files (hidden):\n${top100Files.join('\n')}\n-->`;
+    output += `\n\n<!-- Top largest files (hidden):\n${top100Files.join('\n')}\n-->`;
   }
 
   return {

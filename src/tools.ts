@@ -3,6 +3,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   GetCodebaseSizeArgsSchema,
   GetCodebaseArgsSchema,
+  GetCodebaseTopLargestFilesArgsSchema,
   ReadFileArgsSchema,
   WriteFileArgsSchema,
   CreateDirectoryArgsSchema,
@@ -17,6 +18,7 @@ import { ToolInput, ToolHandler } from './types.js';
 // Import handlers
 import { handleGetCodebaseSize } from './handlers/get_codebase_size.js';
 import { handleGetCodebase } from './handlers/get_codebase.js';
+import { handleGetCodebaseTopLargestFiles } from './handlers/get_codebase_top_largest_files.js';
 import { handleReadFile } from './handlers/read_file.js';
 import { handleWriteFile } from './handlers/write_file.js';
 import { handleCreateDirectory } from './handlers/create_directory.js';
@@ -51,6 +53,15 @@ export const tools: ToolWithHandler[] = [
       'If more content exists, a message will prompt to call again with the next page number.',
     inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
     handler: handleGetCodebase,
+  },
+  {
+    name: 'get_codebase_top_largest_files',
+    description:
+      'Returns the top X largest files in the codebase. ' +
+      'Use this tool when users want to see more large files beyond the initial 10 shown in get_codebase_size. ' +
+      'Helpful for identifying which files to add to .aidigestignore for large codebases.',
+    inputSchema: zodToJsonSchema(GetCodebaseTopLargestFilesArgsSchema) as ToolInput,
+    handler: handleGetCodebaseTopLargestFiles,
   },
   {
     name: 'read_file',

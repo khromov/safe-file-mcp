@@ -12,9 +12,11 @@ export async function handleSearchFiles(
   if (!parsed.success) {
     throw new Error(`Invalid arguments for search_files: ${parsed.error}`);
   }
-  
-  console.log(`🔍 search_files handler started: pattern "${parsed.data.pattern}", path ${parsed.data.path}`);
-  
+
+  console.log(
+    `🔍 search_files handler started: pattern "${parsed.data.pattern}", path ${parsed.data.path}`
+  );
+
   validateRelativePath(parsed.data.path);
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
   const results = await searchFiles(absolutePath, parsed.data.pattern, parsed.data.excludePatterns);
@@ -33,7 +35,9 @@ export async function handleSearchFiles(
       },
     ],
   };
-  
-  console.log(`⏱️ search_files handler finished: found ${relativePaths.length} matches for pattern "${parsed.data.pattern}"`);
+
+  console.log(
+    `⏱️ search_files handler finished: found ${relativePaths.length} matches for pattern "${parsed.data.pattern}"`
+  );
   return result;
 }

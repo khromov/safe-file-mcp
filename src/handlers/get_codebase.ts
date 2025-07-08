@@ -11,8 +11,10 @@ export async function handleGetCodebase(
   if (!parsed.success) {
     throw new Error(`Invalid arguments for get_codebase: ${parsed.error}`);
   }
-  
-  console.log(`📦 get_codebase handler started: page ${parsed.data.page}, path ${parsed.data.path}`);
+
+  console.log(
+    `📦 get_codebase handler started: page ${parsed.data.page}, path ${parsed.data.path}`
+  );
 
   validateRelativePath(parsed.data.path);
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
@@ -32,8 +34,10 @@ export async function handleGetCodebase(
     const handlerResult = {
       content: [{ type: 'text', text: content }],
     };
-    
-    console.log(`⏱️ get_codebase handler finished: page ${parsed.data.page}, content length ${result.content.length}, has more pages: ${result.hasMorePages}`);
+
+    console.log(
+      `⏱️ get_codebase handler finished: page ${parsed.data.page}, content length ${result.content.length}, has more pages: ${result.hasMorePages}`
+    );
     return handlerResult;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

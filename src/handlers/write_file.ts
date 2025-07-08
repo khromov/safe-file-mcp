@@ -10,7 +10,7 @@ export async function handleWriteFile(
   context: HandlerContext
 ): Promise<HandlerResponse> {
   console.log('✏️ write_file handler started');
-  
+
   const parsed = WriteFileArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for write_file: ${parsed.error}`);
@@ -23,11 +23,13 @@ export async function handleWriteFile(
   await fs.mkdir(parentDir, { recursive: true });
 
   await writeFileSecure(absolutePath, parsed.data.content);
-  
+
   const result = {
     content: [{ type: 'text', text: `Successfully wrote to ${parsed.data.path}` }],
   };
-  
-  console.log(`⏱️ write_file handler finished for path: ${parsed.data.path}, content length: ${parsed.data.content.length}`);
+
+  console.log(
+    `⏱️ write_file handler finished for path: ${parsed.data.path}, content length: ${parsed.data.content.length}`
+  );
   return result;
 }

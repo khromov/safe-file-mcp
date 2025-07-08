@@ -6,7 +6,7 @@ import path from 'path';
 
 export async function handleMoveFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
   console.log('🚚 move_file handler started');
-  
+
   const parsed = MoveFileArgsSchema.safeParse(args);
   if (!parsed.success) {
     throw new Error(`Invalid arguments for move_file: ${parsed.error}`);
@@ -21,7 +21,7 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
   await fs.mkdir(destParentDir, { recursive: true });
 
   await fs.rename(absoluteSource, absoluteDest);
-  
+
   const result = {
     content: [
       {
@@ -30,7 +30,7 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
       },
     ],
   };
-  
+
   console.log(`⏱️ move_file handler finished: ${parsed.data.source} -> ${parsed.data.destination}`);
   return result;
 }

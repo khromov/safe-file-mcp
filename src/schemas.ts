@@ -70,3 +70,16 @@ export const GetCodebaseSizeArgsSchema = z.object({
     .default('./')
     .describe('Relative path from root directory to analyze (defaults to root)'),
 });
+
+export const GetCodebaseTopLargestFilesArgsSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .default('./')
+    .describe('Relative path from root directory to analyze (defaults to root)'),
+  count: z
+    .number()
+    .optional()
+    .default(20)
+    .describe('Number of largest files to return (defaults to 20)'),
+});

@@ -8,7 +8,7 @@ export async function handleDirectoryTree(
   context: HandlerContext
 ): Promise<HandlerResponse> {
   console.log('🌳 directory_tree handler started');
-  
+
   const parsed = DirectoryTreeArgsSchema.safeParse(args || {});
   if (!parsed.success) {
     throw new Error(`Invalid arguments for directory_tree: ${parsed.error}`);
@@ -21,7 +21,7 @@ export async function handleDirectoryTree(
     [context.absoluteRootDir],
     context.absoluteRootDir
   );
-  
+
   const result = {
     content: [
       {
@@ -30,7 +30,9 @@ export async function handleDirectoryTree(
       },
     ],
   };
-  
-  console.log(`⏱️ directory_tree handler finished for path: ${parsed.data.path}, found ${treeData.length} entries`);
+
+  console.log(
+    `⏱️ directory_tree handler finished for path: ${parsed.data.path}, found ${treeData.length} entries`
+  );
   return result;
 }
