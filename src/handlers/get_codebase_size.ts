@@ -1,5 +1,4 @@
 import { GetCodebaseSizeArgsSchema } from '../schemas.js';
-import { getCodebaseSize } from '../codebase-digest.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
 import aiDigest from 'ai-digest';
