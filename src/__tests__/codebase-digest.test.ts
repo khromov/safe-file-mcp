@@ -177,9 +177,9 @@ describe('generateCodebaseDigest', () => {
 
       expect(result.hasMorePages).toBe(false);
       expect(result.currentPage).toBe(1);
-      // Should NOT show any pagination message since all content fits on page 1
-      expect(result.content).not.toContain('This is the last page');
-      expect(result.content).not.toContain('You MUST call this tool again');
+      // Should show last page message even on page 1
+      expect(result.content).toContain('This is the last page (page 1)');
+      expect(result.content).toContain('Do NOT call this tool again');
     } finally {
       await fs.rm(SINGLE_PAGE_DIR, { recursive: true, force: true });
     }
@@ -220,7 +220,7 @@ describe('generateCodebaseDigest', () => {
         inputDir: EMPTY_DIR,
       });
 
-      expect(result.content).toBe('');
+      expect(result.content).toBe('\n\n---\nThis is the last page (page 1). Do NOT call this tool again - you have received the complete codebase.\n');
       expect(result.hasMorePages).toBe(false);
       expect(result.currentPage).toBe(1);
       expect(result.nextPage).toBeUndefined();
