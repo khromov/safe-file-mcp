@@ -208,6 +208,52 @@ describe('generateCodebaseDigest', () => {
       await fs.rm(LARGE_FILES_DIR, { recursive: true, force: true });
     }
   });
+
+  it('should use .cocoignore when it exists and exclude specified files', async () => {
+    const COCOIGNORE_DIR = path.join(__dirname, 'test-cocoignore-temp');
+    await fs.mkdir(COCOIGNORE_DIR, { recursive: true });
+
+    try {
+      // Create a .cocoignore file that excludes test files
+      const cocoignoreContent = `
+# Ignore test files
+*.test.ts
+test-data/
+`;
+      await fs.writeFile(path.join(COCOIGNORE_DIR, '.cocoignore'), cocoignoreContent);
+
+      // Create some files - some should be ignored, some should be included
+      await fs.writeFile(path.join(COCOIGNORE_DIR, 'main.ts'), 'console.log("main");');
+      await fs.writeFile(path.join(COCOIGNORE_DIR, 'utils.ts'), 'export const utils = true;');
+      await fs.writeFile(path.join(COCOIGNORE_DIR, 'app.test.ts'), 'test("should work", () => {});');
+      
+      // Create test-data directory with a file
+      await fs.mkdir(path.join(COCOIGNORE_DIR, 'test-data'), { recursive: true });
+      await fs.writeFile(path.join(COCOIGNORE_DIR, 'test-data', 'sample.json'), '{"test": true}');
+
+      // Generate digest
+      const result = await generateCodebaseDigest({
+        inputDir: COCOIGNORE_DIR,
+      });
+
+      // Should include main.ts and utils.ts
+      expect(result.content).toContain('main.ts');
+      expect(result.content).toContain('utils.ts');
+      expect(result.content).toContain('console.log("main")');
+      expect(result.content).toContain('export const utils = true');
+
+      // Should NOT include .test.ts files or test-data/
+      expect(result.content).not.toContain('app.test.ts');
+      expect(result.content).not.toContain('test-data');
+      expect(result.content).not.toContain('sample.json');
+      expect(result.content).not.toContain('test("should work"');
+
+      // Should include the .cocoignore file itself
+      expect(result.content).toContain('.cocoignore');
+    } finally {
+      await fs.rm(COCOIGNORE_DIR, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('getCodebaseSize', () => {
