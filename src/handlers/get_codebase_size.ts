@@ -42,24 +42,16 @@ export async function handleGetCodebaseSize(
 
     // Check token counts and provide warnings
     const claudeTokenLimit = 150000;
-    const gptTokenLimit = 128000;
+    // const gptTokenLimit = 128000;
 
     let hasWarning = false;
     const hitClaudeLimit = stats.totalClaudeTokens > claudeTokenLimit;
-    const hitGptLimit = stats.totalGptTokens > gptTokenLimit;
 
     if (hitClaudeLimit) {
       hasWarning = true;
-      output += `⚠️ **WARNING: Large Codebase Detected for Claude**\n\n`;
+      output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
       output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
       output += `This may cause issues with Claude's context window. You should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
-    }
-
-    if (hitGptLimit) {
-      if (!hasWarning) {
-        output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
-      }
-      output += `Note: The codebase also contains ${stats.totalGptTokens.toLocaleString()} ChatGPT tokens (limit: ${gptTokenLimit.toLocaleString()}).\n\n`;
     }
 
     // Show token summary
