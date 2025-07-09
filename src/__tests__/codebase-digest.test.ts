@@ -85,6 +85,87 @@ describe('generateCodebaseDigest', () => {
     expect(result).toBeDefined();
   });
 
+  it('should show last page message when on final page', async () => {
+    // Create a test directory with content that spans exactly 2 pages
+    const LAST_PAGE_DIR = path.join(__dirname, 'test-last-page-temp');
+    await fs.mkdir(LAST_PAGE_DIR, { recursive: true });
+
+    try {
+      // Create multiple small files that together exceed one page but individually are smaller than page size
+      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file1.ts'), 'x'.repeat(3000)); // 3KB
+      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file2.ts'), 'y'.repeat(3000)); // 3KB  
+      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file3.ts'), 'z'.repeat(3000)); // 3KB
+      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file4.ts'), 'a'.repeat(3000)); // 3KB
+      // Total: 12KB of content, which should span multiple pages with 5KB page size
+
+      // Test page 1 - should show continue message
+      const page1Result = await generateCodebaseDigest({
+        inputDir: LAST_PAGE_DIR,
+        page: 1,
+        pageSize: 5000, // 5KB page size
+      });
+
+      expect(page1Result.hasMorePages).toBe(true);
+      expect(page1Result.content).toContain('You MUST call this tool again with page: 2');
+
+      // Test page 2 - should show last page message
+      const page2Result = await generateCodebaseDigest({
+        inputDir: LAST_PAGE_DIR,
+        page: 2,
+        pageSize: 5000,
+      });
+
+      expect(page2Result.hasMorePages).toBe(false);
+      expect(page2Result.content).toContain('This is the last page (page 2). Do NOT call this tool again');
+    } finally {
+      await fs.rm(LAST_PAGE_DIR, { recursive: true, force: true });
+    }
+  });
+
+  it('should show last page message when requesting page beyond last page', async () => {
+    // Test requesting page 3 when there are only 2 pages of content
+    const BEYOND_PAGE_DIR = path.join(__dirname, 'test-beyond-page-temp');
+    await fs.mkdir(BEYOND_PAGE_DIR, { recursive: true });
+
+    try {
+      await fs.writeFile(path.join(BEYOND_PAGE_DIR, 'small.ts'), 'small content');
+
+      const result = await generateCodebaseDigest({
+        inputDir: BEYOND_PAGE_DIR,
+        page: 3, // Request page 3 when there's only 1 page
+        pageSize: 10000,
+      });
+
+      expect(result.hasMorePages).toBe(false);
+      expect(result.content).toContain('This is the last page (page 3). Do NOT call this tool again');
+    } finally {
+      await fs.rm(BEYOND_PAGE_DIR, { recursive: true, force: true });
+    }
+  });
+
+  it('should not show last page message on page 1 when all content fits', async () => {
+    const SINGLE_PAGE_DIR = path.join(__dirname, 'test-single-page-temp');
+    await fs.mkdir(SINGLE_PAGE_DIR, { recursive: true });
+
+    try {
+      await fs.writeFile(path.join(SINGLE_PAGE_DIR, 'small.ts'), 'small content');
+
+      const result = await generateCodebaseDigest({
+        inputDir: SINGLE_PAGE_DIR,
+        page: 1,
+        pageSize: 10000, // Large enough to fit all content
+      });
+
+      expect(result.hasMorePages).toBe(false);
+      expect(result.currentPage).toBe(1);
+      // Should NOT show any pagination message since all content fits on page 1
+      expect(result.content).not.toContain('This is the last page');
+      expect(result.content).not.toContain('You MUST call this tool again');
+    } finally {
+      await fs.rm(SINGLE_PAGE_DIR, { recursive: true, force: true });
+    }
+  });
+
   it('should handle large files with omission message', async () => {
     // Create a specific test for large file
     const LARGE_FILE_DIR = path.join(__dirname, 'test-large-file-temp');
@@ -151,7 +232,7 @@ describe('generateCodebaseDigest', () => {
       page: 10, // Way beyond available pages
     });
 
-    expect(result.content).toBe('');
+    expect(result.content).toContain('This is the last page (page 10). Do NOT call this tool again');
     expect(result.hasMorePages).toBe(false);
     expect(result.currentPage).toBe(10);
     expect(result.nextPage).toBeUndefined();

@@ -182,6 +182,9 @@ export async function generateCodebaseDigest(
 
   if (hasMorePages) {
     currentPageContent += `\n\n---\nThis is page ${page}. You MUST call this tool again with page: ${page + 1} to get the rest of the files.\n`;
+  } else if (page > 1) {
+    // We're on the last page of a multi-page digest, or beyond the last page
+    currentPageContent += `\n\n---\nThis is the last page (page ${page}). Do NOT call this tool again - you have received the complete codebase.\n`;
   }
 
   return {
