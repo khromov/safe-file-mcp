@@ -47,39 +47,47 @@ export async function handleGetCodebaseSize(
     let hasWarning = false;
     const hitClaudeLimit = stats.totalClaudeTokens > claudeTokenLimit;
 
-    if (hitClaudeLimit) {
-      hasWarning = true;
-      output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
-      output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
-      output += `This may cause issues with Claude's context window. You should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
-    }
-
     // Show token summary
     output += `## Token Summary\n\n`;
     output += `- **Claude tokens**: ${stats.totalClaudeTokens.toLocaleString()}\n`;
     output += `- **ChatGPT tokens**: ${stats.totalGptTokens.toLocaleString()}\n`;
     output += `- **Total files**: ${sortedFiles.length}\n\n`;
 
-    output += `## Top largest files\n\n`;
-    output += `You may tell the user to consider adding some of these to their \`.cocoignore\` file if they are big and not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
+    // Only show top largest files if we hit the Claude limit
+    if (hitClaudeLimit && sortedFiles.length > 0) {
+      output += `## Top 25 Largest Files\n\n`;
+      output += `You may tell the user to consider adding some of these to their \`.cocoignore\` file if they are big and not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
 
-    const top10Files = sortedFiles.slice(0, 10);
-    top10Files.forEach((file, index) => {
-      const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
+      const top25Files = sortedFiles.slice(0, 25);
+      top25Files.forEach((file, index) => {
+        const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
 
-      // Ensure the path does not start with a ./
-      const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
-      output += `${index + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
-    });
+        // Ensure the path does not start with a ./
+        const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
+        output += `${index + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
+      });
 
-    if (sortedFiles.length > 10) {
-      output += `\n... and ${sortedFiles.length - 10} more files.\n`;
-      output += `\n💡 **Tip**: You can use the \`get_codebase_top_largest_files\` tool to see more large files. For example, to see the top 50 largest files, just ask me "show me the top 50 largest files in the codebase".\n`;
+      if (sortedFiles.length > 25) {
+        output += `\n... and ${sortedFiles.length - 25} more files.\n`;
+        output += `\n💡 **Tip**: You can use the \`get_codebase_top_largest_files\` tool to see more large files. For example, to see the top 50 largest files, just ask me "show me the top 50 largest files in the codebase".\n`;
+      }
+    }
+
+    if (hitClaudeLimit) {
+      hasWarning = true;
+      output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
+      output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
+      output += `This codebase may be too large for your context window. You should consider creating a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
+      output += `**Ask the user if they want to proceed anyway?** If yes, please confirm and then run \`get_codebase\` - but make the user aware that the large size may cause issues.\n\n`;
     }
 
     // Add instruction to run get_codebase next
     output += `\n## Next Step\n\n`;
-    output += `You MUST now run the \`get_codebase\` tool to retrieve the actual codebase content - this is required for this MCP to function correctly.`;
+    if (hitClaudeLimit) {
+      output += `If you want to proceed despite the large codebase size, run the \`get_codebase\` tool to retrieve the actual codebase content. Consider using a \`.cocoignore\` file to reduce the size first.`;
+    } else {
+      output += `You MUST now run the \`get_codebase\` tool to retrieve the actual codebase content - this is required for this MCP to function correctly.`;
+    }
 
     const handlerResult = {
       content: [{ type: 'text', text: output }],
