@@ -85,8 +85,16 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
     const top10Files = sortedFiles.slice(0, 10);
     top10Files.forEach((file, index) => {
       const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-      const relativePath = path.relative(inputDir, file.path);
-      output += `${index + 1}. \`./${relativePath}\` - ${sizeInKB} KB\n`;
+
+      // ai-digest returns paths relative to the inputDir
+      let displayPath = file.path;
+
+      if (path.isAbsolute(file.path)) {
+        // Only convert if it's absolute
+        displayPath = path.relative(inputDir, file.path);
+      }
+
+      output += `${index + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
     });
 
     if (sortedFiles.length > 10) {
@@ -101,8 +109,13 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
   // Store the top 100 files in case user asks for more
   const top100Files = sortedFiles.slice(0, 100).map((file, index) => {
     const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-    const relativePath = path.relative(inputDir, file.path);
-    return `${index + 1}. ./${relativePath} - ${sizeInKB} KB`;
+
+    let displayPath = file.path;
+    if (path.isAbsolute(file.path)) {
+      displayPath = path.relative(inputDir, file.path);
+    }
+
+    return `${index + 1}. ${displayPath} - ${sizeInKB} KB`;
   });
 
   // Add hidden comment with top 100 for potential follow-up

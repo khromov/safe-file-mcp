@@ -52,9 +52,17 @@ export async function handleGetCodebaseTopLargestFiles(
         const file = sortedFiles[i];
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
 
-        // Get relative path from the context root dir (not from absolutePath)
-        const relativePath = path.relative(context.absoluteRootDir, file.path);
-        output += `${i + 1}. \`${relativePath}\` - ${sizeInKB} KB\n`;
+        // ai-digest returns paths relative to the inputDir we provided
+        // So if file.path is relative (not absolute), it's already relative to absolutePath
+        let displayPath = file.path;
+
+        if (path.isAbsolute(file.path)) {
+          // Only if it's absolute do we need to make it relative
+          displayPath = path.relative(absolutePath, file.path);
+        }
+        // If it's already relative, use it as-is since it's relative to our target directory
+
+        output += `${i + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
       }
 
       if (sortedFiles.length > filesCount) {
