@@ -32,6 +32,8 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
     ],
   };
 
-  logger.debug(`⏱️ move_file handler finished: ${parsed.data.source} -> ${parsed.data.destination}`);
+  logger.debug(
+    `⏱️ move_file handler finished: ${parsed.data.source} -> ${parsed.data.destination}`
+  );
   return result;
 }

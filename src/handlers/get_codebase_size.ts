@@ -23,7 +23,9 @@ export async function handleGetCodebaseSize(
 
     // Check for .cocoignore file
     const ignoreFile = await getIgnoreFile(absolutePath);
-    logger.info(`📋 get_codebase_size using ignore file: ${ignoreFile || '.aidigestignore (default)'}`);
+    logger.info(
+      `📋 get_codebase_size using ignore file: ${ignoreFile || '.aidigestignore (default)'}`
+    );
 
     // Get file statistics without content
     const stats = await aiDigest.getFileStats({
