@@ -38,15 +38,18 @@ describe('handleGetCodebaseSize', () => {
   });
 
   it('should show file list with sizes', async () => {
-    // Create files with known content
+    // Create files with large enough content to exceed Claude token limit
+    // Need to create content that results in > 150,000 tokens
+    // Tokens are roughly 4 characters, so we need ~600,000 chars
+    const largeContent = 'x'.repeat(600000); // Large enough to hit Claude limit
     await createTestFile(testDir, 'small.js', 'const x = 1;');
-    await createTestFile(testDir, 'medium.js', 'x'.repeat(1000));
-    await createTestFile(testDir, 'large.js', 'y'.repeat(5000));
+    await createTestFile(testDir, 'medium.js', 'x'.repeat(50000));
+    await createTestFile(testDir, 'large.js', largeContent);
 
     const context = createTestContext(testDir);
     const result = await handleGetCodebaseSize({ path: './' }, context);
 
-    expect(result.content[0].text).toContain('## Top largest files');
+    expect(result.content[0].text).toContain('## Top 25 Largest Files');
     expect(result.content[0].text).toContain('large.js');
     expect(result.content[0].text).toContain('medium.js');
     expect(result.content[0].text).toContain('small.js');

@@ -220,7 +220,7 @@ describe('generateCodebaseDigest', () => {
         inputDir: EMPTY_DIR,
       });
 
-      expect(result.content).toBe('\n\n---\nThis is the last page (page 1). Do NOT call this tool again - you have received the complete codebase.\n');
+      expect(result.content).toBe('\n---\nThis is the last page (page 1). Do NOT call this tool again - you have received the complete codebase.\n');
       expect(result.hasMorePages).toBe(false);
       expect(result.currentPage).toBe(1);
       expect(result.nextPage).toBeUndefined();
