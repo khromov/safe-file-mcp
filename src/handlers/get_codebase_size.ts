@@ -3,12 +3,13 @@ import { getCodebaseSize } from '../codebase-digest.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import aiDigest from 'ai-digest';
+import logger from '../logger.js';
 
 export async function handleGetCodebaseSize(
   args: any,
   context: HandlerContext
 ): Promise<HandlerResponse> {
-  console.log('📊 get_codebase_size handler started');
+  logger.debug('📊 get_codebase_size handler started');
 
   const parsed = GetCodebaseSizeArgsSchema.safeParse(args);
   if (!parsed.success) {
@@ -19,7 +20,7 @@ export async function handleGetCodebaseSize(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
 
   try {
-    console.log(`Getting file statistics for path: ${absolutePath}`);
+    logger.debug(`Getting file statistics for path: ${absolutePath}`);
 
     // Get file statistics without content
     const stats = await aiDigest.getFileStats({
@@ -85,13 +86,13 @@ export async function handleGetCodebaseSize(
       content: [{ type: 'text', text: output }],
     };
 
-    console.log(
+    logger.info(
       `⏱️ get_codebase_size handler finished: ${sortedFiles.length} files, ${stats.totalClaudeTokens} tokens`
     );
     return handlerResult;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`⏱️ get_codebase_size handler finished with error: ${errorMessage}`);
+    logger.error(`⏱️ get_codebase_size handler finished with error: ${errorMessage}`);
     throw new Error(`Failed to get codebase statistics: ${errorMessage}`);
   }
 }

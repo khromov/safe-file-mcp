@@ -3,9 +3,10 @@ import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import fs from 'fs/promises';
 import path from 'path';
+import logger from '../logger.js';
 
 export async function handleMoveFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
-  console.log('🚚 move_file handler started');
+  logger.debug('🚚 move_file handler started');
 
   const parsed = MoveFileArgsSchema.safeParse(args);
   if (!parsed.success) {
@@ -31,6 +32,6 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
     ],
   };
 
-  console.log(`⏱️ move_file handler finished: ${parsed.data.source} -> ${parsed.data.destination}`);
+  logger.debug(`⏱️ move_file handler finished: ${parsed.data.source} -> ${parsed.data.destination}`);
   return result;
 }

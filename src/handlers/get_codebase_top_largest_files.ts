@@ -2,12 +2,13 @@ import { GetCodebaseTopLargestFilesArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import aiDigest from 'ai-digest';
+import logger from '../logger.js';
 
 export async function handleGetCodebaseTopLargestFiles(
   args: any,
   context: HandlerContext
 ): Promise<HandlerResponse> {
-  console.log('📈 get_codebase_top_largest_files handler started');
+  logger.debug('📈 get_codebase_top_largest_files handler started');
 
   const parsed = GetCodebaseTopLargestFilesArgsSchema.safeParse(args);
   if (!parsed.success) {
@@ -18,7 +19,7 @@ export async function handleGetCodebaseTopLargestFiles(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
 
   try {
-    console.log(`Getting file statistics for path: ${absolutePath}, count: ${parsed.data.count}`);
+    logger.debug(`Getting file statistics for path: ${absolutePath}, count: ${parsed.data.count}`);
 
     // Get file statistics without content
     const stats = await aiDigest.getFileStats({
@@ -61,11 +62,11 @@ export async function handleGetCodebaseTopLargestFiles(
       content: [{ type: 'text', text: output }],
     };
 
-    console.log(`⏱️ get_codebase_top_largest_files handler finished: returned ${filesCount} files`);
+    logger.info(`⏱️ get_codebase_top_largest_files handler finished: returned ${filesCount} files`);
     return handlerResult;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`⏱️ get_codebase_top_largest_files handler finished with error: ${errorMessage}`);
+    logger.error(`⏱️ get_codebase_top_largest_files handler finished with error: ${errorMessage}`);
     throw new Error(`Failed to get top largest files: ${errorMessage}`);
   }
 }

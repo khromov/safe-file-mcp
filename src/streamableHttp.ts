@@ -3,8 +3,9 @@ import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/in
 import express, { Request, Response } from 'express';
 import { createServer } from './mcp.js';
 import { randomUUID } from 'node:crypto';
+import logger from './logger.js';
 
-console.error('Starting 🥥 Coco MCP Server (Streamable HTTP)...');
+logger.info('Starting 🥥 Coco MCP Server (Streamable HTTP)...');
 
 const app = express();
 
@@ -14,7 +15,7 @@ const transports: Map<string, StreamableHTTPServerTransport> = new Map<
 >();
 
 app.post('/mcp', async (req: Request, res: Response) => {
-  console.error('Received MCP POST request');
+  logger.debug('Received MCP POST request');
   try {
     // Check for existing session ID
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
@@ -34,7 +35,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
         onsessioninitialized: (sessionId: string) => {
           // Store the transport by session ID when session is initialized
           // This avoids race conditions where requests might come in before the session is stored
-          console.error(`Session initialized with ID: ${sessionId}`);
+          logger.info(`Session initialized with ID: ${sessionId}`);
           transports.set(sessionId, transport);
         },
       });
@@ -43,7 +44,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
       server.onclose = async () => {
         const sid = transport.sessionId;
         if (sid && transports.has(sid)) {
-          console.error(`Transport closed for session ${sid}, removing from transports map`);
+          logger.info(`Transport closed for session ${sid}, removing from transports map`);
           transports.delete(sid);
           await cleanup();
         }
@@ -72,7 +73,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
     // The existing transport is already connected to the server
     await transport.handleRequest(req, res);
   } catch (error) {
-    console.error('Error handling MCP request:', error);
+    logger.error('Error handling MCP request:', error);
     if (!res.headersSent) {
       res.status(500).json({
         jsonrpc: '2.0',
@@ -89,7 +90,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
 
 // Handle GET requests for SSE streams (using built-in support from StreamableHTTP)
 app.get('/mcp', async (req: Request, res: Response) => {
-  console.error('Received MCP GET request');
+  logger.debug('Received MCP GET request');
   const sessionId = req.headers['mcp-session-id'] as string | undefined;
   if (!sessionId || !transports.has(sessionId)) {
     res.status(400).json({
@@ -106,9 +107,9 @@ app.get('/mcp', async (req: Request, res: Response) => {
   // Check for Last-Event-ID header for resumability
   const lastEventId = req.headers['last-event-id'] as string | undefined;
   if (lastEventId) {
-    console.error(`Client reconnecting with Last-Event-ID: ${lastEventId}`);
+    logger.debug(`Client reconnecting with Last-Event-ID: ${lastEventId}`);
   } else {
-    console.error(`Establishing new SSE stream for session ${sessionId}`);
+    logger.debug(`Establishing new SSE stream for session ${sessionId}`);
   }
 
   const transport = transports.get(sessionId);
@@ -130,13 +131,13 @@ app.delete('/mcp', async (req: Request, res: Response) => {
     return;
   }
 
-  console.error(`Received session termination request for session ${sessionId}`);
+  logger.info(`Received session termination request for session ${sessionId}`);
 
   try {
     const transport = transports.get(sessionId);
     await transport!.handleRequest(req, res);
   } catch (error) {
-    console.error('Error handling session termination:', error);
+    logger.error('Error handling session termination:', error);
     if (!res.headersSent) {
       res.status(500).json({
         jsonrpc: '2.0',
@@ -154,25 +155,25 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.error(`🥥 Coco MCP Server listening on port ${PORT}`);
+  logger.info(`🥥 Coco MCP Server listening on port ${PORT}`);
 });
 
 // Handle server shutdown
 const gracefulShutdown = async () => {
-  console.error('Shutting down 🥥 Coco server...');
+  logger.info('Shutting down 🥥 Coco server...');
 
   // Close all active transports to properly clean up resources
   for (const sessionId in transports) {
     try {
-      console.error(`Closing transport for session ${sessionId}`);
+      logger.debug(`Closing transport for session ${sessionId}`);
       await transports.get(sessionId)!.close();
       transports.delete(sessionId);
     } catch (error) {
-      console.error(`Error closing transport for session ${sessionId}:`, error);
+      logger.error(`Error closing transport for session ${sessionId}:`, error);
     }
   }
 
-  console.error('🥥 Coco server shutdown complete');
+  logger.info('🥥 Coco server shutdown complete');
   process.exit(0);
 };
 

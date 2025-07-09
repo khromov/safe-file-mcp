@@ -2,9 +2,10 @@ import { ReadFileArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import fs from 'fs/promises';
+import logger from '../logger.js';
 
 export async function handleReadFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
-  console.log('📖 read_file handler started');
+  logger.debug('📖 read_file handler started');
 
   const parsed = ReadFileArgsSchema.safeParse(args);
   if (!parsed.success) {
@@ -20,7 +21,7 @@ export async function handleReadFile(args: any, context: HandlerContext): Promis
     content: [{ type: 'text', text: content }],
   };
 
-  console.log(
+  logger.debug(
     `⏱️ read_file handler finished for path: ${parsed.data.path}, content length: ${content.length}`
   );
   return result;

@@ -2,6 +2,7 @@ import { GetCodebaseArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import { generateCodebaseDigest } from '../codebase-digest.js';
+import logger from '../logger.js';
 
 export async function handleGetCodebase(
   args: any,
@@ -12,7 +13,7 @@ export async function handleGetCodebase(
     throw new Error(`Invalid arguments for get_codebase: ${parsed.error}`);
   }
 
-  console.log(
+  logger.info(
     `📦 get_codebase handler started: page ${parsed.data.page}, path ${parsed.data.path}`
   );
 
@@ -20,13 +21,13 @@ export async function handleGetCodebase(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
 
   try {
-    console.log(`Generating codebase digest for path: ${absolutePath}`);
+    logger.debug(`Generating codebase digest for path: ${absolutePath}`);
     const result = await generateCodebaseDigest({
       inputDir: absolutePath,
       page: parsed.data.page,
       pageSize: 99000, // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
     });
-    console.log(`Generated codebase digest with length: ${result.content.length}`);
+    logger.debug(`Generated codebase digest with length: ${result.content.length}`);
 
     // The message is already in the correct format from codebase-digest.ts
     let content = result.content;
@@ -35,13 +36,13 @@ export async function handleGetCodebase(
       content: [{ type: 'text', text: content }],
     };
 
-    console.log(
+    logger.info(
       `⏱️ get_codebase handler finished: page ${parsed.data.page}, content length ${result.content.length}, has more pages: ${result.hasMorePages}`
     );
     return handlerResult;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`⏱️ get_codebase handler finished with error: ${errorMessage}`);
+    logger.error(`⏱️ get_codebase handler finished with error: ${errorMessage}`);
     throw new Error(`Failed to generate codebase digest: ${errorMessage}`);
   }
 }

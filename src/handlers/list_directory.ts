@@ -2,12 +2,13 @@ import { ListDirectoryArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import fs from 'fs/promises';
+import logger from '../logger.js';
 
 export async function handleListDirectory(
   args: any,
   context: HandlerContext
 ): Promise<HandlerResponse> {
-  console.log('📋 list_directory handler started');
+  logger.debug('📋 list_directory handler started');
 
   const parsed = ListDirectoryArgsSchema.safeParse(args);
   if (!parsed.success) {
@@ -24,7 +25,7 @@ export async function handleListDirectory(
     content: [{ type: 'text', text: formatted }],
   };
 
-  console.log(
+  logger.debug(
     `⏱️ list_directory handler finished for path: ${parsed.data.path}, found ${entries.length} entries`
   );
   return result;

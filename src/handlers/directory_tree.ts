@@ -2,12 +2,13 @@ import { DirectoryTreeArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import { buildTree } from '../file-operations.js';
+import logger from '../logger.js';
 
 export async function handleDirectoryTree(
   args: any,
   context: HandlerContext
 ): Promise<HandlerResponse> {
-  console.log('🌳 directory_tree handler started');
+  logger.debug('🌳 directory_tree handler started');
 
   const parsed = DirectoryTreeArgsSchema.safeParse(args || {});
   if (!parsed.success) {
@@ -31,7 +32,7 @@ export async function handleDirectoryTree(
     ],
   };
 
-  console.log(
+  logger.debug(
     `⏱️ directory_tree handler finished for path: ${parsed.data.path}, found ${treeData.length} entries`
   );
   return result;

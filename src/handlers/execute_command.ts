@@ -1,6 +1,7 @@
 import { ExecuteCommandArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { spawn } from 'child_process';
+import logger from '../logger.js';
 
 export async function handleExecuteCommand(
   args: any,
@@ -11,7 +12,7 @@ export async function handleExecuteCommand(
     throw new Error(`Invalid arguments for execute_command: ${parsed.error}`);
   }
 
-  console.log(`⚡ execute_command handler started: ${parsed.data.command}`);
+  logger.info(`⚡ execute_command handler started: ${parsed.data.command}`);
 
   // Parse the command string into command and args
   const commandParts = parsed.data.command.trim().split(/\s+/);
@@ -84,11 +85,11 @@ export async function handleExecuteCommand(
       };
 
       if (code !== 0) {
-        console.error(
+        logger.error(
           `⏱️ execute_command handler finished with error: ${parsed.data.command} (exit code: ${code})`
         );
       } else {
-        console.log(
+        logger.info(
           `⏱️ execute_command handler finished: ${parsed.data.command} (exit code: ${code})`
         );
       }
@@ -98,7 +99,7 @@ export async function handleExecuteCommand(
     // Handle spawn errors
     child.on('error', (error) => {
       clearTimeout(timeoutId);
-      console.error(
+      logger.error(
         `⏱️ execute_command handler finished with spawn error: ${parsed.data.command} (${error.message})`
       );
       resolve({

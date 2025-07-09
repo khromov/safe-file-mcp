@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { tools, ToolWithHandler } from './tools.js';
 import { HandlerContext } from './types.js';
+import logger from './logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,7 +20,7 @@ let instructions = '';
 try {
   instructions = readFileSync(join(__dirname, 'instructions.md'), 'utf-8');
 } catch (error) {
-  console.error('Warning: instructions.md not found, continuing without instructions');
+  logger.warn('Warning: instructions.md not found, continuing without instructions');
 }
 
 export const createServer = async () => {

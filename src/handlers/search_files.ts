@@ -3,6 +3,7 @@ import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath } from './utils.js';
 import { searchFiles } from '../file-operations.js';
 import path from 'path';
+import logger from '../logger.js';
 
 export async function handleSearchFiles(
   args: any,
@@ -13,7 +14,7 @@ export async function handleSearchFiles(
     throw new Error(`Invalid arguments for search_files: ${parsed.error}`);
   }
 
-  console.log(
+  logger.info(
     `🔍 search_files handler started: pattern "${parsed.data.pattern}", path ${parsed.data.path}`
   );
 
@@ -36,7 +37,7 @@ export async function handleSearchFiles(
     ],
   };
 
-  console.log(
+  logger.info(
     `⏱️ search_files handler finished: found ${relativePaths.length} matches for pattern "${parsed.data.pattern}"`
   );
   return result;
