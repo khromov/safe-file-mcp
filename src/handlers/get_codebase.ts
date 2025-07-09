@@ -26,10 +26,14 @@ export async function handleGetCodebase(
     logger.info(`📋 get_codebase using ignore file: ${ignoreFile || '.aidigestignore (default)'}`);
 
     logger.debug(`Generating codebase digest for path: ${absolutePath}`);
+    
+    // Use _pageSize if provided, otherwise default to 99000
+    const pageSize = parsed.data._pageSize ?? 99000; // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
+    
     const result = await generateCodebaseDigest({
       inputDir: absolutePath,
       page: parsed.data.page,
-      pageSize: 99000, // Claude Desktop limits to 100,000 characters per page, so we leave some buffer
+      pageSize,
     });
     logger.debug(`Generated codebase digest with length: ${result.content.length}`);
 
