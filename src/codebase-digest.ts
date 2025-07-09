@@ -140,10 +140,10 @@ export async function generateCodebaseDigest(
     additionalDefaultIgnores: ['.cocoignore'],
   });
 
-  let currentPage = 1;
-  let currentPageContent = '';
+  // Build array of pages - each page is an array of file contents
+  const pages: string[][] = [];
+  let currentPageFiles: string[] = [];
   let currentPageCharCount = 0;
-  let totalCharCount = 0;
 
   for (const file of files) {
     let fileContent = file.content;
@@ -157,32 +157,37 @@ export async function generateCodebaseDigest(
     }
 
     // Check if adding this file would exceed the page size
-    if (currentPageCharCount + fileCharCount > pageSize && currentPageCharCount > 0) {
-      // Move to next page
-      if (currentPage === page) {
-        // We've collected the requested page, stop here
-        break;
-      }
-      currentPage++;
-      currentPageContent = '';
+    if (currentPageCharCount + fileCharCount > pageSize && currentPageFiles.length > 0) {
+      // Save current page and start a new one
+      pages.push(currentPageFiles);
+      currentPageFiles = [];
       currentPageCharCount = 0;
     }
 
-    // Add file to current page if we're on the requested page
-    if (currentPage === page) {
-      currentPageContent += fileContent;
-      currentPageCharCount += fileCharCount;
-    }
+    // Add file to current page
+    currentPageFiles.push(fileContent);
+    currentPageCharCount += fileCharCount;
+  }
 
-    totalCharCount += fileCharCount;
+  // Don't forget the last page if it has content
+  if (currentPageFiles.length > 0) {
+    pages.push(currentPageFiles);
+  }
+
+  // Get the requested page content
+  const pageIndex = page - 1;
+  let currentPageContent = '';
+
+  if (pageIndex >= 0 && pageIndex < pages.length) {
+    currentPageContent = pages[pageIndex].join('');
   }
 
   // Check if there are more pages
-  const hasMorePages = totalCharCount > page * pageSize;
+  const hasMorePages = page < pages.length;
 
   if (hasMorePages) {
     currentPageContent += `\n\n---\nThis is page ${page}. You MUST call this tool again with page: ${page + 1} to get the rest of the files.\n`;
-  } else if (page > 1) {
+  } else {
     // We're on the last page of a multi-page digest, or beyond the last page
     currentPageContent += `\n\n---\nThis is the last page (page ${page}). Do NOT call this tool again - you have received the complete codebase.\n`;
   }

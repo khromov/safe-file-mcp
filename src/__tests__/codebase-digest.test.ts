@@ -85,38 +85,55 @@ describe('generateCodebaseDigest', () => {
     expect(result).toBeDefined();
   });
 
-  it('should show last page message when on final page', async () => {
+  it('should show last page message when on final page with custom page size', async () => {
     // Create a test directory with content that spans exactly 2 pages
     const LAST_PAGE_DIR = path.join(__dirname, 'test-last-page-temp');
     await fs.mkdir(LAST_PAGE_DIR, { recursive: true });
 
     try {
-      // Create multiple small files that together exceed one page but individually are smaller than page size
-      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file1.ts'), 'x'.repeat(3000)); // 3KB
-      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file2.ts'), 'y'.repeat(3000)); // 3KB  
-      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file3.ts'), 'z'.repeat(3000)); // 3KB
-      await fs.writeFile(path.join(LAST_PAGE_DIR, 'file4.ts'), 'a'.repeat(3000)); // 3KB
-      // Total: 12KB of content, which should span multiple pages with 5KB page size
+      // Create files with real code content that will span multiple pages when formatted by ai-digest
+      const files = [
+        { name: 'file1.ts', content: `// File 1\nconst file1 = true;\n${'x'.repeat(1000)}` },
+        { name: 'file2.ts', content: `// File 2\nconst file2 = true;\n${'y'.repeat(1000)}` },
+        { name: 'file3.ts', content: `// File 3\nconst file3 = true;\n${'z'.repeat(1000)}` },
+        { name: 'file4.ts', content: `// File 4\nconst file4 = true;\n${'a'.repeat(1000)}` },
+      ];
 
-      // Test page 1 - should show continue message
+      for (const file of files) {
+        await fs.writeFile(path.join(LAST_PAGE_DIR, file.name), file.content);
+      }
+
+      // Test page 1 with very small page size to force pagination
       const page1Result = await generateCodebaseDigest({
         inputDir: LAST_PAGE_DIR,
         page: 1,
-        pageSize: 5000, // 5KB page size
+        pageSize: 1500, // Very small page size to ensure only 1 file fits per page
       });
 
       expect(page1Result.hasMorePages).toBe(true);
       expect(page1Result.content).toContain('You MUST call this tool again with page: 2');
 
-      // Test page 2 - should show last page message
+      // Test page 2 - should show continue message
       const page2Result = await generateCodebaseDigest({
         inputDir: LAST_PAGE_DIR,
         page: 2,
-        pageSize: 5000,
+        pageSize: 1500,
       });
 
-      expect(page2Result.hasMorePages).toBe(false);
-      expect(page2Result.content).toContain('This is the last page (page 2). Do NOT call this tool again');
+      expect(page2Result.hasMorePages).toBe(true);
+      expect(page2Result.content).toContain('You MUST call this tool again with page: 3');
+
+      // Test later page - should eventually show last page message
+      const page4Result = await generateCodebaseDigest({
+        inputDir: LAST_PAGE_DIR,
+        page: 4,
+        pageSize: 1500,
+      });
+
+      expect(page4Result.hasMorePages).toBe(false);
+      expect(page4Result.content).toContain(
+        'This is the last page (page 4). Do NOT call this tool again'
+      );
     } finally {
       await fs.rm(LAST_PAGE_DIR, { recursive: true, force: true });
     }
@@ -137,7 +154,9 @@ describe('generateCodebaseDigest', () => {
       });
 
       expect(result.hasMorePages).toBe(false);
-      expect(result.content).toContain('This is the last page (page 3). Do NOT call this tool again');
+      expect(result.content).toContain(
+        'This is the last page (page 3). Do NOT call this tool again'
+      );
     } finally {
       await fs.rm(BEYOND_PAGE_DIR, { recursive: true, force: true });
     }
@@ -232,7 +251,9 @@ describe('generateCodebaseDigest', () => {
       page: 10, // Way beyond available pages
     });
 
-    expect(result.content).toContain('This is the last page (page 10). Do NOT call this tool again');
+    expect(result.content).toContain(
+      'This is the last page (page 10). Do NOT call this tool again'
+    );
     expect(result.hasMorePages).toBe(false);
     expect(result.currentPage).toBe(10);
     expect(result.nextPage).toBeUndefined();
@@ -306,8 +327,11 @@ test-data/
       // Create some files - some should be ignored, some should be included
       await fs.writeFile(path.join(COCOIGNORE_DIR, 'main.ts'), 'console.log("main");');
       await fs.writeFile(path.join(COCOIGNORE_DIR, 'utils.ts'), 'export const utils = true;');
-      await fs.writeFile(path.join(COCOIGNORE_DIR, 'app.test.ts'), 'test("should work", () => {});');
-      
+      await fs.writeFile(
+        path.join(COCOIGNORE_DIR, 'app.test.ts'),
+        'test("should work", () => {});'
+      );
+
       // Create test-data directory with a file
       await fs.mkdir(path.join(COCOIGNORE_DIR, 'test-data'), { recursive: true });
       await fs.writeFile(path.join(COCOIGNORE_DIR, 'test-data', 'sample.json'), '{"test": true}');
