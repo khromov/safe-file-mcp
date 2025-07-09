@@ -248,8 +248,8 @@ test-data/
       expect(result.content).not.toContain('sample.json');
       expect(result.content).not.toContain('test("should work"');
 
-      // Should include the .cocoignore file itself
-      expect(result.content).toContain('.cocoignore');
+      // Should NOT include the .cocoignore file itself (it should be excluded)
+      expect(result.content).not.toContain('.cocoignore');
     } finally {
       await fs.rm(COCOIGNORE_DIR, { recursive: true, force: true });
     }
