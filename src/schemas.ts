@@ -26,8 +26,8 @@ export const DirectoryTreeArgsSchema = z.object({
   path: z
     .string()
     .optional()
-    .default('./')
-    .transform((p) => p || './')
+    .default('')
+    .transform((p) => p || '')
     .describe('Relative path from root directory, with or without "./" prefix (defaults to root)'),
 });
 
@@ -58,7 +58,7 @@ export const GetCodebaseArgsSchema = z.object({
   path: z
     .string()
     .optional()
-    .default('./')
+    .default('')
     .describe('Relative path from root directory to analyze (defaults to root)'),
   page: z.number().optional().default(1).describe('Page number for pagination (defaults to 1)'),
   _pageSize: z.number().optional().describe('Page size for pagination (defaults to 99000)'),
@@ -68,7 +68,7 @@ export const GetCodebaseSizeArgsSchema = z.object({
   path: z
     .string()
     .optional()
-    .default('./')
+    .default('')
     .describe('Relative path from root directory to analyze (defaults to root)'),
 });
 
@@ -76,7 +76,7 @@ export const GetCodebaseTopLargestFilesArgsSchema = z.object({
   path: z
     .string()
     .optional()
-    .default('./')
+    .default('')
     .describe('Relative path from root directory to analyze (defaults to root)'),
   count: z
     .number()

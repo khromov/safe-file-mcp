@@ -19,7 +19,7 @@ describe('handleCreateDirectory', () => {
     const context = createTestContext(testDir);
     const result = await handleCreateDirectory({ path: './newdir' }, context);
 
-    expect(result.content[0].text).toBe('Successfully created directory ./newdir');
+    expect(result.content[0].text).toBe('Successfully created directory newdir');
 
     const stats = await fs.stat(path.join(testDir, 'newdir'));
     expect(stats.isDirectory()).toBe(true);
@@ -29,7 +29,7 @@ describe('handleCreateDirectory', () => {
     const context = createTestContext(testDir);
     const result = await handleCreateDirectory({ path: './parent/child/grandchild' }, context);
 
-    expect(result.content[0].text).toBe('Successfully created directory ./parent/child/grandchild');
+    expect(result.content[0].text).toBe('Successfully created directory parent/child/grandchild');
 
     const stats = await fs.stat(path.join(testDir, 'parent/child/grandchild'));
     expect(stats.isDirectory()).toBe(true);
@@ -43,6 +43,13 @@ describe('handleCreateDirectory', () => {
     const result = await handleCreateDirectory({ path: './existing' }, context);
 
     // Should succeed without error
-    expect(result.content[0].text).toBe('Successfully created directory ./existing');
+    expect(result.content[0].text).toBe('Successfully created directory existing');
+  });
+
+  it('should handle empty path as root', async () => {
+    const context = createTestContext(testDir);
+    const result = await handleCreateDirectory({ path: '' }, context);
+
+    expect(result.content[0].text).toBe('Successfully created directory (root)');
   });
 });

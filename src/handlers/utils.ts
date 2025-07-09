@@ -2,6 +2,11 @@ import path from 'path';
 import fs from 'fs/promises';
 
 export function validateRelativePath(relativePath: string): void {
+  // Handle empty path as current directory
+  if (!relativePath || relativePath === '') {
+    return;
+  }
+
   const pathToNormalize =
     relativePath.startsWith('./') || relativePath === '.' ? relativePath : './' + relativePath;
   const normalized = path.normalize(pathToNormalize);
@@ -11,11 +16,22 @@ export function validateRelativePath(relativePath: string): void {
 }
 
 export function resolveRelativePath(relativePath: string, rootDir: string): string {
-  if (!relativePath.startsWith('./')) {
-    relativePath = './' + relativePath;
+  // Handle empty path as root directory
+  if (!relativePath || relativePath === '') {
+    return rootDir;
   }
-  const cleanPath = relativePath.slice(2);
-  return path.join(rootDir, cleanPath);
+
+  // Handle '.' as root directory
+  if (relativePath === '.') {
+    return rootDir;
+  }
+
+  // Strip leading './' if present
+  if (relativePath.startsWith('./')) {
+    relativePath = relativePath.slice(2);
+  }
+
+  return path.join(rootDir, relativePath);
 }
 
 /**

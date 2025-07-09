@@ -25,8 +25,13 @@ export async function handleWriteFile(
 
   await writeFileSecure(absolutePath, parsed.data.content);
 
+  // Remove leading ./ from display path
+  const displayPath = parsed.data.path.startsWith('./')
+    ? parsed.data.path.slice(2)
+    : parsed.data.path;
+
   const result = {
-    content: [{ type: 'text', text: `Successfully wrote to ${parsed.data.path}` }],
+    content: [{ type: 'text', text: `Successfully wrote to ${displayPath}` }],
   };
 
   logger.debug(

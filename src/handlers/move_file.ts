@@ -23,11 +23,19 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
 
   await fs.rename(absoluteSource, absoluteDest);
 
+  // Remove leading ./ from display paths
+  const displaySource = parsed.data.source.startsWith('./')
+    ? parsed.data.source.slice(2)
+    : parsed.data.source;
+  const displayDest = parsed.data.destination.startsWith('./')
+    ? parsed.data.destination.slice(2)
+    : parsed.data.destination;
+
   const result = {
     content: [
       {
         type: 'text',
-        text: `Successfully moved ${parsed.data.source} to ${parsed.data.destination}`,
+        text: `Successfully moved ${displaySource} to ${displayDest}`,
       },
     ],
   };

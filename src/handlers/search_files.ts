@@ -22,10 +22,10 @@ export async function handleSearchFiles(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
   const results = await searchFiles(absolutePath, parsed.data.pattern, parsed.data.excludePatterns);
 
-  // Convert absolute paths back to relative paths for display
+  // Convert absolute paths back to relative paths without leading ./
   const relativePaths = results.map((absPath) => {
     const relPath = path.relative(context.absoluteRootDir, absPath);
-    return './' + relPath;
+    return relPath;
   });
 
   const result = {

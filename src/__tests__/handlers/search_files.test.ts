@@ -31,9 +31,9 @@ describe('handleSearchFiles', () => {
 
     const files = result.content[0].text.split('\n');
     expect(files).toHaveLength(3);
-    expect(files.some((f) => f.includes('test1.js'))).toBe(true);
-    expect(files.some((f) => f.includes('test2.js'))).toBe(true);
-    expect(files.some((f) => f.includes('src/test3.js'))).toBe(true);
+    expect(files.some((f) => f === 'test1.js')).toBe(true);
+    expect(files.some((f) => f === 'test2.js')).toBe(true);
+    expect(files.some((f) => f === 'src/test3.js')).toBe(true);
     expect(files.some((f) => f.includes('other.js'))).toBe(false);
   });
 
@@ -53,8 +53,8 @@ describe('handleSearchFiles', () => {
     );
 
     const files = result.content[0].text.split('\n');
-    expect(files.some((f) => f.includes('app.test.js'))).toBe(true);
-    expect(files.some((f) => f.includes('component.test.js'))).toBe(true);
+    expect(files.some((f) => f === 'app.test.js')).toBe(true);
+    expect(files.some((f) => f === 'src/component.test.js')).toBe(true);
     expect(files.some((f) => f.includes('node_modules'))).toBe(false);
   });
 
@@ -71,5 +71,22 @@ describe('handleSearchFiles', () => {
     );
 
     expect(result.content[0].text).toBe('No matches found');
+  });
+
+  it('should handle empty path', async () => {
+    await createTestFile(testDir, 'test.js', 'content');
+
+    const context = createTestContext(testDir);
+    const result = await handleSearchFiles(
+      {
+        path: '',
+        pattern: 'test',
+      },
+      context
+    );
+
+    const files = result.content[0].text.split('\n');
+    expect(files).toHaveLength(1);
+    expect(files[0]).toBe('test.js');
   });
 });

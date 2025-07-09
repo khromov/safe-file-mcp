@@ -33,7 +33,7 @@ describe('handleMoveFile', () => {
       context
     );
 
-    expect(result.content[0].text).toBe('Successfully moved ./source.txt to ./moved/target.txt');
+    expect(result.content[0].text).toBe('Successfully moved source.txt to moved/target.txt');
     expect(await fileExists(testDir, 'source.txt')).toBe(false);
     expect(await fileExists(testDir, 'moved/target.txt')).toBe(true);
     expect(await readTestFile(testDir, 'moved/target.txt')).toBe(content);
@@ -52,7 +52,7 @@ describe('handleMoveFile', () => {
       context
     );
 
-    expect(result.content[0].text).toBe('Successfully moved ./oldname.txt to ./newname.txt');
+    expect(result.content[0].text).toBe('Successfully moved oldname.txt to newname.txt');
     expect(await fileExists(testDir, 'oldname.txt')).toBe(false);
     expect(await fileExists(testDir, 'newname.txt')).toBe(true);
     expect(await readTestFile(testDir, 'newname.txt')).toBe(content);
@@ -70,5 +70,23 @@ describe('handleMoveFile', () => {
         context
       )
     ).rejects.toThrow('ENOENT');
+  });
+
+  it('should handle paths without ./ prefix', async () => {
+    const content = 'File without prefix';
+    await createTestFile(testDir, 'noslash.txt', content);
+
+    const context = createTestContext(testDir);
+    const result = await handleMoveFile(
+      {
+        source: 'noslash.txt',
+        destination: 'renamed.txt',
+      },
+      context
+    );
+
+    expect(result.content[0].text).toBe('Successfully moved noslash.txt to renamed.txt');
+    expect(await fileExists(testDir, 'noslash.txt')).toBe(false);
+    expect(await fileExists(testDir, 'renamed.txt')).toBe(true);
   });
 });

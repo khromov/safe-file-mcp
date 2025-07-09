@@ -2,6 +2,7 @@ import { GetCodebaseSizeArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
 import aiDigest from 'ai-digest';
+import path from 'path';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseSize(
@@ -62,9 +63,9 @@ export async function handleGetCodebaseSize(
       top25Files.forEach((file, index) => {
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
 
-        // Ensure the path does not start with a ./
-        const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
-        output += `${index + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
+        // Get relative path from the context root dir (not from absolutePath)
+        const relativePath = path.relative(context.absoluteRootDir, file.path);
+        output += `${index + 1}. \`${relativePath}\` - ${sizeInKB} KB\n`;
       });
 
       if (sortedFiles.length > 25) {

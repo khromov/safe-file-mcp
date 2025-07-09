@@ -26,7 +26,7 @@ describe('handleWriteFile', () => {
 
     const result = await handleWriteFile({ path: './newfile.txt', content }, context);
 
-    expect(result.content[0].text).toBe('Successfully wrote to ./newfile.txt');
+    expect(result.content[0].text).toBe('Successfully wrote to newfile.txt');
     expect(await fileExists(testDir, 'newfile.txt')).toBe(true);
     expect(await readTestFile(testDir, 'newfile.txt')).toBe(content);
   });
@@ -39,7 +39,7 @@ describe('handleWriteFile', () => {
 
     const result = await handleWriteFile({ path: './existing.txt', content: newContent }, context);
 
-    expect(result.content[0].text).toBe('Successfully wrote to ./existing.txt');
+    expect(result.content[0].text).toBe('Successfully wrote to existing.txt');
     expect(await readTestFile(testDir, 'existing.txt')).toBe(newContent);
   });
 
@@ -49,8 +49,19 @@ describe('handleWriteFile', () => {
 
     const result = await handleWriteFile({ path: './deeply/nested/file.txt', content }, context);
 
-    expect(result.content[0].text).toBe('Successfully wrote to ./deeply/nested/file.txt');
+    expect(result.content[0].text).toBe('Successfully wrote to deeply/nested/file.txt');
     expect(await fileExists(testDir, 'deeply/nested/file.txt')).toBe(true);
     expect(await readTestFile(testDir, 'deeply/nested/file.txt')).toBe(content);
+  });
+
+  it('should handle file without ./ prefix', async () => {
+    const context = createTestContext(testDir);
+    const content = 'content without prefix';
+
+    const result = await handleWriteFile({ path: 'noprefix.txt', content }, context);
+
+    expect(result.content[0].text).toBe('Successfully wrote to noprefix.txt');
+    expect(await fileExists(testDir, 'noprefix.txt')).toBe(true);
+    expect(await readTestFile(testDir, 'noprefix.txt')).toBe(content);
   });
 });
