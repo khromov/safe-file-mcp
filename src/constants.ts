@@ -1,4 +1,5 @@
 export const DEFAULT_IGNORES = [
+  '.cocoignore',
   '.aidigestignore',
   // Node.js
   'node_modules',

@@ -52,7 +52,7 @@ export async function handleGetCodebaseSize(
       hasWarning = true;
       output += `⚠️ **WARNING: Large Codebase Detected for Claude**\n\n`;
       output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
-      output += `This may cause issues with Claude's context window. You should create a \`.aidigestignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
+      output += `This may cause issues with Claude's context window. You should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
     }
 
     if (hitGptLimit) {

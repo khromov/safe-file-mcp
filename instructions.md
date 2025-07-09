@@ -13,7 +13,7 @@ Coco (Context Coder) is an MCP server that provides AI assistants with comprehen
 - Checks total token counts for Claude and ChatGPT
 - Warns if the codebase exceeds recommended limits (150k for Claude, 128k for ChatGPT)
 - Shows the top 10 largest files that might need to be excluded
-- Suggests creating a `.aidigestignore` file if needed
+- Suggests creating a `.cocoignore` file if needed
 
 ### 2. Get Full Context
 
@@ -57,7 +57,7 @@ Only use these tools when specifically needed:
 
 If `get_codebase_size` warns about a large codebase:
 
-1. **Create a `.aidigestignore` file** in the project root (similar to `.gitignore`)
+1. **Create a `.cocoignore` file** in the project root (similar to `.gitignore`)
 2. Add patterns for files/directories to exclude:
 
    ```

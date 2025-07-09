@@ -59,7 +59,7 @@ export const tools: ToolWithHandler[] = [
     description:
       'Returns the top X largest files in the codebase. ' +
       'Use this tool when users want to see more large files beyond the initial 10 shown in get_codebase_size. ' +
-      'Helpful for identifying which files to add to .aidigestignore for large codebases.',
+      'Helpful for identifying which files to add to .cocoignore for large codebases.',
     inputSchema: zodToJsonSchema(GetCodebaseTopLargestFilesArgsSchema) as ToolInput,
     handler: handleGetCodebaseTopLargestFiles,
   },

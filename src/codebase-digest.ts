@@ -61,7 +61,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
     hasWarning = true;
     output += `⚠️ **WARNING: Large Codebase Detected for Claude**\n\n`;
     output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
-    output += `This may cause issues with Claude's context window. You should create a \`.aidigestignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
+    output += `This may cause issues with Claude's context window. You should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
   }
 
   if (stats.totalGptTokens > gptTokenLimit) {
@@ -80,7 +80,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
   // Show top 10 largest files
   if (sortedFiles.length > 0) {
     output += `## Top 10 Largest Files\n\n`;
-    output += `Consider adding some of these to your \`.aidigestignore\` file:\n\n`;
+    output += `Consider adding some of these to your \`.cocoignore\` file:\n\n`;
 
     const top10Files = sortedFiles.slice(0, 10);
     top10Files.forEach((file, index) => {
