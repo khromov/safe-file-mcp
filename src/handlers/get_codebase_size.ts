@@ -1,7 +1,7 @@
 import { GetCodebaseSizeArgsSchema } from '../schemas.js';
 import { getCodebaseSize } from '../codebase-digest.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
 import aiDigest from 'ai-digest';
 import logger from '../logger.js';
 
@@ -22,9 +22,13 @@ export async function handleGetCodebaseSize(
   try {
     logger.debug(`Getting file statistics for path: ${absolutePath}`);
 
+    // Check for .cocoignore file
+    const ignoreFile = await getIgnoreFile(absolutePath);
+
     // Get file statistics without content
     const stats = await aiDigest.getFileStats({
       inputDir: absolutePath,
+      ignoreFile,
       silent: true,
     });
 

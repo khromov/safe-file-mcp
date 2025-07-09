@@ -1,5 +1,6 @@
 import aiDigest from 'ai-digest';
 import path from 'path';
+import { getIgnoreFile } from './handlers/utils.js';
 
 export interface CodebaseDigestOptions {
   inputDir: string;
@@ -32,9 +33,13 @@ export interface CodebaseSizeResult {
 export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<CodebaseSizeResult> {
   const { inputDir } = options;
 
+  // Check for .cocoignore file
+  const ignoreFile = await getIgnoreFile(inputDir);
+
   // Get file statistics without content
   const stats = await aiDigest.getFileStats({
     inputDir,
+    ignoreFile,
     silent: true,
   });
 
@@ -120,9 +125,13 @@ export async function generateCodebaseDigest(
 ): Promise<CodebaseDigestResult> {
   const { inputDir, page = 1, pageSize = 99000 } = options;
 
+  // Check for .cocoignore file
+  const ignoreFile = await getIgnoreFile(inputDir);
+
   // Get individual file objects from ai-digest
   const { files } = await aiDigest.generateDigestFiles({
     inputDir,
+    ignoreFile,
     silent: true,
   });
 

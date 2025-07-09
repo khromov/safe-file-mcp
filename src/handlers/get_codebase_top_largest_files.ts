@@ -1,6 +1,6 @@
 import { GetCodebaseTopLargestFilesArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
 import aiDigest from 'ai-digest';
 import logger from '../logger.js';
 
@@ -21,9 +21,13 @@ export async function handleGetCodebaseTopLargestFiles(
   try {
     logger.debug(`Getting file statistics for path: ${absolutePath}, count: ${parsed.data.count}`);
 
+    // Check for .cocoignore file
+    const ignoreFile = await getIgnoreFile(absolutePath);
+
     // Get file statistics without content
     const stats = await aiDigest.getFileStats({
       inputDir: absolutePath,
+      ignoreFile,
       silent: true,
     });
 
