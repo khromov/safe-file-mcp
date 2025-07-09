@@ -3,3 +3,4 @@
 .gitignore
 src/__tests__/test-*-temp/
 **/test-*-temp/
+#src/__tests__/*
