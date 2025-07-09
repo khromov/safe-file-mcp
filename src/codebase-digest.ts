@@ -43,6 +43,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
     inputDir,
     ignoreFile,
     silent: true,
+    additionalDefaultIgnores: ['.cocoignore'],
   });
 
   // Sort files by size (largest first) - they should already be sorted by ai-digest
@@ -136,6 +137,7 @@ export async function generateCodebaseDigest(
     inputDir,
     ignoreFile,
     silent: true,
+    additionalDefaultIgnores: ['.cocoignore'],
   });
 
   let currentPage = 1;

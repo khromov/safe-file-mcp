@@ -31,6 +31,7 @@ export async function handleGetCodebaseSize(
       inputDir: absolutePath,
       ignoreFile,
       silent: true,
+      additionalDefaultIgnores: ['.cocoignore'],
     });
 
     // Sort files by size (largest first) - they should already be sorted by ai-digest
