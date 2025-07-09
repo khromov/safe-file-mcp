@@ -1,6 +1,7 @@
 import aiDigest from 'ai-digest';
 import path from 'path';
 import { getIgnoreFile } from './handlers/utils.js';
+import logger from './logger.js';
 
 export interface CodebaseDigestOptions {
   inputDir: string;
@@ -35,6 +36,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
 
   // Check for .cocoignore file
   const ignoreFile = await getIgnoreFile(inputDir);
+  logger.debug(`📋 Using ignore file: ${ignoreFile || '.aidigestignore (default)'}`);
 
   // Get file statistics without content
   const stats = await aiDigest.getFileStats({
@@ -127,6 +129,7 @@ export async function generateCodebaseDigest(
 
   // Check for .cocoignore file
   const ignoreFile = await getIgnoreFile(inputDir);
+  logger.debug(`📋 Using ignore file: ${ignoreFile || '.aidigestignore (default)'}`);
 
   // Get individual file objects from ai-digest
   const { files } = await aiDigest.generateDigestFiles({

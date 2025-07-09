@@ -1,6 +1,6 @@
 import { GetCodebaseArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
 import { generateCodebaseDigest } from '../codebase-digest.js';
 import logger from '../logger.js';
 
@@ -21,6 +21,10 @@ export async function handleGetCodebase(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
 
   try {
+    // Check for .cocoignore file and log which one will be used
+    const ignoreFile = await getIgnoreFile(absolutePath);
+    logger.info(`📋 get_codebase using ignore file: ${ignoreFile || '.aidigestignore (default)'}`);
+
     logger.debug(`Generating codebase digest for path: ${absolutePath}`);
     const result = await generateCodebaseDigest({
       inputDir: absolutePath,
