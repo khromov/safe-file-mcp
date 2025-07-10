@@ -26,7 +26,7 @@ WORKDIR /deps
 COPY package.json package-lock.json ./
 RUN npm ci --production --ignore-scripts
 
-# Release stage - regular build
+# Release stage - same for both regular and mini
 FROM node:22-alpine AS release
 
 LABEL org.opencontainers.image.title="🥥 Coco - Context Coder"
@@ -48,34 +48,6 @@ RUN apk add --no-cache \
     bind-tools \
     jq \
     ncdu
-
-WORKDIR /opt/mcp-server
-
-COPY --from=builder /build/dist ./dist
-COPY --from=builder /build/package.json ./
-COPY --from=builder /build/instructions.md ./
-COPY --from=prod-deps /deps/node_modules ./node_modules
-
-# Copy the entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENV NODE_ENV=production
-
-WORKDIR /app
-
-# Use exec form to ensure signals are properly handled
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
-
-# Release stage - mini build (minimal tools, no extra packages)
-FROM node:22-alpine AS release-mini
-
-LABEL org.opencontainers.image.title="🥥 Coco Mini - Essential Context Tools"
-LABEL org.opencontainers.image.description="Minimal MCP server with only essential codebase tools (get_codebase_size, get_codebase, get_codebase_top_largest_files)"
-LABEL org.opencontainers.image.vendor="Model Context Protocol"
-
-# Only install tini for process management
-RUN apk add --no-cache tini
 
 WORKDIR /opt/mcp-server
 
