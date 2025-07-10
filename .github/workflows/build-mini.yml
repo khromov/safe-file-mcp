@@ -27,9 +27,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch,suffix=-mini
-            type=ref,event=pr,suffix=-mini
-            type=raw,value=mini,enable={{is_default_branch}}
+            type=raw,value=main-mini
+            type=raw,value=mini
 
       - name: Login to GHCR
         uses: docker/login-action@v3

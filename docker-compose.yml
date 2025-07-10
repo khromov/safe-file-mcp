@@ -1,7 +1,7 @@
 services:
   coco:
     # build: .
-    image: ghcr.io/khromov/coco:main
+    image: ghcr.io/khromov/coco:full
     ports:
       - "3001:3001"
     volumes:

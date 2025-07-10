@@ -21,7 +21,7 @@ Create a `docker-compose.yml` file in the project(s) you want to work on.
 ```yaml
 services:
   coco:
-    image: ghcr.io/khromov/coco:main
+    image: ghcr.io/khromov/coco:full
     ports:
       - '3001:3001'
     volumes:
@@ -34,7 +34,7 @@ For the mini version:
 ```yaml
 services:
   coco:
-    image: ghcr.io/khromov/coco:main-mini
+    image: ghcr.io/khromov/coco:mini
     ports:
       - '3001:3001'
     volumes:
@@ -86,7 +86,7 @@ Add this to your Claude Desktop configuration file:
         "/app",
         "-e",
         "MCP_TRANSPORT=stdio",
-        "ghcr.io/khromov/coco:main",
+        "ghcr.io/khromov/coco:full",
         "node",
         "/opt/mcp-server/dist/index.js",
         "--stdio"
@@ -176,7 +176,7 @@ docker build --target release-mini --build-arg BUILD_TYPE=mini -t coco:mini .
 Build a custom image:
 
 ```dockerfile
-FROM ghcr.io/khromov/coco:main
+FROM ghcr.io/khromov/coco:full
 # Add customizations
 ```
 
