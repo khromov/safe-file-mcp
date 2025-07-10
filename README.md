@@ -9,40 +9,6 @@ Coco supports two transport modes:
 - **HTTP mode** (recommended as default): For remote connections and multiple clients
 - **stdio mode** (less convenient): For better stability with Claude Desktop
 
-### Method 1: Docker with stdio Mode (Recommended for Claude Desktop)
-
-Add this to your Claude Desktop configuration file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path every time you want to switch projects.**
-
-```json
-{
-  "mcpServers": {
-    "coco": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "-v",
-        "/Users/YOUR_USERNAME/GitHub/YOUR_REPO:/app",
-        "-w",
-        "/app",
-        "-e",
-        "MCP_TRANSPORT=stdio",
-        "ghcr.io/khromov/coco:main",
-        "node",
-        "/opt/mcp-server/dist/index.js",
-        "--stdio"
-      ]
-    }
-  }
-}
-```
-
 ### Method 2: Docker Compose with HTTP Mode
 
 Create a `docker-compose.yml` file in the project(s) you want to work on.
@@ -77,6 +43,40 @@ Then add to Claude Desktop config:
 ```
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
+
+### Method 2: Docker with stdio Mode (Recommended for Claude Desktop)
+
+Add this to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path every time you want to switch projects.**
+
+```json
+{
+  "mcpServers": {
+    "coco": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        "/Users/YOUR_USERNAME/GitHub/YOUR_REPO:/app",
+        "-w",
+        "/app",
+        "-e",
+        "MCP_TRANSPORT=stdio",
+        "ghcr.io/khromov/coco:main",
+        "node",
+        "/opt/mcp-server/dist/index.js",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
 
 ## Configuration
 
