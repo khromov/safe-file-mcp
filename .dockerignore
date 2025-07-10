@@ -28,14 +28,6 @@ Thumbs.db
 # Documentation (except instructions.md which is needed)
 README.md
 CLAUDE.md
-DOCKER_STDIO_MODE.md
-CLAUDE_DESKTOP_CONFIG.md
-
-# Test files
-*.test.ts
-__tests__/
-jest.config.js
-test-*.sh
 
 # CI/CD
 .github/
