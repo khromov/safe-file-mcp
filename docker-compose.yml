@@ -1,5 +1,4 @@
 services:
-  # HTTP mode (default) - for use with MCP remote connections
   coco-mcp-http:
     # build: .
     image: ghcr.io/khromov/coco:main
@@ -12,16 +11,3 @@ services:
       - NODE_ENV=production
       - MCP_TRANSPORT=http
     restart: unless-stopped
-
-  # Stdio mode - for direct integration with Claude Desktop or other MCP clients
-  coco-mcp-stdio:
-    build: .
-    #image: ghcr.io/khromov/coco:main
-    volumes:
-      - ./:/app
-    working_dir: /app
-    environment:
-      - NODE_ENV=production
-      - MCP_TRANSPORT=stdio
-    stdin_open: true
-    tty: false
