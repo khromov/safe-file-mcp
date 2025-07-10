@@ -16,12 +16,26 @@ export async function handleCreateDirectory(
   }
   validateRelativePath(parsed.data.path);
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
+
+  // Check if directory already exists
+  let directoryExisted = false;
+  try {
+    const stats = await fs.stat(absolutePath);
+    directoryExisted = stats.isDirectory();
+  } catch (error) {
+    // Directory doesn't exist, which is expected
+  }
+
   await fs.mkdir(absolutePath, { recursive: true });
 
   const displayPath = formatDisplayPath(parsed.data.path);
 
+  const message = directoryExisted
+    ? `Directory ${displayPath} already exists`
+    : `Successfully created directory ${displayPath}`;
+
   const result = {
-    content: [{ type: 'text', text: `Successfully created directory ${displayPath}` }],
+    content: [{ type: 'text', text: message }],
   };
 
   logger.debug(`⏱️ create_directory handler finished for path: ${parsed.data.path}`);

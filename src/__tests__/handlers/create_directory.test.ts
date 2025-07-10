@@ -42,14 +42,14 @@ describe('handleCreateDirectory', () => {
     const context = createTestContext(testDir);
     const result = await handleCreateDirectory({ path: './existing' }, context);
 
-    // Should succeed without error
-    expect(result.content[0].text).toBe('Successfully created directory existing');
+    // Should succeed without error but with different message
+    expect(result.content[0].text).toBe('Directory existing already exists');
   });
 
   it('should handle empty path as root', async () => {
     const context = createTestContext(testDir);
     const result = await handleCreateDirectory({ path: '' }, context);
 
-    expect(result.content[0].text).toBe('Successfully created directory (root)');
+    expect(result.content[0].text).toBe('Directory (root) already exists');
   });
 });
