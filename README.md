@@ -4,7 +4,48 @@ Coco provides AI models with full-context awareness of entire codebases through 
 
 ## Installation
 
-Run Coco using Docker Compose by adding this to a `docker-compose.yml` file:
+Coco supports two transport modes:
+
+- **HTTP mode** (default): For remote connections and multiple clients
+- **stdio mode** (recommended): For better stability with Claude Desktop and other MCP clients
+
+### Method 1: Docker with stdio Mode (Recommended for Claude Desktop)
+
+Add this to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "coco": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        "/path/to/your/project:/app",
+        "-w",
+        "/app",
+        "-e",
+        "MCP_TRANSPORT=stdio",
+        "ghcr.io/khromov/coco:main",
+        "node",
+        "/opt/mcp-server/dist/index.js",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+Replace `/path/to/your/project` with the actual path to your project directory.
+
+### Method 2: Docker Compose with HTTP Mode
+
+Create a `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -23,12 +64,7 @@ Start the service:
 docker-compose up
 ```
 
-The MCP endpoint will be available at `http://localhost:3001/mcp`.
-
-### Claude Desktop Setup
-
-1. Open Claude Desktop, go to **Settings** → **Developer** → **Edit Config**
-2. Add this to your configuration file:
+Then add to Claude Desktop config:
 
 ```json
 {
@@ -40,14 +76,29 @@ The MCP endpoint will be available at `http://localhost:3001/mcp`.
 }
 ```
 
-3. Restart Claude Desktop
+## Transport Modes
 
-The config file location:
+### stdio Mode (Recommended)
 
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- ✅ Better stability and reliability
+- ✅ Lower latency
+- ✅ Simpler configuration
+- ✅ Direct process control by MCP client
+- ❌ Single client only
+
+### HTTP Mode
+
+- ✅ Supports multiple concurrent clients
+- ✅ Easier debugging with HTTP tools
+- ✅ Can be accessed remotely
+- ⚠️ Requires port management
+- ⚠️ May have stability issues with long-running connections
+
+See [DOCKER_STDIO_MODE.md](./DOCKER_STDIO_MODE.md) for detailed stdio mode documentation.
 
 ## Configuration
+
+### Volume Mounts
 
 Mount a specific directory:
 
@@ -56,17 +107,11 @@ volumes:
   - ./src:/app # Only expose src directory
 ```
 
-Use a different port:
-
-```yaml
-ports:
-  - '8080:3001' # Available at localhost:8080
-```
-
-Environment variables:
+### Environment Variables
 
 - `NODE_ENV`: Set to `production` (default) or `development`
-- `PORT`: Override default port 3001
+- `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
+- `PORT`: Override default port 3001 (HTTP mode only)
 
 ## Available Tools
 
@@ -97,7 +142,8 @@ Build and run:
 
 ```bash
 npm run build
-npm start
+npm start  # HTTP mode
+npm start -- --stdio  # stdio mode
 ```
 
 Development mode with auto-reload:
@@ -125,11 +171,28 @@ docker build -t my-coco .
 
 ## Protocol
 
-Coco implements the MCP specification using streamable HTTP transport. Sessions are maintained via the `mcp-session-id` header. The server supports request/response patterns, server-sent events for streaming, and session resumability.
+Coco implements the MCP specification with support for both transport modes:
+
+- **stdio mode**: Direct communication via stdin/stdout
+- **HTTP mode**: Streamable HTTP transport with session management via `mcp-session-id` header
 
 ## Security
 
 File system access is restricted to the mounted directory. Operations that would escape the sandbox are rejected. The server validates all paths and blocks directory traversal attempts.
+
+## Troubleshooting
+
+### stdio Mode Issues
+
+- Ensure Docker is running with `-i` flag (interactive)
+- Check that volume paths are absolute
+- Logs go to stderr and won't interfere with stdio communication
+
+### HTTP Mode Issues
+
+- Verify port 3001 is not in use
+- Check Docker logs: `docker-compose logs`
+- Ensure `mcp-session-id` header is preserved by any proxies
 
 ## License
 

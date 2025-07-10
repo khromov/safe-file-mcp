@@ -25,3 +25,6 @@ mount/
 # OS
 .DS_Store
 Thumbs.db
+
+# Shell scripts
+*.sh

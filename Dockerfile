@@ -44,9 +44,13 @@ COPY --from=builder /build/package.json ./
 COPY --from=builder /build/instructions.md ./
 COPY --from=prod-deps /deps/node_modules ./node_modules
 
+# Copy the entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 ENV NODE_ENV=production
 
 WORKDIR /app
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "/opt/mcp-server/dist/index.js"]
+# Use exec form to ensure signals are properly handled
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
