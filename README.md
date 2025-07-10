@@ -9,7 +9,7 @@ Coco supports two transport modes:
 - **HTTP mode** (recommended as default)
 - **stdio mode** (less convenient): For (potentially) better stability with Claude Desktop
 
-### Method 2: Docker Compose with HTTP Mode
+### Method 1: Docker Compose with HTTP Mode
 
 Create a `docker-compose.yml` file in the project(s) you want to work on.
 
