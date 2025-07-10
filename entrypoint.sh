@@ -6,5 +6,5 @@ if [ "$MCP_TRANSPORT" = "stdio" ]; then
 else
   # HTTP mode can log normally
   echo "Starting Coco MCP in HTTP mode (port ${PORT:-3001})..." >&2
-  exec node /opt/mcp-server/dist/index.js
+  exec node /opt/mcp-server/dist/index.js "$@"
 fi
