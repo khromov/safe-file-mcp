@@ -5,7 +5,7 @@ Coco provides AI models with full-context awareness of entire codebases through 
 ## Available Versions
 
 - **Coco (Full)**: Complete file system operations with all tools
-- **Coco Mini**: Lightweight version with only essential codebase analysis tools
+- **Coco Mini**: Lightweight version with only essential codebase analysis tools (Note: You need to have existing tools to edit files!)
 
 ## Installation
 
