@@ -38,3 +38,6 @@ Dockerfile
 
 # Debug files
 debug-*.js
+
+# Build scripts
+build-all.sh
