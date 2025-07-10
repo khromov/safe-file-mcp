@@ -35,6 +35,30 @@ export function resolveRelativePath(relativePath: string, rootDir: string): stri
 }
 
 /**
+ * Format a path for display by removing the leading './' if present.
+ * This provides cleaner output in user-facing messages.
+ *
+ * @param filePath - The path to format
+ * @returns The formatted path without leading './'
+ *
+ * @example
+ * formatDisplayPath('./src/index.ts') // returns 'src/index.ts'
+ * formatDisplayPath('src/index.ts')   // returns 'src/index.ts'
+ * formatDisplayPath('')               // returns '(root)'
+ * formatDisplayPath('.')              // returns '(root)'
+ * formatDisplayPath('./')             // returns '(root)'
+ */
+export function formatDisplayPath(filePath: string): string {
+  // Handle empty path or current directory references
+  if (!filePath || filePath === '' || filePath === '.' || filePath === './') {
+    return '(root)';
+  }
+
+  // Remove leading './' if present
+  return filePath.startsWith('./') ? filePath.slice(2) : filePath;
+}
+
+/**
  * Check if .cocoignore file exists in the given directory
  * @param inputDir - The directory to check for .cocoignore
  * @returns '.cocoignore' if it exists, undefined otherwise (to fallback to .aidigestignore)

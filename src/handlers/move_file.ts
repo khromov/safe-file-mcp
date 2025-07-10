@@ -1,6 +1,6 @@
 import { MoveFileArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
 import path from 'path';
 import logger from '../logger.js';
@@ -23,13 +23,8 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
 
   await fs.rename(absoluteSource, absoluteDest);
 
-  // Remove leading ./ from display paths
-  const displaySource = parsed.data.source.startsWith('./')
-    ? parsed.data.source.slice(2)
-    : parsed.data.source;
-  const displayDest = parsed.data.destination.startsWith('./')
-    ? parsed.data.destination.slice(2)
-    : parsed.data.destination;
+  const displaySource = formatDisplayPath(parsed.data.source);
+  const displayDest = formatDisplayPath(parsed.data.destination);
 
   const result = {
     content: [
