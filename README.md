@@ -6,8 +6,8 @@ Coco provides AI models with full-context awareness of entire codebases through 
 
 Coco supports two transport modes:
 
-- **HTTP mode** (recommended as default): For remote connections and multiple clients
-- **stdio mode** (less convenient): For better stability with Claude Desktop
+- **HTTP mode** (recommended as default)
+- **stdio mode** (less convenient): For (potentially) better stability with Claude Desktop
 
 ### Method 2: Docker Compose with HTTP Mode
 
@@ -97,18 +97,19 @@ volumes:
 
 ## Available Tools
 
-| Tool                    | Purpose                                                                                                   |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- |
-| **`get_codebase_size`** | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
-| **`get_codebase`**      | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**              |
-| `read_file`             | Read file contents (only use when specifically asked to re-read or for debugging)                         |
-| `write_file`            | Create or overwrite files                                                                                 |
-| `create_directory`      | Create directories                                                                                        |
-| `list_directory`        | List directory contents (only use when specifically asked or for debugging)                               |
-| `directory_tree`        | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
-| `move_file`             | Move or rename files                                                                                      |
-| `search_files`          | Search by pattern                                                                                         |
-| `execute_command`       | Run shell commands                                                                                        |
+| Tool                                | Purpose                                                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **`get_codebase_size`**             | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
+| **`get_codebase`**                  | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**              |
+| `get_codebase_top_largest_files`    | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                |
+| `read_file`                         | Read file contents (only use when specifically asked to re-read or for debugging)                         |
+| `write_file`                        | Create or overwrite files                                                                                 |
+| `create_directory`                  | Create directories                                                                                        |
+| `list_directory`                    | List directory contents (only use when specifically asked or for debugging)                               |
+| `directory_tree`                    | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
+| `move_file`                         | Move or rename files                                                                                      |
+| `search_files`                      | Search by pattern                                                                                         |
+| `execute_command`                   | Run shell commands                                                                                        |
 
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
