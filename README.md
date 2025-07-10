@@ -51,7 +51,7 @@ Add this to your Claude Desktop configuration file:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path every time you want to switch projects.**
+**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path _every_ time you want to switch projects.**
 
 ```json
 {
