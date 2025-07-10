@@ -16,22 +16,14 @@ export function validateRelativePath(relativePath: string): void {
 }
 
 export function resolveRelativePath(relativePath: string, rootDir: string): string {
-  // Handle empty path as root directory
-  if (!relativePath || relativePath === '') {
-    return rootDir;
-  }
-
-  // Handle '.' as root directory
-  if (relativePath === '.') {
+  // Handle empty path or current directory references as root directory
+  if (!relativePath || relativePath === '' || relativePath === '.') {
     return rootDir;
   }
 
   // Strip leading './' if present
-  if (relativePath.startsWith('./')) {
-    relativePath = relativePath.slice(2);
-  }
-
-  return path.join(rootDir, relativePath);
+  const cleanPath = relativePath.startsWith('./') ? relativePath.slice(2) : relativePath;
+  return path.join(rootDir, cleanPath);
 }
 
 /**
@@ -56,6 +48,18 @@ export function formatDisplayPath(filePath: string): string {
 
   // Remove leading './' if present
   return filePath.startsWith('./') ? filePath.slice(2) : filePath;
+}
+
+/**
+ * Normalize a file path for display by converting absolute paths to relative paths
+ * and handling paths that are already relative.
+ *
+ * @param filePath - The file path to normalize
+ * @param inputDir - The input directory to make paths relative to
+ * @returns The normalized path for display
+ */
+export function normalizeDisplayPath(filePath: string, inputDir: string): string {
+  return path.isAbsolute(filePath) ? path.relative(inputDir, filePath) : filePath;
 }
 
 /**

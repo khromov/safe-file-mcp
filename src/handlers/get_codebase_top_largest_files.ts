@@ -1,6 +1,11 @@
 import { GetCodebaseTopLargestFilesArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
+import {
+  validateRelativePath,
+  resolveRelativePath,
+  getIgnoreFile,
+  normalizeDisplayPath,
+} from './utils.js';
 import aiDigest from 'ai-digest';
 import path from 'path';
 import logger from '../logger.js';
@@ -51,17 +56,7 @@ export async function handleGetCodebaseTopLargestFiles(
       for (let i = 0; i < filesCount; i++) {
         const file = sortedFiles[i];
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-
-        // ai-digest returns paths relative to the inputDir we provided
-        // So if file.path is relative (not absolute), it's already relative to absolutePath
-        let displayPath = file.path;
-
-        if (path.isAbsolute(file.path)) {
-          // Only if it's absolute do we need to make it relative
-          displayPath = path.relative(absolutePath, file.path);
-        }
-        // If it's already relative, use it as-is since it's relative to our target directory
-
+        const displayPath = normalizeDisplayPath(file.path, absolutePath);
         output += `${i + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
       }
 

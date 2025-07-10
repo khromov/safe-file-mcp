@@ -1,6 +1,6 @@
 import aiDigest from 'ai-digest';
 import path from 'path';
-import { getIgnoreFile } from './handlers/utils.js';
+import { getIgnoreFile, normalizeDisplayPath } from './handlers/utils.js';
 import logger from './logger.js';
 
 export interface CodebaseDigestOptions {
@@ -85,15 +85,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
     const top10Files = sortedFiles.slice(0, 10);
     top10Files.forEach((file, index) => {
       const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-
-      // ai-digest returns paths relative to the inputDir
-      let displayPath = file.path;
-
-      if (path.isAbsolute(file.path)) {
-        // Only convert if it's absolute
-        displayPath = path.relative(inputDir, file.path);
-      }
-
+      const displayPath = normalizeDisplayPath(file.path, inputDir);
       output += `${index + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
     });
 
@@ -109,12 +101,7 @@ export async function getCodebaseSize(options: CodebaseSizeOptions): Promise<Cod
   // Store the top 100 files in case user asks for more
   const top100Files = sortedFiles.slice(0, 100).map((file, index) => {
     const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-
-    let displayPath = file.path;
-    if (path.isAbsolute(file.path)) {
-      displayPath = path.relative(inputDir, file.path);
-    }
-
+    const displayPath = normalizeDisplayPath(file.path, inputDir);
     return `${index + 1}. ${displayPath} - ${sizeInKB} KB`;
   });
 
