@@ -16,7 +16,7 @@ Create a `docker-compose.yml` file in the project(s) you want to work on.
 ```yaml
 services:
   coco:
-    image: ghcr.io/khromov/coco:latest
+    image: ghcr.io/khromov/coco:main
     ports:
       - '3001:3001'
     volumes:
@@ -142,7 +142,7 @@ In development mode, file operations are sandboxed to the `./mount` directory.
 Build a custom image:
 
 ```dockerfile
-FROM ghcr.io/khromov/coco:latest
+FROM ghcr.io/khromov/coco:main
 # Add customizations
 ```
 
