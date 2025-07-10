@@ -2,11 +2,16 @@
 
 import logger from './logger.js';
 
-// Only streamableHttp transport is supported
+const transportMode = process.env.MCP_TRANSPORT || 
+  (process.argv.includes('--stdio') ? 'stdio' : 'http');
+
 async function run() {
   try {
-    // Import and run the streamable HTTP server
-    await import('./streamableHttp.js');
+    if (transportMode === 'stdio') {
+      await import('./stdio.js');
+    } else {
+      await import('./streamableHttp.js');
+    }
   } catch (error) {
     logger.error('Error running server:', error);
     process.exit(1);

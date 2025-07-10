@@ -1,5 +1,5 @@
 services:
-  coco-mcp:
+  coco:
     # build: .
     image: ghcr.io/khromov/coco:main
     ports:
@@ -9,3 +9,5 @@ services:
     working_dir: /app
     environment:
       - NODE_ENV=production
+      - MCP_TRANSPORT=http
+    restart: unless-stopped
