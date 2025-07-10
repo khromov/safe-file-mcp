@@ -6,11 +6,11 @@ echo "🥥 Building Coco Docker images..."
 
 # Build regular version
 echo "\n📦 Building regular Coco image..."
-docker build --target release -t coco:latest -t coco:regular .
+docker build -t coco:latest -t coco:regular .
 
 # Build mini version
 echo "\n📦 Building Coco Mini image..."
-docker build --target release-mini --build-arg BUILD_TYPE=mini -t coco:mini .
+docker build --build-arg BUILD_TYPE=mini -t coco:mini .
 
 echo "\n✅ Build complete!"
 echo "\nAvailable images:"
