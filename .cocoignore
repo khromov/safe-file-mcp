@@ -1,6 +1,5 @@
 .claude
-.github
 .gitignore
 src/__tests__/test-*-temp/
 **/test-*-temp/
-#src/__tests__/*
+src/__tests__/**

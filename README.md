@@ -2,6 +2,11 @@
 
 Coco provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Unlike traditional file-access tools that require reading files one by one, Coco's `get_codebase` command instantly digests and understands your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
 
+## Available Versions
+
+- **Coco (Full)**: Complete file system operations with all tools
+- **Coco Mini**: Lightweight version with only essential codebase analysis tools
+
 ## Installation
 
 Coco supports two transport modes:
@@ -17,6 +22,19 @@ Create a `docker-compose.yml` file in the project(s) you want to work on.
 services:
   coco:
     image: ghcr.io/khromov/coco:main
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./:/app
+    working_dir: /app
+```
+
+For the mini version:
+
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco:mini
     ports:
       - '3001:3001'
     volumes:
@@ -138,6 +156,22 @@ npm run dev
 In development mode, file operations are sandboxed to the `./mount` directory.
 
 ## Docker Build
+
+Build both versions:
+
+```bash
+./build-all.sh
+```
+
+Or build individually:
+
+```bash
+# Full version
+docker build -t coco:latest .
+
+# Mini version
+docker build --target release-mini --build-arg BUILD_TYPE=mini -t coco:mini .
+```
 
 Build a custom image:
 
