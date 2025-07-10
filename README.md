@@ -34,7 +34,7 @@ For the mini version:
 ```yaml
 services:
   coco:
-    image: ghcr.io/khromov/coco:mini
+    image: ghcr.io/khromov/coco:main-mini
     ports:
       - '3001:3001'
     volumes:
