@@ -45,7 +45,7 @@ Add this to your Claude Desktop configuration file:
 
 ### Method 2: Docker Compose with HTTP Mode
 
-Create a `docker-compose.yml` file:
+Create a `docker-compose.yml` file in the project(s) you want to work on.
 
 ```yaml
 services:
@@ -76,25 +76,7 @@ Then add to Claude Desktop config:
 }
 ```
 
-## Transport Modes
-
-### stdio Mode (Recommended)
-
-- ✅ Better stability and reliability
-- ✅ Lower latency
-- ✅ Simpler configuration
-- ✅ Direct process control by MCP client
-- ❌ Single client only
-
-### HTTP Mode
-
-- ✅ Supports multiple concurrent clients
-- ✅ Easier debugging with HTTP tools
-- ✅ Can be accessed remotely
-- ⚠️ Requires port management
-- ⚠️ May have stability issues with long-running connections
-
-See [DOCKER_STDIO_MODE.md](./DOCKER_STDIO_MODE.md) for detailed stdio mode documentation.
+Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
 
 ## Configuration
 
