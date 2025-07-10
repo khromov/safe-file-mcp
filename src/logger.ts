@@ -17,11 +17,16 @@ const logFormat = winston.format.combine(
   })
 );
 
-// Create Winston logger instance that outputs to console.log() only
+// Create Winston logger instance that outputs to stderr ONLY
+// This is critical for stdio mode - stdout must be reserved for MCP protocol
 const logger = winston.createLogger({
   level: 'debug', // Set to debug to capture all levels
   format: logFormat,
-  transports: [new winston.transports.Console()],
+  transports: [
+    new winston.transports.Console({
+      stderrLevels: ['error', 'warn', 'info', 'debug'], // All levels go to stderr
+    }),
+  ],
 });
 
 export default logger;
