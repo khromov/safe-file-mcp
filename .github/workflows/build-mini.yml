@@ -29,7 +29,6 @@ jobs:
           tags: |
             type=ref,event=branch,suffix=-mini
             type=ref,event=pr,suffix=-mini
-            type=sha,suffix=-mini
             type=raw,value=mini,enable={{is_default_branch}}
 
       - name: Login to GHCR
