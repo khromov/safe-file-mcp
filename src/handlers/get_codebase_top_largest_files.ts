@@ -44,7 +44,7 @@ export async function handleGetCodebaseTopLargestFiles(
     // Sort files by size (largest first) - they should already be sorted by ai-digest
     const sortedFiles = stats.files || [];
 
-    let output = `## Top ${parsed.data.count} Largest Files\n\n`;
+    let output = `## Top Largest Files\n\n`;
 
     const filesCount = Math.min(parsed.data.count, sortedFiles.length);
 
