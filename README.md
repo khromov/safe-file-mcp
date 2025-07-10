@@ -6,8 +6,8 @@ Coco provides AI models with full-context awareness of entire codebases through 
 
 Coco supports two transport modes:
 
-- **HTTP mode** (default): For remote connections and multiple clients
-- **stdio mode** (recommended): For better stability with Claude Desktop and other MCP clients
+- **HTTP mode** (recommended as default): For remote connections and multiple clients
+- **stdio mode** (less convenient): For better stability with Claude Desktop
 
 ### Method 1: Docker with stdio Mode (Recommended for Claude Desktop)
 
@@ -15,6 +15,8 @@ Add this to your Claude Desktop configuration file:
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path every time you want to switch projects.**
 
 ```json
 {
@@ -26,7 +28,7 @@ Add this to your Claude Desktop configuration file:
         "--rm",
         "-i",
         "-v",
-        "/path/to/your/project:/app",
+        "/Users/YOUR_USERNAME/GitHub/YOUR_REPO:/app",
         "-w",
         "/app",
         "-e",
@@ -40,8 +42,6 @@ Add this to your Claude Desktop configuration file:
   }
 }
 ```
-
-Replace `/path/to/your/project` with the actual path to your project directory.
 
 ### Method 2: Docker Compose with HTTP Mode
 
