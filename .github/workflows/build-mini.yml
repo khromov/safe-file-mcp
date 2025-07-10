@@ -1,4 +1,4 @@
-name: build + publish
+name: build + publish mini
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  build-mini:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +26,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,suffix=-mini
+            type=ref,event=pr,suffix=-mini
+            type=sha,suffix=-mini
+            type=raw,value=mini,enable={{is_default_branch}}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -43,4 +48,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            PUBLIC_HELLO=world
+            BUILD_TYPE=mini
