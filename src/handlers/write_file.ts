@@ -1,6 +1,6 @@
 import { WriteFileArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import { writeFileSecure } from '../file-operations.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -25,8 +25,10 @@ export async function handleWriteFile(
 
   await writeFileSecure(absolutePath, parsed.data.content);
 
+  const displayPath = formatDisplayPath(parsed.data.path);
+
   const result = {
-    content: [{ type: 'text', text: `Successfully wrote to ${parsed.data.path}` }],
+    content: [{ type: 'text', text: `Successfully wrote to ${displayPath}` }],
   };
 
   logger.debug(

@@ -1,7 +1,13 @@
 import { GetCodebaseTopLargestFilesArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
+import {
+  validateRelativePath,
+  resolveRelativePath,
+  getIgnoreFile,
+  normalizeDisplayPath,
+} from './utils.js';
 import aiDigest from 'ai-digest';
+import path from 'path';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseTopLargestFiles(
@@ -38,7 +44,7 @@ export async function handleGetCodebaseTopLargestFiles(
     // Sort files by size (largest first) - they should already be sorted by ai-digest
     const sortedFiles = stats.files || [];
 
-    let output = `## Top ${parsed.data.count} Largest Files\n\n`;
+    let output = `## Top Largest Files\n\n`;
 
     const filesCount = Math.min(parsed.data.count, sortedFiles.length);
 
@@ -50,10 +56,8 @@ export async function handleGetCodebaseTopLargestFiles(
       for (let i = 0; i < filesCount; i++) {
         const file = sortedFiles[i];
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-
-        // Ensure the path does not start with ./
-        const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
-        output += `${i + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
+        const displayPath = normalizeDisplayPath(file.path, absolutePath);
+        output += `${i + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
       }
 
       if (sortedFiles.length > filesCount) {

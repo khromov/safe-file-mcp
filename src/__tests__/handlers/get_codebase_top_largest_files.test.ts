@@ -26,7 +26,7 @@ describe('handleGetCodebaseTopLargestFiles', () => {
     const output = result.content[0].text;
 
     // Should show default 20 files
-    expect(output).toContain('## Top 20 Largest Files');
+    expect(output).toContain('## Top Largest Files');
     expect(output).toContain('Found 25 total files. Showing the top 20 largest:');
 
     // Check that files are listed in order (largest first)
@@ -61,7 +61,7 @@ describe('handleGetCodebaseTopLargestFiles', () => {
     const output = result.content[0].text;
 
     // Should show only 5 files
-    expect(output).toContain('## Top 5 Largest Files');
+    expect(output).toContain('## Top Largest Files');
     expect(output).toContain('Found 10 total files. Showing the top 5 largest:');
 
     // Count the number of file entries
@@ -89,7 +89,7 @@ describe('handleGetCodebaseTopLargestFiles', () => {
     const output = result.content[0].text;
 
     // Should show all 3 files even though we requested 10
-    expect(output).toContain('## Top 10 Largest Files');
+    expect(output).toContain('## Top Largest Files');
     expect(output).toContain('Found 3 total files. Showing the top 3 largest:');
 
     // Should not show "more files" message
@@ -107,7 +107,7 @@ describe('handleGetCodebaseTopLargestFiles', () => {
 
     const output = result.content[0].text;
 
-    expect(output).toContain('## Top 20 Largest Files');
+    expect(output).toContain('## Top Largest Files');
     expect(output).toContain('No files found in the specified directory.');
     expect(output).toContain('**Total files**: 0');
   });
@@ -147,7 +147,7 @@ describe('handleGetCodebaseTopLargestFiles', () => {
 
     const output = result.content[0].text;
 
-    expect(output).toContain('## Top 30 Largest Files');
+    expect(output).toContain('## Top Largest Files');
     expect(output).toContain('Found 50 total files. Showing the top 30 largest:');
 
     // Count file entries

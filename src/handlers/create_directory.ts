@@ -1,6 +1,6 @@
 import { CreateDirectoryArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
 import logger from '../logger.js';
 
@@ -18,8 +18,10 @@ export async function handleCreateDirectory(
   const absolutePath = resolveRelativePath(parsed.data.path, context.absoluteRootDir);
   await fs.mkdir(absolutePath, { recursive: true });
 
+  const displayPath = formatDisplayPath(parsed.data.path);
+
   const result = {
-    content: [{ type: 'text', text: `Successfully created directory ${parsed.data.path}` }],
+    content: [{ type: 'text', text: `Successfully created directory ${displayPath}` }],
   };
 
   logger.debug(`⏱️ create_directory handler finished for path: ${parsed.data.path}`);

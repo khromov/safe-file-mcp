@@ -1,6 +1,6 @@
 import { MoveFileArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath } from './utils.js';
+import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
 import path from 'path';
 import logger from '../logger.js';
@@ -23,11 +23,14 @@ export async function handleMoveFile(args: any, context: HandlerContext): Promis
 
   await fs.rename(absoluteSource, absoluteDest);
 
+  const displaySource = formatDisplayPath(parsed.data.source);
+  const displayDest = formatDisplayPath(parsed.data.destination);
+
   const result = {
     content: [
       {
         type: 'text',
-        text: `Successfully moved ${parsed.data.source} to ${parsed.data.destination}`,
+        text: `Successfully moved ${displaySource} to ${displayDest}`,
       },
     ],
   };

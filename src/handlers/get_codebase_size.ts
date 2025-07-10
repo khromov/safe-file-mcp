@@ -1,7 +1,13 @@
 import { GetCodebaseSizeArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
-import { validateRelativePath, resolveRelativePath, getIgnoreFile } from './utils.js';
+import {
+  validateRelativePath,
+  resolveRelativePath,
+  getIgnoreFile,
+  normalizeDisplayPath,
+} from './utils.js';
 import aiDigest from 'ai-digest';
+import path from 'path';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseSize(
@@ -61,10 +67,8 @@ export async function handleGetCodebaseSize(
       const top25Files = sortedFiles.slice(0, 25);
       top25Files.forEach((file, index) => {
         const sizeInKB = (file.sizeInBytes / 1024).toFixed(2);
-
-        // Ensure the path does not start with a ./
-        const formattedPath = file.path.startsWith('./') ? file.path.slice(2) : file.path;
-        output += `${index + 1}. \`${formattedPath}\` - ${sizeInKB} KB\n`;
+        const displayPath = normalizeDisplayPath(file.path, absolutePath);
+        output += `${index + 1}. \`${displayPath}\` - ${sizeInKB} KB\n`;
       });
 
       if (sortedFiles.length > 25) {

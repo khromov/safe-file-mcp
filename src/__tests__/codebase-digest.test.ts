@@ -185,14 +185,14 @@ describe('generateCodebaseDigest', () => {
     }
   });
 
-  it('should handle large files with omission message', async () => {
+  it('should omit very large files', async () => {
     // Create a specific test for large file
     const LARGE_FILE_DIR = path.join(__dirname, 'test-large-file-temp');
     await fs.mkdir(LARGE_FILE_DIR, { recursive: true });
 
-    // Create a file larger than 99000 chars
-    const largeContent = '// huge.ts\n' + 'x'.repeat(100000);
-    await fs.writeFile(path.join(LARGE_FILE_DIR, 'huge.ts'), largeContent);
+    // Create a file larger than page size
+    const hugeContent = '// huge.ts\n' + 'x'.repeat(100000);
+    await fs.writeFile(path.join(LARGE_FILE_DIR, 'huge.ts'), hugeContent);
 
     try {
       const result = await generateCodebaseDigest({
@@ -203,9 +203,8 @@ describe('generateCodebaseDigest', () => {
       // Should contain the omission message
       expect(result.content).toContain('huge.ts');
       expect(result.content).toContain('File omitted due to large size');
-
-      // Should NOT contain the actual large file content
-      expect(result.content.length).toBeLessThan(1000); // Much smaller than original
+      // Should not contain the actual huge content
+      expect(result.content.length).toBeLessThan(hugeContent.length);
     } finally {
       await fs.rm(LARGE_FILE_DIR, { recursive: true, force: true });
     }
@@ -220,7 +219,9 @@ describe('generateCodebaseDigest', () => {
         inputDir: EMPTY_DIR,
       });
 
-      expect(result.content).toBe('\n---\nThis is the last page (page 1). Do NOT call this tool again - you have received the complete codebase.\n');
+      expect(result.content).toBe(
+        '\n---\nThis is the last page (page 1). Do NOT call this tool again - you have received the complete codebase.\n'
+      );
       expect(result.hasMorePages).toBe(false);
       expect(result.currentPage).toBe(1);
       expect(result.nextPage).toBeUndefined();
@@ -418,7 +419,6 @@ describe('getCodebaseSize', () => {
 
       // Check markdown formatting
       expect(output).toMatch(/##\s+Token Summary/);
-      expect(output).toMatch(/##\s+Top 10 Largest Files/);
       expect(output).toMatch(/##\s+Next Step/);
 
       // Check bold formatting

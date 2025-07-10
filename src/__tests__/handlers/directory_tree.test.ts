@@ -53,4 +53,15 @@ describe('handleDirectoryTree', () => {
     const tree = JSON.parse(result.content[0].text);
     expect(tree).toEqual([]);
   });
+
+  it('should handle empty path as root', async () => {
+    await createTestFile(testDir, 'test.js', 'content');
+
+    const context = createTestContext(testDir);
+    const result = await handleDirectoryTree({ path: '' }, context);
+
+    const tree = JSON.parse(result.content[0].text);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].name).toBe('test.js');
+  });
 });
