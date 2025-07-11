@@ -33,7 +33,8 @@ export interface ToolWithHandler extends Tool {
   handler: ToolHandler;
 }
 
-export const tools: ToolWithHandler[] = [
+// Define the core mini tools that are always included
+const miniTools: ToolWithHandler[] = [
   {
     name: 'get_codebase_size',
     description:
@@ -63,6 +64,10 @@ export const tools: ToolWithHandler[] = [
     inputSchema: zodToJsonSchema(GetCodebaseTopLargestFilesArgsSchema) as ToolInput,
     handler: handleGetCodebaseTopLargestFiles,
   },
+];
+
+// Define additional tools for the full version
+const additionalTools: ToolWithHandler[] = [
   {
     name: 'read_file',
     description:
@@ -141,3 +146,10 @@ export const tools: ToolWithHandler[] = [
     handler: handleExecuteCommand,
   },
 ];
+
+// Check BUILD_TYPE environment variable at build time
+// This will be evaluated during the TypeScript compilation
+const isMini = process.env.BUILD_TYPE === 'mini';
+
+// Export the appropriate set of tools based on BUILD_TYPE
+export const tools: ToolWithHandler[] = isMini ? miniTools : [...miniTools, ...additionalTools];

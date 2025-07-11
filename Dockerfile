@@ -11,10 +11,8 @@ RUN npm ci
 COPY src/ ./src/
 COPY instructions.md ./
 
-# Replace tools.ts with tools.mini.ts for mini build
-RUN if [ "$BUILD_TYPE" = "mini" ]; then \
-    mv ./src/tools.mini.ts ./src/tools.ts; \
-  fi
+# Set BUILD_TYPE as environment variable for the build process
+ENV BUILD_TYPE=$BUILD_TYPE
 
 RUN npm run build
 
