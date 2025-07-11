@@ -54,7 +54,8 @@ Then add to Claude Desktop config:
 {
   "mcpServers": {
     "coco": {
-      "url": "http://localhost:3001/mcp"
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:3001/mcp"]
     }
   }
 }
