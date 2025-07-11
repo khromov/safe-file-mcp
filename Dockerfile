@@ -60,8 +60,6 @@ COPY --from=prod-deps /deps/node_modules ./node_modules
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENV NODE_ENV=production
-
 WORKDIR /app
 
 # Use exec form to ensure signals are properly handled

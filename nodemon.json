@@ -4,7 +4,7 @@
   "ignore": ["dist/**", "node_modules/**", "*.test.ts", "mount/**"],
   "exec": "npm run build && node dist/index.js",
   "env": {
-    "NODE_ENV": "development"
+    "COCO_DEV": "true"
   },
   "signal": "SIGTERM",
   "delay": 500

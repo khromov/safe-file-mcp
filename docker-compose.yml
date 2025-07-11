@@ -8,6 +8,5 @@ services:
       - ./:/app
     working_dir: /app
     environment:
-      - NODE_ENV=production
       - MCP_TRANSPORT=http
     restart: unless-stopped

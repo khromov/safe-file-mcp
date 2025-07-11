@@ -25,7 +25,7 @@ try {
 
 export const createServer = async () => {
   // Determine the root directory based on environment
-  const ROOT_DIR = process.env.NODE_ENV === 'development' ? './mount' : './';
+  const ROOT_DIR = process.env.COCO_DEV === 'true' ? './mount' : './';
 
   // Resolve to absolute path for internal use only
   const absoluteRootDir = path.resolve(ROOT_DIR);

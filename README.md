@@ -109,7 +109,7 @@ volumes:
 
 ### Environment Variables
 
-- `NODE_ENV`: Set to `production` (default) or `development`
+- `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
 - `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
 - `PORT`: Override default port 3001 (HTTP mode only)
 
