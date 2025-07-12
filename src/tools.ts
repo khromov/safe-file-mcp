@@ -51,7 +51,7 @@ const miniTools: ToolWithHandler[] = [
     description:
       'Generate a a merged markdown file of the entire codebase.' +
       'Results are paginated.' +
-      'If more content exists, a message will prompt to call again with the next page number.',
+      'If more content exists, a message will prompt to call again with the next page number. Leave the _pageSize variable empty UNLESS you are running under Claude Code, in that case set it to 30000 to work around the Claude Code limits.',
     inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
     handler: handleGetCodebase,
   },
