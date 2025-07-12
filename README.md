@@ -63,7 +63,43 @@ Then add to Claude Desktop config:
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
 
-### Method 2: Docker with stdio Mode (Recommended for Claude Desktop)
+### Method 2: Claude Code Configuration
+
+For [Claude Code](https://claude.ai/code), use the `:mini` version and create a `.mcp.json` file in your project root. The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in
+
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco:mini
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - MCP_TRANSPORT=http
+    restart: unless-stopped
+```
+
+```json
+{
+  "mcpServers": {
+    "coco": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:3001/mcp"
+      ],
+      "env": {}
+    }
+  }
+}
+```
+
+Start Coco with `docker-compose up` and Claude Code will automatically connect.
+
+### Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
 
 Add this to your Claude Desktop configuration file:
 
