@@ -101,7 +101,7 @@ You have access to both Claude Code's built-in file tools and the Coco MCP for e
 3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 ```
 
-### Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
+### TODO REWORK Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
 
 Add this to your Claude Desktop configuration file:
 
@@ -120,15 +120,12 @@ Add this to your Claude Desktop configuration file:
         "--rm",
         "-i",
         "-v",
-        "/Users/YOUR_USERNAME/GitHub/YOUR_REPO:/app",
+        "./:/app",
         "-w",
         "/app",
         "-e",
         "MCP_TRANSPORT=stdio",
-        "ghcr.io/khromov/coco:full",
-        "node",
-        "/opt/mcp-server/dist/index.js",
-        "--stdio"
+        "ghcr.io/khromov/coco:mini"
       ]
     }
   }

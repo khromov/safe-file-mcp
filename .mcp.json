@@ -1,13 +1,19 @@
 {
   "mcpServers": {
     "coco": {
-      "type": "stdio",
-      "command": "npx",
+      "command": "docker",
       "args": [
-        "mcp-remote",
-        "http://localhost:3001/mcp"
-      ],
-      "env": {}
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        "./:/app",
+        "-w",
+        "/app",
+        "-e",
+        "MCP_TRANSPORT=stdio",
+        "ghcr.io/khromov/coco:mini"
+      ]
     }
   }
 }
