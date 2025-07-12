@@ -7,14 +7,9 @@ Coco provides AI models with full-context awareness of entire codebases through 
 - **Coco (Full)**: Complete file system operations with all tools
 - **Coco Mini**: Lightweight version with only essential codebase analysis tools (Note: You need to have existing tools to edit files!)
 
-## Installation
+## Getting started
 
-Coco supports two transport modes:
-
-- **HTTP mode** (recommended as default)
-- **stdio mode** (less convenient): For (potentially) better stability with Claude Desktop
-
-### Method 1: Docker Compose with HTTP Mode
+### Method 1: Claude Desktop + Docker
 
 Create a `docker-compose.yml` file in the project(s) you want to work on.
 
@@ -29,26 +24,13 @@ services:
     working_dir: /app
 ```
 
-For the mini version:
-
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco:mini
-    ports:
-      - '3001:3001'
-    volumes:
-      - ./:/app
-    working_dir: /app
-```
-
 Start the service:
 
 ```bash
 docker-compose up
 ```
 
-Then add to Claude Desktop config:
+Then add to Claude Desktop config and restart Claude Desktop afterwards:
 
 ```json
 {
@@ -69,23 +51,9 @@ Use the Coco MCP to edit files. Remember that partial edits are not allowed, alw
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
 
-### Method 2: Claude Code Configuration
+### Method 2: Claude Code + Docker
 
-For [Claude Code](https://claude.ai/code), use the `:mini` version and create a `.mcp.json` file in your project root. The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in
-
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco:mini
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./:/app
-    working_dir: /app
-    environment:
-      - MCP_TRANSPORT=http
-    restart: unless-stopped
-```
+For [Claude Code](https://claude.ai/code), use the `:mini` version and create the following `.mcp.json` file in your project root:
 
 ```json
 {
@@ -102,6 +70,24 @@ services:
   }
 }
 ```
+
+*The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in.*
+
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco:mini
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - MCP_TRANSPORT=http
+    restart: unless-stopped
+```
+
+
 
 Start Coco with `docker-compose up` and Claude Code will automatically connect.
 
