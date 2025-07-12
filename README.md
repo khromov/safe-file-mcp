@@ -61,6 +61,12 @@ Then add to Claude Desktop config:
 }
 ```
 
+**Recommended Setup**: Create a Claude Project and add this to your project instructions:
+
+```
+Use the Coco MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
+```
+
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
 
 ### Method 2: Claude Code Configuration
