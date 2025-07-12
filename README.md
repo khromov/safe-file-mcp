@@ -61,7 +61,7 @@ Then add to Claude Desktop config:
 }
 ```
 
-**Recommended Setup**: Create a Claude Project and add this to your project instructions:
+**Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
 
 ```
 Use the Coco MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
@@ -104,6 +104,16 @@ services:
 ```
 
 Start Coco with `docker-compose up` and Claude Code will automatically connect.
+
+**Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
+
+```
+You have access to both Claude Code's built-in file tools and the Coco MCP for enhanced codebase analysis. Follow this workflow:
+
+1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
+2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
+```
 
 ### Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
 
