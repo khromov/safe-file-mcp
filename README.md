@@ -4,13 +4,30 @@ Context Coder provides AI models with full-context awareness of entire codebases
 
 ## Quick Start
 
-For the simplest setup, you can run Context Coder directly with npx:
+Context Coder comes in two modes:
+
+- **Mini Mode (default)**: Provides codebase analysis tools only (`get_codebase`, `get_codebase_size`, etc.)
+- **Full Mode**: Includes all file operation tools (`read_file`, `write_file`, `create_directory`, etc.)
+
+### Mini Mode (Recommended)
+
+For codebase analysis only:
 
 ```bash
 npx context-coder
 ```
 
-This starts the MCP server in stdio mode, which can be connected to any MCP-compatible client. Add this to your MCP client configuration:
+### Full Mode
+
+For complete file system operations:
+
+```bash
+npx context-coder --full
+```
+
+### MCP Client Configuration
+
+Add this to your MCP client configuration:
 
 ```json
 {
@@ -23,9 +40,24 @@ This starts the MCP server in stdio mode, which can be connected to any MCP-comp
 }
 ```
 
+For full mode:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder", "--full"]
+    }
+  }
+}
+```
+
 ## Available Versions
 
-- **Context Coder (npm package)**: Full version available via `npx context-coder` with complete file system operations
+- **Context Coder (npm package)**: Available via `npx context-coder` 
+  - Mini mode (default): Codebase analysis tools only
+  - Full mode (`--full` flag): Complete file system operations
 - **Coco Docker Images**: Docker-based versions for containerized deployment
   - **Coco (Full)**: Complete file system operations with all tools
   - **Coco Mini**: Lightweight version with only essential codebase analysis tools
