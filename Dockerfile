@@ -26,6 +26,8 @@ RUN npm ci --production --ignore-scripts
 # Release stage - same for both regular and mini
 FROM node:22-alpine AS release
 
+# Re-declare ARG in this stage so it can be used
+ARG BUILD_TYPE=regular
 ENV BUILD_TYPE=$BUILD_TYPE
 
 LABEL org.opencontainers.image.title="🥥 Coco - Context Coder"

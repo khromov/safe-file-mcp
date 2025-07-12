@@ -5,7 +5,8 @@ import { createServer } from './mcp.js';
 import { randomUUID } from 'node:crypto';
 import logger from './logger.js';
 
-logger.info('Starting 🥥 Coco MCP Server (Streamable HTTP)...');
+const buildType = process.env.BUILD_TYPE || 'NOT_SET';
+logger.info(`Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType}`);
 
 const app = express();
 
