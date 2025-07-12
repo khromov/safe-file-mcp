@@ -11,6 +11,9 @@ Coco provides AI models with full-context awareness of entire codebases through 
 
 ### Method 1: Claude Desktop + Docker
 
+<details>
+<summary>Setup instructions</summary>
+
 Create a `docker-compose.yml` file in the project(s) you want to work on.
 
 ```yaml
@@ -51,7 +54,12 @@ Use the Coco MCP to edit files. Remember that partial edits are not allowed, alw
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
 
+</details>
+
 ### Method 2: Claude Code + Docker
+
+<details>
+<summary>Setup instructions</summary>
 
 For [Claude Code](https://claude.ai/code), use the `:mini` version and create the following `.mcp.json` file in your project root:
 
@@ -87,8 +95,6 @@ services:
     restart: unless-stopped
 ```
 
-
-
 Start Coco with `docker-compose up` and Claude Code will automatically connect.
 
 **Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
@@ -101,7 +107,12 @@ You have access to both Claude Code's built-in file tools and the Coco MCP for e
 3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 ```
 
+</details>
+
 ### TODO REWORK Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
+
+<details>
+<summary>Setup instructions</summary>
 
 Add this to your Claude Desktop configuration file:
 
@@ -132,7 +143,12 @@ Add this to your Claude Desktop configuration file:
 }
 ```
 
+</details>
+
 ## Configuration
+
+<details>
+<summary>Volume Mounts and Environment Variables</summary>
 
 ### Volume Mounts
 
@@ -148,6 +164,8 @@ volumes:
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
 - `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
 - `PORT`: Override default port 3001 (HTTP mode only)
+
+</details>
 
 ## Available Tools
 
@@ -168,6 +186,9 @@ volumes:
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
 ## Development
+
+<details>
+<summary>Development setup and commands</summary>
 
 Clone and install dependencies:
 
@@ -191,7 +212,12 @@ npm run dev
 
 In development mode, file operations are sandboxed to the `./mount` directory.
 
+</details>
+
 ## Docker Build
+
+<details>
+<summary>Docker build instructions</summary>
 
 Build both versions:
 
@@ -222,6 +248,8 @@ Or build from source:
 docker build -t my-coco .
 ```
 
+</details>
+
 ## Protocol
 
 Coco implements the MCP specification with support for both transport modes:
@@ -235,6 +263,9 @@ File system access is restricted to the mounted directory. Operations that would
 
 ## Troubleshooting
 
+<details>
+<summary>Common issues and solutions</summary>
+
 ### stdio Mode Issues
 
 - Ensure Docker is running with `-i` flag (interactive)
@@ -246,6 +277,8 @@ File system access is restricted to the mounted directory. Operations that would
 - Verify port 3001 is not in use
 - Check Docker logs: `docker-compose logs`
 - Ensure `mcp-session-id` header is preserved by any proxies
+
+</details>
 
 ## License
 
