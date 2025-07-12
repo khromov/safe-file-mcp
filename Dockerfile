@@ -11,7 +11,6 @@ RUN npm ci
 COPY src/ ./src/
 COPY instructions.md ./
 
-# Set BUILD_TYPE as environment variable for the build process
 ENV BUILD_TYPE=$BUILD_TYPE
 
 RUN npm run build
@@ -26,6 +25,8 @@ RUN npm ci --production --ignore-scripts
 
 # Release stage - same for both regular and mini
 FROM node:22-alpine AS release
+
+ENV BUILD_TYPE=$BUILD_TYPE
 
 LABEL org.opencontainers.image.title="🥥 Coco - Context Coder"
 LABEL org.opencontainers.image.description="MCP server providing secure file system operations with relative path handling for AI context management"

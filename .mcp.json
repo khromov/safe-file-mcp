@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "coco": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:3001/mcp"
+      ],
+      "env": {}
+    }
+  }
+}
