@@ -3,7 +3,7 @@
 import logger from './logger.js';
 
 const transportMode = process.env.MCP_TRANSPORT || 
-  (process.argv.includes('--stdio') ? 'stdio' : 'http');
+  (process.argv.includes('--http') ? 'http' : 'stdio');
 
 async function run() {
   try {

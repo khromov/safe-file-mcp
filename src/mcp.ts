@@ -32,7 +32,7 @@ export const createServer = async () => {
 
   const server = new Server(
     {
-      name: 'coco-mcp',
+      name: 'context-coder',
       version: '1.0.0',
     },
     {

@@ -1,15 +1,55 @@
-# 🥥 Coco - Context Coder MCP
+# 🥥 Context Coder MCP (aka. Coco)
 
-Coco provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Unlike traditional file-access tools that require reading files one by one, Coco's `get_codebase` command instantly digests and understands your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
+Context Coder provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
+
+## Quick Start
+
+For the simplest setup, you can run Context Coder directly with npx:
+
+```bash
+npx context-coder
+```
+
+This starts the MCP server in stdio mode, which can be connected to any MCP-compatible client. Add this to your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder"]
+    }
+  }
+}
+```
 
 ## Available Versions
 
-- **Coco (Full)**: Complete file system operations with all tools
-- **Coco Mini**: Lightweight version with only essential codebase analysis tools (Note: You need to have existing tools to edit files!)
+- **Context Coder (npm package)**: Full version available via `npx context-coder` with complete file system operations
+- **Coco Docker Images**: Docker-based versions for containerized deployment
+  - **Coco (Full)**: Complete file system operations with all tools
+  - **Coco Mini**: Lightweight version with only essential codebase analysis tools
 
 ## Getting started
 
-### Method 1: Claude Desktop + Docker
+### Method 1: NPX (Recommended)
+
+Use the npm package directly with npx:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder"]
+    }
+  }
+}
+```
+
+Add this to your Claude Desktop configuration, then restart Claude Desktop. Context Coder will run in stdio mode automatically.
+
+### Method 2: Claude Desktop + Docker
 
 <details>
 <summary>Setup instructions</summary>
@@ -56,12 +96,27 @@ Since `docker-compose up` already knows which folder it's running in, we can eas
 
 </details>
 
-### Method 2: Claude Code + Docker
+### Method 3: Claude Code
 
 <details>
 <summary>Setup instructions</summary>
 
-**Option A: Direct Docker (Recommended)**
+**Option A: NPX (Recommended)**
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder"]
+    }
+  }
+}
+```
+
+**Option B: Direct Docker**
 
 Create `.mcp.json` in your project root:
 
@@ -87,7 +142,7 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-**Option B: Via HTTP + mcp-remote**
+**Option C: Via HTTP + mcp-remote**
 
 For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project root:
 
