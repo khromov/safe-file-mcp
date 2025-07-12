@@ -61,65 +61,9 @@ Since `docker-compose up` already knows which folder it's running in, we can eas
 <details>
 <summary>Setup instructions</summary>
 
-For [Claude Code](https://claude.ai/code), use the `:mini` version and create the following `.mcp.json` file in your project root:
+**Option A: Direct Docker (Recommended)**
 
-```json
-{
-  "mcpServers": {
-    "coco": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:3001/mcp"
-      ],
-      "env": {}
-    }
-  }
-}
-```
-
-*The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in.*
-
-```yaml
-services:
-  coco:
-    image: ghcr.io/khromov/coco:mini
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./:/app
-    working_dir: /app
-    environment:
-      - MCP_TRANSPORT=http
-    restart: unless-stopped
-```
-
-Start Coco with `docker-compose up` and Claude Code will automatically connect.
-
-**Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
-
-```
-You have access to both Claude Code's built-in file tools and the Coco MCP for enhanced codebase analysis. Follow this workflow:
-
-1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
-2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
-3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
-```
-
-</details>
-
-### TODO REWORK Method 3: Docker with stdio Mode (Recommended for Claude Desktop)
-
-<details>
-<summary>Setup instructions</summary>
-
-Add this to your Claude Desktop configuration file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-**Important note: You need to manually replace `/Users/YOUR_USERNAME/GitHub/YOUR_REPO` with your project path _every_ time you want to switch projects.**
+Create `.mcp.json` in your project root:
 
 ```json
 {
@@ -141,6 +85,56 @@ Add this to your Claude Desktop configuration file:
     }
   }
 }
+```
+
+**Option B: Via HTTP + mcp-remote**
+
+For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "coco": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:3001/mcp"
+      ],
+      "env": {}
+    }
+  }
+}
+```
+
+And create `docker-compose.yml`:
+
+```yaml
+services:
+  coco:
+    image: ghcr.io/khromov/coco:mini
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - MCP_TRANSPORT=http
+    restart: unless-stopped
+```
+
+Start Coco with `docker-compose up` and Claude Code will automatically connect.
+
+*The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in.*
+
+**Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
+
+```
+You have access to both Claude Code's built-in file tools and the Coco MCP for enhanced codebase analysis. Follow this workflow:
+
+1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
+2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 ```
 
 </details>
