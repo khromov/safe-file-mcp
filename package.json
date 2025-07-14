@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
+    "build": "shx rm -rf dist && tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
     "start:stdio": "MCP_TRANSPORT=stdio node dist/index.js --stdio",

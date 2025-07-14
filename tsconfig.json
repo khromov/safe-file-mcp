@@ -13,5 +13,17 @@
     "rootDir": "src"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/__tests__/**", "src/**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/__tests__/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.test.js",
+    "src/jest.teardown.js",
+    "src/lib/**/*",
+    "**/*.test.*",
+    "**/__tests__/**/*",
+    "coverage",
+    "mount"
+  ]
 }
