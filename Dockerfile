@@ -30,8 +30,8 @@ FROM node:22-alpine AS release
 ARG BUILD_TYPE=regular
 ENV BUILD_TYPE=$BUILD_TYPE
 
-LABEL org.opencontainers.image.title="🥥 Coco - Context Coder"
-LABEL org.opencontainers.image.description="MCP server providing secure file system operations with relative path handling for AI context management"
+LABEL org.opencontainers.image.title="Context Coder"
+LABEL org.opencontainers.image.description="Context Coder: MCP server for full-context coding"
 LABEL org.opencontainers.image.vendor="Model Context Protocol"
 
 RUN apk add --no-cache \
