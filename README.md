@@ -4,84 +4,13 @@ Context Coder provides AI models with full-context awareness of entire codebases
 
 ## Quick Start
 
-Context Coder comes in two modes:
+Context Coder supports three main ways of running it:
 
-- **Mini Mode (default)**: Provides codebase analysis tools only (`get_codebase`, `get_codebase_size`, etc.)
-- **Full Mode**: Includes all file operation tools (`read_file`, `write_file`, `create_directory`, etc.)
+1. Via Claude Desktop
+2. Via Claude Code
+3. Via other clients
 
-### Mini Mode (Recommended)
-
-For codebase analysis only:
-
-```bash
-npx context-coder
-```
-
-### Full Mode
-
-For complete file system operations:
-
-```bash
-npx context-coder --full
-```
-
-### MCP Client Configuration
-
-Add this to your MCP client configuration:
-
-```json
-{
-  "mcpServers": {
-    "context-coder": {
-      "command": "npx",
-      "args": ["context-coder"]
-    }
-  }
-}
-```
-
-For full mode:
-
-```json
-{
-  "mcpServers": {
-    "context-coder": {
-      "command": "npx",
-      "args": ["context-coder", "--full"]
-    }
-  }
-}
-```
-
-## Available Versions
-
-- **Context Coder (npm package)**: Available via `npx context-coder` 
-  - Mini mode (default): Codebase analysis tools only
-  - Full mode (`--full` flag): Complete file system operations
-- **Coco Docker Images**: Docker-based versions for containerized deployment
-  - **Coco (Full)**: Complete file system operations with all tools
-  - **Coco Mini**: Lightweight version with only essential codebase analysis tools
-
-## Getting started
-
-### Method 1: NPX (Recommended)
-
-Use the npm package directly with npx:
-
-```json
-{
-  "mcpServers": {
-    "context-coder": {
-      "command": "npx",
-      "args": ["context-coder"]
-    }
-  }
-}
-```
-
-Add this to your Claude Desktop configuration, then restart Claude Desktop. Context Coder will run in stdio mode automatically.
-
-### Method 2: Claude Desktop + Docker
+### Claude Desktop + Docker
 
 <details>
 <summary>Setup instructions</summary>
@@ -124,16 +53,16 @@ Then add to Claude Desktop config and restart Claude Desktop afterwards:
 Use the Coco MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
 ```
 
-Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
+Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
 
 </details>
 
-### Method 3: Claude Code
+### Claude Code
 
 <details>
 <summary>Setup instructions</summary>
 
-**Option A: NPX (Recommended)**
+**Option 1: npx (Recommended)**
 
 Create `.mcp.json` in your project root:
 
@@ -148,7 +77,9 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-**Option B: Direct Docker**
+You're done!
+
+**Option 2: Docker**
 
 Create `.mcp.json` in your project root:
 
@@ -174,7 +105,7 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-**Option C: Via HTTP + mcp-remote**
+**Option 3: Via HTTP + mcp-remote**
 
 For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project root:
 
@@ -194,7 +125,7 @@ For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project ro
 }
 ```
 
-And create `docker-compose.yml`:
+And create `docker-compose.yml` in your project:
 
 ```yaml
 services:
