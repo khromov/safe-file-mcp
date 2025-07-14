@@ -8,7 +8,6 @@ You have access to both Claude Code's built-in file tools and the Coco MCP for e
 2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
 3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 
-
 ## Project Overview
 
 Coco MCP (Context Coder) is a secure file system access server implementing the Model Context Protocol. It provides AI models with controlled file operations within designated directories.

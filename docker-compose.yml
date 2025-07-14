@@ -1,7 +1,7 @@
 services:
-  coco:
+  context-coder:
     # build: .
-    image: ghcr.io/khromov/coco:full
+    image: ghcr.io/khromov/context-coder:full
     ports:
       - "3001:3001"
     volumes:

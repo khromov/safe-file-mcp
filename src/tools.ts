@@ -154,10 +154,14 @@ export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
   // 2. Runtime environment variable set by index.ts
   // 3. BUILD_TYPE environment variable (for Docker builds)
   // 4. Default to mini
-  const resolvedMode = mode || 
-    process.env.CONTEXT_CODER_MODE as ('mini' | 'full') ||
-    (process.env.BUILD_TYPE === 'mini' ? 'mini' : 
-     process.env.BUILD_TYPE === 'full' ? 'full' : 'mini');
+  const resolvedMode =
+    mode ||
+    (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') ||
+    (process.env.BUILD_TYPE === 'mini'
+      ? 'mini'
+      : process.env.BUILD_TYPE === 'full'
+        ? 'full'
+        : 'mini');
 
   return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
 }

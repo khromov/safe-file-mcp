@@ -7,7 +7,9 @@ import logger from './logger.js';
 
 const buildType = process.env.BUILD_TYPE || 'NOT_SET';
 const mode = process.env.CONTEXT_CODER_MODE || 'mini';
-logger.info(`Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType} (${mode} mode)`);
+logger.info(
+  `Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType} (${mode} mode)`
+);
 
 const app = express();
 

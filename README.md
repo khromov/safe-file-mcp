@@ -21,8 +21,8 @@ Create a `docker-compose.yml` file in the project(s) you want to work on.
 
 ```yaml
 services:
-  coco:
-    image: ghcr.io/khromov/coco:full
+  context-coder:
+    image: ghcr.io/khromov/context-coder:full
     ports:
       - '3001:3001'
     volumes:
@@ -41,7 +41,7 @@ Then add to Claude Desktop config and restart Claude Desktop afterwards:
 ```json
 {
   "mcpServers": {
-    "coco": {
+    "context-coder": {
       "command": "npx",
       "args": ["mcp-remote", "http://localhost:3001/mcp"]
     }
@@ -90,7 +90,7 @@ Create `.mcp.json` in your project root:
 ```json
 {
   "mcpServers": {
-    "coco": {
+    "context-coder": {
       "command": "docker",
       "args": [
         "run",
@@ -102,7 +102,7 @@ Create `.mcp.json` in your project root:
         "/app",
         "-e",
         "MCP_TRANSPORT=stdio",
-        "ghcr.io/khromov/coco:mini"
+        "ghcr.io/khromov/context-coder:mini"
       ]
     }
   }
@@ -116,13 +116,10 @@ For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project ro
 ```json
 {
   "mcpServers": {
-    "coco": {
+    "context-coder": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:3001/mcp"
-      ],
+      "args": ["mcp-remote", "http://localhost:3001/mcp"],
       "env": {}
     }
   }
@@ -133,10 +130,10 @@ And create `docker-compose.yml` in your project:
 
 ```yaml
 services:
-  coco:
-    image: ghcr.io/khromov/coco:mini
+  context-coder:
+    image: ghcr.io/khromov/context-coder:mini
     ports:
-      - "3001:3001"
+      - '3001:3001'
     volumes:
       - ./:/app
     working_dir: /app
@@ -147,7 +144,7 @@ services:
 
 Start Coco with `docker-compose up` and Claude Code will automatically connect.
 
-*The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in.*
+_The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in._
 
 **Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
 
@@ -185,19 +182,19 @@ volumes:
 
 ## Available Tools
 
-| Tool                                | Purpose                                                                                                   |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **`get_codebase_size`**             | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
-| **`get_codebase`**                  | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**              |
-| `get_codebase_top_largest_files`    | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                |
-| `read_file`                         | Read file contents (only use when specifically asked to re-read or for debugging)                         |
-| `write_file`                        | Create or overwrite files                                                                                 |
-| `create_directory`                  | Create directories                                                                                        |
-| `list_directory`                    | List directory contents (only use when specifically asked or for debugging)                               |
-| `directory_tree`                    | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
-| `move_file`                         | Move or rename files                                                                                      |
-| `search_files`                      | Search by pattern                                                                                         |
-| `execute_command`                   | Run shell commands                                                                                        |
+| Tool                             | Purpose                                                                                                   |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **`get_codebase_size`**          | **Check codebase size and token counts - LLMs should call this first to ensure codebase isn't too large** |
+| **`get_codebase`**               | **Generate AI-digestible summary of entire codebase (paginated) - Call after checking size**              |
+| `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
+| `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
+| `write_file`                     | Create or overwrite files                                                                                 |
+| `create_directory`               | Create directories                                                                                        |
+| `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
+| `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
+| `move_file`                      | Move or rename files                                                                                      |
+| `search_files`                   | Search by pattern                                                                                         |
+| `execute_command`                | Run shell commands                                                                                        |
 
 All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
@@ -245,16 +242,16 @@ Or build individually:
 
 ```bash
 # Full version
-docker build -t coco:latest .
+docker build -t context-coder:latest .
 
 # Mini version
-docker build --target release-mini --build-arg BUILD_TYPE=mini -t coco:mini .
+docker build --target release-mini --build-arg BUILD_TYPE=mini -t context-coder:mini .
 ```
 
 Build a custom image:
 
 ```dockerfile
-FROM ghcr.io/khromov/coco:full
+FROM ghcr.io/khromov/context-coder:full
 # Add customizations
 ```
 

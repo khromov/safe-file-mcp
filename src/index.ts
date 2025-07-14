@@ -4,15 +4,15 @@ import logger from './logger.js';
 
 // Parse command line arguments
 const isFullMode = process.argv.includes('--full');
-const transportMode = process.env.MCP_TRANSPORT || 
-  (process.argv.includes('--http') ? 'http' : 'stdio');
+const transportMode =
+  process.env.MCP_TRANSPORT || (process.argv.includes('--http') ? 'http' : 'stdio');
 
 // Set the mode globally for other modules to access
 const mode = isFullMode ? 'full' : 'mini';
 process.env.CONTEXT_CODER_MODE = mode;
 
 // Log startup information
-logger.info(`Current directory: ${process.cwd()}`)
+logger.info(`Current directory: ${process.cwd()}`);
 
 async function run() {
   try {
