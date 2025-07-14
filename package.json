@@ -3,9 +3,8 @@
   "version": "1.0.2",
   "description": "Context Coder: MCP server providing secure file system operations with relative path handling for AI context management",
   "license": "MIT",
-  "author": "Anthropic, PBC (https://anthropic.com)",
+  "author": "khromov",
   "homepage": "https://github.com/khromov/context-coder",
-  "bugs": "https://github.com/modelcontextprotocol/servers/issues",
   "type": "module",
   "bin": {
     "context-coder": "dist/index.js"
