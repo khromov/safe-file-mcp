@@ -8,7 +8,11 @@ const transportMode = process.env.MCP_TRANSPORT ||
   (process.argv.includes('--http') ? 'http' : 'stdio');
 
 // Set the mode globally for other modules to access
-process.env.CONTEXT_CODER_MODE = isFullMode ? 'full' : 'mini';
+const mode = isFullMode ? 'full' : 'mini';
+process.env.CONTEXT_CODER_MODE = mode;
+
+// Log startup information
+logger.info(`Current directory: ${process.cwd()}`)
 
 async function run() {
   try {

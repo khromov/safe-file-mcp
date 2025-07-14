@@ -6,7 +6,8 @@ import { randomUUID } from 'node:crypto';
 import logger from './logger.js';
 
 const buildType = process.env.BUILD_TYPE || 'NOT_SET';
-logger.info(`Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType}`);
+const mode = process.env.CONTEXT_CODER_MODE || 'mini';
+logger.info(`Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType} (${mode} mode)`);
 
 const app = express();
 
@@ -156,7 +157,7 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  logger.info(`🥥 Coco MCP Server listening on port ${PORT}`);
+  logger.info(`🥥 Coco MCP Server listening on port ${PORT} (${mode} mode)`);
 });
 
 // Handle server shutdown

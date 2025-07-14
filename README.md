@@ -2,6 +2,8 @@
 
 Context Coder provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
 
+📦 **[Available on npm](https://www.npmjs.com/package/context-coder)**
+
 ## Quick Start
 
 Context Coder supports three main ways of running it:
@@ -76,6 +78,8 @@ Create `.mcp.json` in your project root:
   }
 }
 ```
+
+Use `--http` flag to force HTTP mode or `--full` flag to enable all file operation tools instead of mini mode.
 
 You're done!
 
