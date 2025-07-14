@@ -147,9 +147,20 @@ const additionalTools: ToolWithHandler[] = [
   },
 ];
 
-// Check BUILD_TYPE environment variable at build time
-// This will be evaluated during the TypeScript compilation
-const isMini = process.env.BUILD_TYPE === 'mini';
+// Function to get tools based on runtime mode
+export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
+  // Determine mode from various sources (in order of priority):
+  // 1. Explicit mode parameter
+  // 2. Runtime environment variable set by index.ts
+  // 3. BUILD_TYPE environment variable (for Docker builds)
+  // 4. Default to mini
+  const resolvedMode = mode || 
+    process.env.CONTEXT_CODER_MODE as ('mini' | 'full') ||
+    (process.env.BUILD_TYPE === 'mini' ? 'mini' : 
+     process.env.BUILD_TYPE === 'full' ? 'full' : 'mini');
 
-// Export the appropriate set of tools based on BUILD_TYPE
-export const tools: ToolWithHandler[] = isMini ? miniTools : [...miniTools, ...additionalTools];
+  return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
+}
+
+// Export default tools for backward compatibility (defaults to mini)
+export const tools: ToolWithHandler[] = getTools();

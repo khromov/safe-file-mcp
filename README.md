@@ -1,15 +1,16 @@
-# 🥥 Coco - Context Coder MCP
+# 🥥 Context Coder MCP (aka. Coco)
 
-Coco provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Unlike traditional file-access tools that require reading files one by one, Coco's `get_codebase` command instantly digests and understands your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
+Context Coder provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
 
-## Available Versions
+## Quick Start
 
-- **Coco (Full)**: Complete file system operations with all tools
-- **Coco Mini**: Lightweight version with only essential codebase analysis tools (Note: You need to have existing tools to edit files!)
+Context Coder supports three main ways of running it:
 
-## Getting started
+1. Via Claude Desktop
+2. Via Claude Code
+3. Via other clients
 
-### Method 1: Claude Desktop + Docker
+### Claude Desktop + Docker
 
 <details>
 <summary>Setup instructions</summary>
@@ -52,16 +53,33 @@ Then add to Claude Desktop config and restart Claude Desktop afterwards:
 Use the Coco MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
 ```
 
-Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories.
+Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
 
 </details>
 
-### Method 2: Claude Code + Docker
+### Claude Code
 
 <details>
 <summary>Setup instructions</summary>
 
-**Option A: Direct Docker (Recommended)**
+**Option 1: npx (Recommended)**
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder"]
+    }
+  }
+}
+```
+
+You're done!
+
+**Option 2: Docker**
 
 Create `.mcp.json` in your project root:
 
@@ -87,7 +105,7 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-**Option B: Via HTTP + mcp-remote**
+**Option 3: Via HTTP + mcp-remote**
 
 For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project root:
 
@@ -107,7 +125,7 @@ For [Claude Code](https://claude.ai/code), create `.mcp.json` in your project ro
 }
 ```
 
-And create `docker-compose.yml`:
+And create `docker-compose.yml` in your project:
 
 ```yaml
 services:

@@ -8,7 +8,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { tools, ToolWithHandler } from './tools.js';
+import { getTools, ToolWithHandler } from './tools.js';
 import { HandlerContext } from './types.js';
 import logger from './logger.js';
 
@@ -30,9 +30,12 @@ export const createServer = async () => {
   // Resolve to absolute path for internal use only
   const absoluteRootDir = path.resolve(ROOT_DIR);
 
+  // Get tools based on current mode
+  const tools = getTools();
+
   const server = new Server(
     {
-      name: 'coco-mcp',
+      name: 'context-coder',
       version: '1.0.0',
     },
     {

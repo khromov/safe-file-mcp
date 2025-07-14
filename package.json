@@ -1,14 +1,14 @@
 {
-  "name": "coco-mcp",
+  "name": "context-coder",
   "version": "1.0.0",
-  "description": "🥥 Coco (Context Coder): MCP server providing secure file system operations with relative path handling for AI context management",
+  "description": "Context Coder: MCP server providing secure file system operations with relative path handling for AI context management",
   "license": "MIT",
   "author": "Anthropic, PBC (https://anthropic.com)",
   "homepage": "https://modelcontextprotocol.io",
   "bugs": "https://github.com/modelcontextprotocol/servers/issues",
   "type": "module",
   "bin": {
-    "coco-mcp": "dist/index.js"
+    "context-coder": "dist/index.js"
   },
   "files": [
     "dist"
