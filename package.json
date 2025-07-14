@@ -25,7 +25,8 @@
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\""
+    "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
