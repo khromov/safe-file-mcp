@@ -77,6 +77,8 @@ Create `.mcp.json` in your project root:
 }
 ```
 
+Use `--http` flag to force HTTP mode or `--full` flag to enable all file operation tools instead of mini mode.
+
 You're done!
 
 **Option 2: Docker**
