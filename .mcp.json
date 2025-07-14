@@ -1,19 +1,8 @@
 {
   "mcpServers": {
-    "coco": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "-v",
-        "./:/app",
-        "-w",
-        "/app",
-        "-e",
-        "MCP_TRANSPORT=stdio",
-        "ghcr.io/khromov/coco:mini"
-      ]
+    "context-coder": {
+      "command": "npx",
+      "args": ["context-coder"]
     }
   }
 }

@@ -4,7 +4,7 @@
   "description": "Context Coder: MCP server providing secure file system operations with relative path handling for AI context management",
   "license": "MIT",
   "author": "Anthropic, PBC (https://anthropic.com)",
-  "homepage": "https://modelcontextprotocol.io",
+  "homepage": "https://github.com/khromov/context-coder",
   "bugs": "https://github.com/modelcontextprotocol/servers/issues",
   "type": "module",
   "bin": {
@@ -26,7 +26,8 @@
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "cc-http": "npx context-coder --http"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
@@ -37,6 +38,9 @@
     "winston": "^3.17.0",
     "zod": "^3.25.74",
     "zod-to-json-schema": "^3.24.6"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
