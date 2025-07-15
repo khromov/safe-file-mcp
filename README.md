@@ -12,7 +12,7 @@ Context Coder supports three main ways of running it:
 2. Via Claude Code
 3. Via other clients
 
-### Claude Desktop + npx
+#### Claude Desktop + npx
 
 <details>
 <summary>Setup instructions</summary>
@@ -40,7 +40,7 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 
 </details>
 
-### Claude Desktop + Docker
+#### Claude Desktop + Docker
 
 <details>
 <summary>Setup instructions</summary>
@@ -84,7 +84,7 @@ Since `docker-compose up` already knows which folder it's running in, we can eas
 
 </details>
 
-### Claude Desktop starting prompt
+#### Claude Desktop starting prompt
 
 **Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
 
@@ -97,7 +97,7 @@ Use the Context Coder MCP to edit files. Remember that partial edits are not all
 
 </details>
 
-### Claude Code
+#### Claude Code
 
 <details>
 <summary>Setup instructions</summary>
@@ -196,7 +196,7 @@ You have access to both Claude Code's built-in file tools and the Context Coder 
 
 </details>
 
-### Important: Limiting which files are including when fetching the codebase
+## Limiting which files are including when fetching the codebase
 
 Context Coder works best in small and medium-sized repositories, as it's limited to the maximum context of your LLM (in the case of Claude Sonnet/Opus 4, that's 200,000 tokens). Your whole codebase might not fit, and for this case you can create a `.cocoignore` file in the root of your project. This file works similarly to .gitignore, allowing you to specify files and directories that should be excluded from the command to aggregate your code - this could be test fixtures, snapshots, large test files or other secondary information that isn't useful to the LLM. Many common build artifacts and folders are already automatically excluded (such as `node_modules`). The LLM can also help you with this - ask it to run the `get_codebase_top_largest_files` tool and suggest files that are large and/or suitable for inclusion in a `.cocoignore` file. 
 
