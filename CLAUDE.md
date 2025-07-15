@@ -43,7 +43,7 @@ npm run watch        # TypeScript compiler in watch mode
 The server follows a layered architecture:
 
 1. **Transport Layer** (`src/streamableHttp.ts`): Handles HTTP/SSE communication with session management
-2. **MCP Layer** (`src/mcp.ts`): Implements the Model Context Protocol server with 14 file operation tools
+2. **MCP Layer** (`src/mcp.ts`): Implements the Model Context Protocol server with 11 file operation tools
 3. **Tool Layer** (`src/tools.ts` + `src/handlers/`): Modular handlers for each MCP tool with Zod validation
 4. **File Operations** (`src/file-operations.ts`): Secure file system utilities with path validation
 5. **Codebase Digest** (`src/codebase-digest.ts`): Handles AI-digest integration for token counting and file analysis
@@ -66,15 +66,21 @@ When working on this codebase:
 4. **Handler Pattern**: New MCP tools should follow the modular handler pattern - create handler in `src/handlers/` and register in `src/tools.ts`
 5. **Docker**: The Dockerfile uses a multi-stage build. Test Docker changes with `docker-compose up --build`
 6. **Token Limits**: Be aware of Claude (150k) and ChatGPT (128k) token limits when processing codebases
+7. **Mode Selection**: Server runs in 'mini' mode by default. Use `--full` flag or set `CONTEXT_CODER_MODE=full` for all tools
+8. **Development Sandbox**: In dev mode (`COCO_DEV=true`), file operations are sandboxed to `./mount` directory
 
 ## Available Tools
 
-The server exposes 14 MCP tools for file operations:
+The server exposes 11 MCP tools for file operations (mini mode has 3, full mode adds 8 more):
 
-- Codebase analysis: `get_codebase_size` (check size first), `get_codebase` (paginated summary)
-- File reading: `read_file`, `read_multiple_files`, `get_file_info`
+**Mini Mode Tools (always available):**
+- `get_codebase_size` - Check codebase size and token counts before processing
+- `get_codebase` - Generate paginated summary of entire codebase 
+- `get_codebase_top_largest_files` - Get top X largest files for .cocoignore optimization
+
+**Full Mode Additional Tools:**
+- File operations: `read_file`, `write_file`, `move_file`
 - Directory operations: `list_directory`, `directory_tree`, `create_directory`
-- File writing: `write_file`, `move_file`
 - Search: `search_files`
 - Command execution: `execute_command`
 
