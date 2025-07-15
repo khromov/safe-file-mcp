@@ -17,7 +17,7 @@ Context Coder supports three main ways of running it:
 <details>
 <summary>Setup instructions</summary>
 
-Start a terminal in your current project and run:
+Start a terminal in your current project folder and run:
 
 ```
 npx context-coder
@@ -79,13 +79,21 @@ Then add this to the Claude Desktop config and restart Claude Desktop afterwards
 }
 ```
 
+
+Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
+
+</details>
+
+### Claude Desktop starting prompt
+
 **Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
+
+<details>
+<summary>Starting prompt</summary>
 
 ```
 Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
 ```
-
-Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
 
 </details>
 
@@ -94,7 +102,7 @@ Since `docker-compose up` already knows which folder it's running in, we can eas
 <details>
 <summary>Setup instructions</summary>
 
-**Option 1: npx (Recommended)**
+**Option 1: npx**
 
 Create `.mcp.json` in your project root:
 
@@ -109,11 +117,11 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-Use `--http` flag to force HTTP mode or `--full` flag to enable all file operation tools instead of mini mode.
-
 You're done!
 
 **Option 2: Docker**
+
+Running via Docker provides better isolation since the container won't be able to write things outside of your project directory.
 
 Create `.mcp.json` in your project root:
 
