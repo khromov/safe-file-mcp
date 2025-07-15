@@ -153,10 +153,8 @@ export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
   // 1. Explicit mode parameter
   // 2. Runtime environment variable set by index.ts based on command line flags
   // 3. Default to full (for npx usage)
-  const resolvedMode: 'mini' | 'full' = 
-    mode || 
-    (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') || 
-    'full';
+  const resolvedMode: 'mini' | 'full' =
+    mode || (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') || 'full';
 
   return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
 }

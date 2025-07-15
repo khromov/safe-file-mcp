@@ -79,7 +79,6 @@ Then add this to the Claude Desktop config and restart Claude Desktop afterwards
 }
 ```
 
-
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
 
 Next, create a Claude Project and insert the recommended starting prompt just below this section.
@@ -113,7 +112,7 @@ Create `.mcp.json` in your project root:
   "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["context-coder", "--mini", "--stdio" ]
+      "args": ["context-coder", "--mini", "--stdio"]
     }
   }
 }
@@ -200,7 +199,7 @@ You have access to both Claude Code's built-in file tools and the Context Coder 
 
 ## Limiting which files are including when fetching the codebase
 
-Context Coder works best in small and medium-sized repositories, as it's limited to the maximum context of your LLM (in the case of Claude Sonnet/Opus 4, that's 200,000 tokens). Your whole codebase might not fit, and for this case you can create a `.cocoignore` file in the root of your project. This file works similarly to .gitignore, allowing you to specify files and directories that should be excluded from the command to aggregate your code - this could be test fixtures, snapshots, large test files or other secondary information that isn't useful to the LLM. Many common build artifacts and folders are already automatically excluded (such as `node_modules`). The LLM can also help you with this - ask it to run the `get_codebase_top_largest_files` tool and suggest files that are large and/or suitable for inclusion in a `.cocoignore` file. 
+Context Coder works best in small and medium-sized repositories, as it's limited to the maximum context of your LLM (in the case of Claude Sonnet/Opus 4, that's 200,000 tokens). Your whole codebase might not fit, and for this case you can create a `.cocoignore` file in the root of your project. This file works similarly to .gitignore, allowing you to specify files and directories that should be excluded from the command to aggregate your code - this could be test fixtures, snapshots, large test files or other secondary information that isn't useful to the LLM. Many common build artifacts and folders are already automatically excluded (such as `node_modules`). The LLM can also help you with this - ask it to run the `get_codebase_top_largest_files` tool and suggest files that are large and/or suitable for inclusion in a `.cocoignore` file.
 
 ## Configuration
 
@@ -239,8 +238,6 @@ volumes:
 | `move_file`                      | Move or rename files                                                                                      |
 | `search_files`                   | Search by pattern                                                                                         |
 | `execute_command`                | Run shell commands                                                                                        |
-
-All file operations use relative paths starting with `./`. Parent directory access (`../`) is blocked.
 
 ## Development
 
