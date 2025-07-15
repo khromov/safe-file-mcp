@@ -1,8 +1,25 @@
 {
-  "mcpServers": {
+  "mcpServers_DISABLED": {
     "context-coder": {
       "command": "npx",
-      "args": ["context-coder", "--mini", "--stdio" ]
+      "args": ["context-coder", "--mini", "--stdio"]
+    }
+  },
+  "mcpServers": {
+    "context-coder": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        "./:/app",
+        "-w",
+        "/app",
+        "-e",
+        "MCP_TRANSPORT=stdio",
+        "ghcr.io/khromov/context-coder:mini"
+      ]
     }
   }
 }
