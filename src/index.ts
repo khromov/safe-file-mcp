@@ -3,9 +3,25 @@
 import logger from './logger.js';
 
 // Parse command line arguments
-const isFullMode = process.argv.includes('--full');
-const transportMode =
-  process.env.MCP_TRANSPORT || (process.argv.includes('--http') ? 'http' : 'stdio');
+// Default to "full" and "http" mode for npx context-coder command (Claude Desktop usage)
+// Claud Code should use the `--mini` flag and `--stdio` flag to run in mini mode with stdio transport
+const hasExplicitMiniMode = process.argv.includes('--mini');
+const hasExplicitFullMode = process.argv.includes('--full');
+const hasExplicitStdioMode = process.argv.includes('--stdio');
+
+let isFullMode = true; // Default to full
+if (hasExplicitMiniMode) {
+  isFullMode = false;
+} else if (hasExplicitFullMode) {
+  isFullMode = true;
+}
+
+let transportMode = 'http'; // Default to http
+if (process.env.MCP_TRANSPORT) {
+  transportMode = process.env.MCP_TRANSPORT;
+} else if (hasExplicitStdioMode) {
+  transportMode = 'stdio';
+}
 
 // Set the mode globally for other modules to access
 const mode = isFullMode ? 'full' : 'mini';
