@@ -45,6 +45,8 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 <details>
 <summary>Setup instructions</summary>
 
+Running via Docker provides better isolation since the container won't be able to write things outside of your project directory.
+
 Create a `docker-compose.yml` file in the project(s) you want to work on.
 
 ```yaml
