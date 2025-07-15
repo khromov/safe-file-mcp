@@ -4,15 +4,24 @@ import logger from './logger.js';
 
 // Parse command line arguments
 // Default to "full" and "http" mode for npx context-coder command (Claude Desktop usage)
-// Claud Code should use the `--mini` flag and `--stdio` flag to run in mini mode with stdio transport
+// Claude Code should use the `--mini` flag and `--stdio` flag to run in mini mode with stdio transport
 const hasExplicitMiniMode = process.argv.includes('--mini');
 const hasExplicitFullMode = process.argv.includes('--full');
 const hasExplicitStdioMode = process.argv.includes('--stdio');
 
+// Determine mode with proper priority:
+// 1. Command line flags (--mini, --full)
+// 2. BUILD_TYPE environment variable (for Docker builds)
+// 3. Default to full (for npx usage)
 let isFullMode = true; // Default to full
+
 if (hasExplicitMiniMode) {
   isFullMode = false;
 } else if (hasExplicitFullMode) {
+  isFullMode = true;
+} else if (process.env.BUILD_TYPE === 'mini') {
+  isFullMode = false;
+} else if (process.env.BUILD_TYPE === 'full') {
   isFullMode = true;
 }
 
