@@ -2,7 +2,7 @@
   "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["context-coder"]
+      "args": ["context-coder", "--mini", "--stdio" ]
     }
   }
 }

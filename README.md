@@ -1,6 +1,6 @@
-# 🥥 Context Coder MCP (aka. Coco)
+# 🥥 Context Coder MCP
 
-Context Coder provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
+Context Coder (aka. Coco) provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
 
 📦 **[Available on npm](https://www.npmjs.com/package/context-coder)**
 
@@ -11,6 +11,34 @@ Context Coder supports three main ways of running it:
 1. Via Claude Desktop
 2. Via Claude Code
 3. Via other clients
+
+### Claude Desktop + npx
+
+<details>
+<summary>Setup instructions</summary>
+
+Start a terminal in your current project and run:
+
+```
+npx context-coder
+```
+
+Then add this to the Claude Desktop config and restart Claude Desktop afterwards:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:3001/mcp"]
+    }
+  }
+}
+```
+
+Next, create a Claude Project and insert the recommended starting prompt just below this section.
+
+</details>
 
 ### Claude Desktop + Docker
 
@@ -36,7 +64,7 @@ Start the service:
 docker-compose up
 ```
 
-Then add to Claude Desktop config and restart Claude Desktop afterwards:
+Then add this to the Claude Desktop config and restart Claude Desktop afterwards:
 
 ```json
 {
@@ -52,7 +80,7 @@ Then add to Claude Desktop config and restart Claude Desktop afterwards:
 **Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
 
 ```
-Use the Coco MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
+Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
 ```
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
@@ -73,7 +101,7 @@ Create `.mcp.json` in your project root:
   "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["context-coder"]
+      "args": ["context-coder", "--mini", "--stdio" ]
     }
   }
 }
@@ -142,18 +170,18 @@ services:
     restart: unless-stopped
 ```
 
-Start Coco with `docker-compose up` and Claude Code will automatically connect.
+Start Context Coder with `docker-compose up` and Claude Code will automatically connect.
 
 _The reason for using the `mini` build is that Claude Code already comes with file editing tools built-in._
 
 **Recommended starting prompt**: Add this at the start of your `CLAUDE.md` file.
 
 ```
-You have access to both Claude Code's built-in file tools and the Coco MCP for enhanced codebase analysis. Follow this workflow:
+You have access to both Claude Code's built-in file tools and the Context Coder MCP for enhanced codebase analysis. Follow this workflow:
 
 1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
-2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
-3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
+2. Use Context Coders's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 ```
 
 </details>
@@ -260,36 +288,6 @@ Or build from source:
 ```bash
 docker build -t my-coco .
 ```
-
-</details>
-
-## Protocol
-
-Coco implements the MCP specification with support for both transport modes:
-
-- **stdio mode**: Direct communication via stdin/stdout
-- **HTTP mode**: Streamable HTTP transport with session management via `mcp-session-id` header
-
-## Security
-
-File system access is restricted to the mounted directory. Operations that would escape the sandbox are rejected. The server validates all paths and blocks directory traversal attempts.
-
-## Troubleshooting
-
-<details>
-<summary>Common issues and solutions</summary>
-
-### stdio Mode Issues
-
-- Ensure Docker is running with `-i` flag (interactive)
-- Check that volume paths are absolute
-- Logs go to stderr and won't interfere with stdio communication
-
-### HTTP Mode Issues
-
-- Verify port 3001 is not in use
-- Check Docker logs: `docker-compose logs`
-- Ensure `mcp-session-id` header is preserved by any proxies
 
 </details>
 
