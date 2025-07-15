@@ -82,6 +82,8 @@ Then add this to the Claude Desktop config and restart Claude Desktop afterwards
 
 Since `docker-compose up` already knows which folder it's running in, we can easily switch between projects by launching `docker-compose up` in different directories. Don't forget to switch between Claude Projects when you do this!
 
+Next, create a Claude Project and insert the recommended starting prompt just below this section.
+
 </details>
 
 #### Claude Desktop starting prompt
@@ -92,7 +94,7 @@ Since `docker-compose up` already knows which folder it's running in, we can eas
 <summary>Starting prompt</summary>
 
 ```
-Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code.
+Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
 ```
 
 </details>
