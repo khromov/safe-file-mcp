@@ -149,26 +149,17 @@ const additionalTools: ToolWithHandler[] = [
 
 // Function to get tools based on runtime mode
 export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
-  // Determine mode from various sources (in order of priority):
+  // Determine mode from sources (in order of priority):
   // 1. Explicit mode parameter
-  // 2. Runtime environment variable set by index.ts
-  // 3. BUILD_TYPE environment variable (for Docker builds)
-  // 4. Default to mini
-  let resolvedMode: 'mini' | 'full' = 'mini'; // Default to mini
-  
-  if (mode) {
-    resolvedMode = mode;
-  } else if (process.env.CONTEXT_CODER_MODE === 'mini' || process.env.CONTEXT_CODER_MODE === 'full') {
-    resolvedMode = process.env.CONTEXT_CODER_MODE as 'mini' | 'full';
-  } else if (process.env.BUILD_TYPE === 'mini') {
-    resolvedMode = 'mini';
-  } else if (process.env.BUILD_TYPE === 'full') {
-    resolvedMode = 'full';
-  }
-
+  // 2. Runtime environment variable set by index.ts based on command line flags
+  // 3. Default to full (for npx usage)
+  const resolvedMode: 'mini' | 'full' = 
+    mode || 
+    (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') || 
+    'full';
 
   return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
 }
 
-// Export default tools for backward compatibility (defaults to mini)
+// Export default tools for backward compatibility (defaults to full)
 export const tools: ToolWithHandler[] = getTools();
