@@ -1,6 +1,6 @@
 # 🥥 Context Coder MCP
 
-Context Coder (aka. Coco) provides AI models with full-context awareness of entire codebases through the Model Context Protocol. Context Coder's `get_codebase` command creates a merged representation of your entire project structure, giving AI assistants the complete context they need to write better code that fits your existing patterns and architecture.
+Context Coder (aka. Coco) provides AI models with an MCP tools to load your entire codebase into the LLM context. This gives AI assistants everything they need to write code that fits your existing patterns and architecture.
 
 📦 **[Available on npm](https://www.npmjs.com/package/context-coder)**
 
