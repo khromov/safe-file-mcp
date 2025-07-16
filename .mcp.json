@@ -1,11 +1,11 @@
 {
-  "mcpServers_DISABLED": {
+  "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["context-coder", "--mini", "--stdio"]
+      "args": ["-y", "context-coder", "--mini", "--stdio"]
     }
   },
-  "mcpServers": {
+  "mcpServers_DISABLED": {
     "context-coder": {
       "command": "docker",
       "args": [
