@@ -237,7 +237,7 @@ describe('CLI with Commander', () => {
 
       const result = await runCommand(`node ${CLI_PATH} ls --directory ${nonExistentDir}`);
 
-      // The command should succeed but show 0 files
+      // The command should succeed but show 0 files (aiDigest handles non-existent dirs gracefully)
       expect(result.code).toBe(0);
       expect(result.stdout).toContain('Total files: 0');
       expect(result.stdout).toContain('📋 Listing files in:');
