@@ -16,11 +16,12 @@ try {
   const packageJsonPath = join(__dirname, '..', 'package.json');
   packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 } catch (error) {
-  packageJson = { version: 'UNKNOWN' };
+  // If package.json is not found, use a default version
+  packageJson = { version: '1.0.5' };
 }
 
 // Async function to run the server
-async function runServer(options: any) {
+async function runServer(options: any, command: any) {
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
   let isFullMode = true; // Default to full
@@ -65,7 +66,6 @@ program
   .option('--mini', 'run in mini mode (only core tools)')
   .option('--full', 'run in full mode (all tools)')
   .option('--stdio', 'use stdio transport instead of HTTP')
-  .allowUnknownOption() // This is important for stdio mode where additional args might be passed
   .action(runServer);
 
 // Add the 'ls' subcommand
