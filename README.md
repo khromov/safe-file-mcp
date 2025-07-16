@@ -252,12 +252,14 @@ npx context-coder ls [options]
 Lists all files that will be included in the codebase analysis, showing file sizes and respecting `.cocoignore` patterns.
 
 **Options:**
+
 - `--sort-by <type>` - Sort by "size" or "path" (default: "size")
 - `--reverse` - Reverse sort order (ascending instead of descending)
 - `--directory <dir>` - Directory to analyze (default: current directory)
 - `--help` - Show usage information
 
 **Examples:**
+
 ```bash
 npx context-coder ls                           # Default: sort by size descending
 npx context-coder ls --sort-by path            # Sort alphabetically by path
@@ -267,6 +269,7 @@ npx context-coder ls --directory ./src         # Analyze specific directory
 ```
 
 The command shows:
+
 - Total file count and token estimates for Claude and ChatGPT
 - Whether a `.cocoignore` file is being used
 - Formatted list of all files with sizes
