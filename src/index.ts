@@ -16,8 +16,7 @@ try {
   const packageJsonPath = join(__dirname, '..', 'package.json');
   packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 } catch (error) {
-  // If package.json is not found, use a default version
-  packageJson = { version: '1.0.5' };
+  packageJson = { version: 'UNKNOWN' };
 }
 
 // Async function to run the server
