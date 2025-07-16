@@ -2,6 +2,13 @@
 
 import logger from './logger.js';
 
+// Check for 'ls' subcommand
+if (process.argv.includes('ls')) {
+  // Import and run the list functionality
+  await import('./list-files-cli.js');
+  process.exit(0);
+}
+
 // Parse command line arguments
 // Default to "full" and "http" mode for npx context-coder command (Claude Desktop usage)
 // Claude Code should use the `--mini` flag and `--stdio` flag to run in mini mode with stdio transport
