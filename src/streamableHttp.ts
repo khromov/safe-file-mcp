@@ -10,7 +10,7 @@ const buildType = process.env.BUILD_TYPE || 'NOT_SET';
 const mode = process.env.CONTEXT_CODER_MODE || 'mini';
 const version = getVersion();
 logger.info(
-  `Starting 🥥 Coco MCP Server (Streamable HTTP) using build type ${buildType} (${mode} mode)`
+  `Starting 🥥 Coco MCP Server v${version} (Streamable HTTP) using build type ${buildType} (${mode} mode)`
 );
 
 const app = express();
