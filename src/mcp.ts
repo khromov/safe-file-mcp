@@ -3,6 +3,8 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -22,6 +24,24 @@ try {
 } catch (error) {
   logger.warn('Warning: instructions.md not found, continuing without instructions');
 }
+
+// Define prompts for Claude Desktop and Claude Code
+const prompts = [
+  {
+    name: 'claude-desktop-context-coder',
+    title: 'Claude Desktop: Context Coder Setup',
+    description:
+      'Default starting prompt for using Context Coder with Claude Desktop. This prompt configures Claude to use the MCP tools properly and establishes the workflow.',
+    arguments: [],
+  },
+  {
+    name: 'claude-code-context-coder',
+    title: 'Claude Code: Context Coder Setup',
+    description:
+      "Default starting prompt for using Context Coder with Claude Code. This prompt explains how to use both Claude Code's built-in tools and Context Coder together.",
+    arguments: [],
+  },
+];
 
 export const createServer = async () => {
   // Determine the root directory based on environment
@@ -80,6 +100,55 @@ export const createServer = async () => {
         isError: true,
       };
     }
+  });
+
+  // Add prompt handlers
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return { prompts };
+  });
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name } = request.params;
+    const prompt = prompts.find((p) => p.name === name);
+
+    if (!prompt) {
+      throw new Error(`Unknown prompt: ${name}`);
+    }
+
+    if (name === 'claude-desktop-context-coder') {
+      return {
+        description: prompt.description,
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: "Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.",
+            },
+          },
+        ],
+      };
+    } else if (name === 'claude-code-context-coder') {
+      return {
+        description: prompt.description,
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `You have access to both Claude Code's built-in file tools and the Context Coder MCP for enhanced codebase analysis. Follow this workflow:
+
+1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
+2. Use Context Coder's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically`,
+            },
+          },
+        ],
+      };
+    }
+
+    // Should not reach here
+    throw new Error(`Prompt implementation missing: ${name}`);
   });
 
   const cleanup = async () => {

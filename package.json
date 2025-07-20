@@ -28,7 +28,8 @@
     "prepublishOnly": "npm run build",
     "cc-http": "npx context-coder --http",
     "check-updates": "npx npm-check-updates",
-    "check-updates:upgrade": "npx npm-check-updates -u"
+    "check-updates:upgrade": "npx npm-check-updates -u",
+    "mcp": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.16.0",
