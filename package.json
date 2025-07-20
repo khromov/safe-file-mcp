@@ -1,6 +1,6 @@
 {
   "name": "context-coder",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Context Coder: MCP server providing secure file system operations with relative path handling for AI context management",
   "license": "MIT",
   "author": "khromov",
@@ -28,17 +28,18 @@
     "prepublishOnly": "npm run build",
     "cc-http": "npx context-coder --http",
     "check-updates": "npx npm-check-updates",
-    "check-updates:upgrade": "npx npm-check-updates -u"
+    "check-updates:upgrade": "npx npm-check-updates -u",
+    "mcp": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@modelcontextprotocol/sdk": "^1.16.0",
     "ai-digest": "^1.4.1",
-    "commander": "^13.0.0",
-    "express": "^4.21.1",
+    "commander": "^14.0.0",
+    "express": "^4.21.2",
     "ignore": "^7.0.5",
     "minimatch": "^10.0.3",
     "winston": "^3.17.0",
-    "zod": "^3.25.74",
+    "zod": "^3.25.76",
     "zod-to-json-schema": "^3.24.6"
   },
   "engines": {
@@ -47,7 +48,7 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.13",
+    "@types/node": "^22.16.5",
     "jest": "^30.0.4",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",

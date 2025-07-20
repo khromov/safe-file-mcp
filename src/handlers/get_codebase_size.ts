@@ -62,7 +62,7 @@ export async function handleGetCodebaseSize(
     // Only show top largest files if we hit the Claude limit
     if (hitClaudeLimit && sortedFiles.length > 0) {
       output += `## Top 25 Largest Files\n\n`;
-      output += `You may tell the user to consider adding some of these to their \`.cocoignore\` file if they are big and not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
+      output += `Tell the user to consider adding some of these to their \`.cocoignore\` file if they are big and not relevant to the project (test files, snapshots, external modules, test data, other unused files, etc):\n\n`;
 
       const top25Files = sortedFiles.slice(0, 25);
       top25Files.forEach((file, index) => {
@@ -80,15 +80,15 @@ export async function handleGetCodebaseSize(
     if (hitClaudeLimit) {
       hasWarning = true;
       output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
-      output += `The codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
-      output += `This codebase may be too large for your context window. You should consider creating a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
-      output += `**Ask the user if they want to proceed anyway?** If yes, please confirm and then run \`get_codebase\` - but make the user aware that the large size may cause issues.\n\n`;
+      output += `Tell the user that the codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
+      output += `Tell the user that the codebase is likely too large for your context window, and that they should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
+      output += `**Ask the user if they want to proceed anyway?** If yes, run \`get_codebase\` - but make the user aware that the large size may cause issues.\n\n`;
     }
 
     // Add instruction to run get_codebase next
     output += `\n## Next Step\n\n`;
     if (hitClaudeLimit) {
-      output += `If you want to proceed despite the large codebase size, run the \`get_codebase\` tool to retrieve the actual codebase content. Consider using a \`.cocoignore\` file to reduce the size first.`;
+      output += `If you want to proceed despite the large codebase size, run the \`get_codebase\` tool to retrieve the actual codebase content. Tell the user to consider using a \`.cocoignore\` file to reduce the size first.`;
     } else {
       output += `You MUST now run the \`get_codebase\` tool to retrieve the actual codebase content - this is required for this MCP to function correctly.`;
     }

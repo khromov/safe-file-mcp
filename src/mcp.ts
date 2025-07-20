@@ -3,6 +3,8 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -11,6 +13,8 @@ import { dirname, join } from 'path';
 import { getTools, ToolWithHandler } from './tools.js';
 import { HandlerContext } from './types.js';
 import logger from './logger.js';
+import { prompts, getPromptContent } from './lib/prompts.js';
+import { getVersion } from './lib/version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,7 +40,7 @@ export const createServer = async () => {
   const server = new Server(
     {
       name: 'context-coder',
-      version: '1.0.0',
+      version: getVersion(),
     },
     {
       capabilities: {
@@ -80,6 +84,27 @@ export const createServer = async () => {
         isError: true,
       };
     }
+  });
+
+  // Add prompt handlers
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return { prompts };
+  });
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    const prompt = prompts.find((p) => p.name === name);
+
+    if (!prompt) {
+      throw new Error(`Unknown prompt: ${name}`);
+    }
+
+    const promptMessages = getPromptContent(name, args);
+
+    return {
+      description: prompt.description,
+      messages: promptMessages,
+    };
   });
 
   const cleanup = async () => {

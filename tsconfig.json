@@ -20,7 +20,6 @@
     "src/**/*.test.ts",
     "src/**/*.test.js",
     "src/jest.teardown.js",
-    "src/lib/**/*",
     "**/*.test.*",
     "**/__tests__/**/*",
     "coverage",

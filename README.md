@@ -239,6 +239,26 @@ volumes:
 | `search_files`                   | Search by pattern                                                                                         |
 | `execute_command`                | Run shell commands                                                                                        |
 
+## Available Prompts
+
+Context Coder provides MCP prompts that help configure Claude properly for your development workflow:
+
+| Prompt                             | Purpose                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| **`context-coder-claude-desktop`** | Default starting prompt for Claude Desktop - configures proper MCP tool usage         |
+| **`context-coder-claude-code`**    | Default starting prompt for Claude Code - explains how to use both tool sets together |
+
+To use these prompts in Claude Code:
+
+1. Type `/` to open the prompt menu
+2. Find "context-coder" in the list, then "Context Coder: Claude Code Setup"
+4. The prompt will be inserted automatically
+5. You may directly add a task after the prompt, eg `/context-coder:Context Coder: Claude Code Setup (MCP) Add a new endpoint that returns a random number`
+
+To use these prompts in Claude Desktop:
+
+*As of the writing of this README, Claude Desktop does not support MCP Prompts. Create a Claude Project and use the prompts from this README.md file as the project instructions.*
+
 ## CLI Commands
 
 Context Coder also provides a convenient CLI command to inspect your codebase:
