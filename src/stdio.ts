@@ -3,6 +3,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createServer } from './mcp.js';
 import logger from './logger.js';
+import { getVersion } from './lib/version.js';
 
 // All logging MUST go to stderr in stdio mode
 // stdout is reserved exclusively for MCP protocol messages
@@ -30,7 +31,8 @@ async function runStdioServer() {
 
     // Log to stderr only - stdout is for MCP protocol
     const mode = process.env.CONTEXT_CODER_MODE || 'mini';
-    logger.info(`🥥 Coco MCP Server running in stdio mode (${mode})`);
+    const version = getVersion();
+    logger.info(`🥥 Coco MCP Server v${version} running in stdio mode (${mode})`);
   } catch (error) {
     logger.error('Failed to start stdio server:', error);
     process.exit(1);

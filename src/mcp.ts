@@ -14,6 +14,7 @@ import { getTools, ToolWithHandler } from './tools.js';
 import { HandlerContext } from './types.js';
 import logger from './logger.js';
 import { prompts, getPromptContent } from './lib/prompts.js';
+import { getVersion } from './lib/version.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,7 +40,7 @@ export const createServer = async () => {
   const server = new Server(
     {
       name: 'context-coder',
-      version: '1.0.0',
+      version: getVersion(),
     },
     {
       capabilities: {
