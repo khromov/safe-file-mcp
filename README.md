@@ -245,17 +245,18 @@ Context Coder provides MCP prompts that help configure Claude properly for your 
 
 | Prompt                             | Purpose                                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| **`claude-desktop-context-coder`** | Default starting prompt for Claude Desktop - configures proper MCP tool usage         |
-| **`claude-code-context-coder`**    | Default starting prompt for Claude Code - explains how to use both tool sets together |
+| **`context-coder-claude-desktop`** | Default starting prompt for Claude Desktop - configures proper MCP tool usage         |
+| **`context-coder-claude-code`**    | Default starting prompt for Claude Code - explains how to use both tool sets together |
+
+To use these prompts in Claude Code:
+
+1. Type `/` to open the prompt menu
+2. Find "context-coder" in the list, then "Context Coder: Claude Code Setup"
+4. The prompt will be inserted automatically
 
 To use these prompts in Claude Desktop:
 
-1. Type `/` to open the prompt menu
-2. Select "context-coder" from the list
-3. Choose either "Claude Desktop: Context Coder Setup" or "Claude Code: Context Coder Setup"
-4. The prompt will be inserted automatically
-
-These prompts contain the same instructions as the manual starting prompts shown above, but can be accessed more conveniently through the MCP prompt system.
+*As of the writing of this README, Claude Desktop does not support MCP Prompts. Create a Claude Project and use the prompts from this README.md file as the project instructions.*
 
 ## CLI Commands
 
