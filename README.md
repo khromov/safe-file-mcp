@@ -253,6 +253,7 @@ To use these prompts in Claude Code:
 1. Type `/` to open the prompt menu
 2. Find "context-coder" in the list, then "Context Coder: Claude Code Setup"
 4. The prompt will be inserted automatically
+5. You may directly add a task after the prompt, eg `/context-coder:Context Coder: Claude Code Setup (MCP) Add a new endpoint that returns a random number`
 
 To use these prompts in Claude Desktop:
 

@@ -91,18 +91,18 @@ export const createServer = async () => {
   });
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    const { name } = request.params;
+    const { name, arguments: args } = request.params;
     const prompt = prompts.find((p) => p.name === name);
 
     if (!prompt) {
       throw new Error(`Unknown prompt: ${name}`);
     }
 
-    const promptMessage = getPromptContent(name);
+    const promptMessages = getPromptContent(name, args);
 
     return {
       description: prompt.description,
-      messages: [promptMessage],
+      messages: promptMessages,
     };
   });
 
