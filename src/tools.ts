@@ -85,6 +85,7 @@ const additionalTools: ToolWithHandler[] = [
         description:
           'Make line-based edits to a text file. Each edit replaces exact line sequences ' +
           "with new content. Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
+          'By default, throws an error if text appears multiple times. Set replace_all to true to replace all occurrences. ' +
           'Only works within allowed directories.',
         inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
         handler: handleEditFile,

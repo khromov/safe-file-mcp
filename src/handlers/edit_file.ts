@@ -17,7 +17,12 @@ export async function handleEditFile(args: any, context: HandlerContext): Promis
 
   try {
     const originalContent = await fs.readFile(absolutePath, 'utf-8');
-    const result = await applyFileEdits(originalContent, parsed.data.edits, parsed.data.dryRun);
+    const result = await applyFileEdits(
+      originalContent,
+      parsed.data.edits,
+      parsed.data.dryRun,
+      parsed.data.replaceAll
+    );
 
     if (parsed.data.dryRun) {
       const displayPath = formatDisplayPath(parsed.data.path);
@@ -73,7 +78,8 @@ interface EditResult {
 async function applyFileEdits(
   originalContent: string,
   edits: Array<{ oldText: string; newText: string }>,
-  dryRun: boolean = false
+  dryRun: boolean = false,
+  replaceAll: boolean = false
 ): Promise<EditResult> {
   let content = originalContent;
   const changes: Array<{ oldText: string; newText: string; applied: boolean }> = [];
@@ -89,15 +95,17 @@ async function applyFileEdits(
     }
 
     const occurrences = (content.match(new RegExp(escapeRegExp(oldText), 'g')) || []).length;
-    if (occurrences > 1) {
+    if (occurrences > 1 && !replaceAll) {
       return {
         success: false,
-        error: `Ambiguous edit: "${oldText.substring(0, 100)}${oldText.length > 100 ? '...' : ''}" appears ${occurrences} times in the file. Please be more specific.`,
+        error: `Found ${occurrences} matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.`,
       };
     }
 
     if (!dryRun) {
-      content = content.replace(oldText, newText);
+      content = replaceAll
+        ? content.replaceAll(oldText, newText)
+        : content.replace(oldText, newText);
     }
     changes.push({ oldText, newText, applied: !dryRun });
   }

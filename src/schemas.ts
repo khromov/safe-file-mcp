@@ -94,4 +94,10 @@ export const EditFileArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
   edits: z.array(EditOperation),
   dryRun: z.boolean().default(false).describe('Preview changes using git-style diff format'),
+  replaceAll: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Allow replacing all occurrences of text. If false and multiple matches found, returns an error.'
+    ),
 });

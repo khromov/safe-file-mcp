@@ -211,7 +211,7 @@ describe('handleEditFile', () => {
       ).rejects.toThrow('Text not found in file: "nonexistent text"');
     });
 
-    it('should throw error for ambiguous matches', async () => {
+    it('should throw error for ambiguous matches when replaceAll is false', async () => {
       const originalContent = 'test line\nanother test line\nfinal test line';
       await createTestFile(testDir, 'test.txt', originalContent);
 
@@ -223,10 +223,13 @@ describe('handleEditFile', () => {
             path: './test.txt',
             edits: [{ oldText: 'test', newText: 'replacement' }],
             dryRun: false,
+            replaceAll: false,
           },
           context
         )
-      ).rejects.toThrow('Ambiguous edit: "test" appears 3 times in the file');
+      ).rejects.toThrow(
+        'Found 3 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.'
+      );
     });
 
     it('should handle long text in error messages', async () => {
@@ -439,6 +442,131 @@ describe('handleEditFile', () => {
 +`;
 
       expect(result.content[0].text).toBe(expectedDiff);
+    });
+  });
+
+  describe('replaceAll functionality', () => {
+    it('should replace all occurrences when replaceAll is true', async () => {
+      const originalContent = 'test line\nanother test line\nfinal test line';
+      await createTestFile(testDir, 'test.txt', originalContent);
+
+      const context = createTestContext(testDir);
+      const result = await handleEditFile(
+        {
+          path: './test.txt',
+          edits: [{ oldText: 'test', newText: 'replacement' }],
+          dryRun: false,
+          replaceAll: true,
+        },
+        context
+      );
+
+      expect(result.content[0].text).toBe('Successfully applied 1 edit(s) to test.txt');
+      expect(await readTestFile(testDir, 'test.txt')).toBe(
+        'replacement line\nanother replacement line\nfinal replacement line'
+      );
+    });
+
+    it('should work normally with single match regardless of replaceAll value', async () => {
+      const originalContent = 'unique text\nother content';
+      await createTestFile(testDir, 'test.txt', originalContent);
+
+      const context = createTestContext(testDir);
+
+      const resultFalse = await handleEditFile(
+        {
+          path: './test.txt',
+          edits: [{ oldText: 'unique text', newText: 'modified text' }],
+          dryRun: false,
+          replaceAll: false,
+        },
+        context
+      );
+
+      expect(resultFalse.content[0].text).toBe('Successfully applied 1 edit(s) to test.txt');
+      expect(await readTestFile(testDir, 'test.txt')).toBe('modified text\nother content');
+
+      await createTestFile(testDir, 'test2.txt', originalContent);
+
+      const resultTrue = await handleEditFile(
+        {
+          path: './test2.txt',
+          edits: [{ oldText: 'unique text', newText: 'modified text' }],
+          dryRun: false,
+          replaceAll: true,
+        },
+        context
+      );
+
+      expect(resultTrue.content[0].text).toBe('Successfully applied 1 edit(s) to test2.txt');
+      expect(await readTestFile(testDir, 'test2.txt')).toBe('modified text\nother content');
+    });
+
+    it('should generate correct diff preview with replaceAll true and multiple matches', async () => {
+      const originalContent = 'test line\nanother test line\nfinal test line';
+      await createTestFile(testDir, 'test.txt', originalContent);
+
+      const context = createTestContext(testDir);
+      const result = await handleEditFile(
+        {
+          path: './test.txt',
+          edits: [{ oldText: 'test', newText: 'replacement' }],
+          dryRun: true,
+          replaceAll: true,
+        },
+        context
+      );
+
+      expect(result.content[0].text).toContain('Dry run preview for test.txt:');
+      expect(result.content[0].text).toContain('@@ Edit: Replace 1 line(s) with 1 line(s) @@');
+      expect(result.content[0].text).toContain('-test');
+      expect(result.content[0].text).toContain('+replacement');
+
+      expect(await readTestFile(testDir, 'test.txt')).toBe(originalContent);
+    });
+
+    it('should handle multiple edits with replaceAll true', async () => {
+      const originalContent = 'foo bar\nfoo baz\nother foo content';
+      await createTestFile(testDir, 'test.txt', originalContent);
+
+      const context = createTestContext(testDir);
+      const result = await handleEditFile(
+        {
+          path: './test.txt',
+          edits: [
+            { oldText: 'foo', newText: 'replaced' },
+            { oldText: 'bar', newText: 'modified' },
+          ],
+          dryRun: false,
+          replaceAll: true,
+        },
+        context
+      );
+
+      expect(result.content[0].text).toBe('Successfully applied 2 edit(s) to test.txt');
+      expect(await readTestFile(testDir, 'test.txt')).toBe(
+        'replaced modified\nreplaced baz\nother replaced content'
+      );
+    });
+
+    it('should throw error for multiple matches with default replaceAll (false)', async () => {
+      const originalContent = 'test line\nanother test line\nfinal test line';
+      await createTestFile(testDir, 'test.txt', originalContent);
+
+      const context = createTestContext(testDir);
+
+      await expect(
+        handleEditFile(
+          {
+            path: './test.txt',
+            edits: [{ oldText: 'test', newText: 'replacement' }],
+            dryRun: false,
+          },
+          context
+        )
+      ).rejects.toThrow(
+        'Found 3 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.'
+      );
     });
   });
 });
