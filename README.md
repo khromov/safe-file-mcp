@@ -23,6 +23,12 @@ Start a terminal in your current project folder and run:
 npx context-coder
 ```
 
+For line-based partial editing instead of complete file rewrites, use:
+
+```
+npx context-coder --edit-file-mode
+```
+
 Then add this to the Claude Desktop config and restart Claude Desktop afterwards:
 
 ```json
@@ -113,6 +119,19 @@ Create `.mcp.json` in your project root:
     "context-coder": {
       "command": "npx",
       "args": ["-y", "context-coder", "--mini", "--stdio"]
+    }
+  }
+}
+```
+
+For line-based partial editing instead of complete file rewrites, use:
+
+```json
+{
+  "mcpServers": {
+    "context-coder": {
+      "command": "npx",
+      "args": ["-y", "context-coder", "--mini", "--stdio", "--edit-file-mode"]
     }
   }
 }
@@ -220,6 +239,7 @@ volumes:
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
 - `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
 - `PORT`: Override default port 3001 (HTTP mode only)
+- `CONTEXT_CODER_EDIT_MODE`: Set to "true" to enable `edit_file` tool (equivalent to `--edit-file-mode` flag)
 
 </details>
 
@@ -232,6 +252,7 @@ volumes:
 | `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
 | `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
 | `write_file`                     | Create or overwrite files                                                                                 |
+| `edit_file`                      | Make line-based partial edits to files (available when `--edit-file-mode` is enabled)                    |
 | `create_directory`               | Create directories                                                                                        |
 | `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
 | `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
@@ -293,6 +314,31 @@ The command shows:
 - Total file count and token estimates for Claude and ChatGPT
 - Whether a `.cocoignore` file is being used
 - Formatted list of all files with sizes
+
+### Runtime Options
+
+Context Coder supports several runtime options to modify its behavior:
+
+```bash
+npx context-coder [options]
+```
+
+**Options:**
+
+- `--mini` - Run in mini mode (only core tools)
+- `--full` - Run in full mode (all tools) - this is the default
+- `--stdio` - Use stdio transport instead of HTTP
+- `--edit-file-mode` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
+
+**Examples:**
+
+```bash
+npx context-coder                           # Default: full mode with HTTP transport
+npx context-coder --mini                    # Mini mode with core tools only
+npx context-coder --stdio                   # Use stdio transport (for Claude Code)
+npx context-coder --edit-file-mode          # Enable partial file editing
+npx context-coder --mini --stdio            # Combine options
+```
 
 ## Development
 
