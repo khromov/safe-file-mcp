@@ -252,7 +252,7 @@ volumes:
 | `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
 | `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
 | `write_file`                     | Create or overwrite files                                                                                 |
-| `edit_file`                      | Make line-based partial edits to files (available when `--edit-file-mode` is enabled)                    |
+| `edit_file`                      | Make line-based partial edits to files (available when `--edit-file-mode` is enabled)                     |
 | `create_directory`               | Create directories                                                                                        |
 | `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
 | `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
