@@ -166,7 +166,7 @@ app.get('/health', (req: Request, res: Response) => {
     mode: mode,
     buildType: buildType,
     timestamp: new Date().toISOString(),
-    activeTransports: transports.size
+    activeTransports: transports.size,
   });
 });
 
