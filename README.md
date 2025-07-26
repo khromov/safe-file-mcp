@@ -248,16 +248,16 @@ Context Coder provides MCP prompts that help configure Claude properly for your 
 | **`context-coder-claude-desktop`** | Default starting prompt for Claude Desktop - configures proper MCP tool usage         |
 | **`context-coder-claude-code`**    | Default starting prompt for Claude Code - explains how to use both tool sets together |
 
-*To use these prompts in Claude Code:*
+_To use these prompts in Claude Code:_
 
 1. Type `/` to open the prompt menu
 2. Find "context-coder" in the list, then "Context Coder: Claude Code Setup"
 3. The prompt will be inserted automatically
 4. You may directly add a task after the prompt, eg `/context-coder:Context Coder: Claude Code Setup (MCP) Add a new endpoint that returns a random number`
 
-*To use these prompts in Claude Desktop:*
+_To use these prompts in Claude Desktop:_
 
-Use the "plus" button just below the chat text box, the `Add from <name of server>`. 
+Use the "plus" button just below the chat text box, the `Add from <name of server>`.
 
 ## CLI Commands
 
