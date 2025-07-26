@@ -1,4 +1,4 @@
-name: build + publish
+name: build + publish all variants
 
 on:
   push:
@@ -13,6 +13,30 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant:
+          - name: regular
+            build_type: ""
+            tags: |
+              type=raw,value=main
+              type=raw,value=full
+            build_args: |
+              BUILD_TYPE=full
+          - name: mini
+            build_type: mini
+            tags: |
+              type=raw,value=main-mini
+              type=raw,value=mini
+            build_args: |
+              BUILD_TYPE=mini
+          - name: edit
+            build_type: edit
+            tags: |
+              type=raw,value=main-edit
+              type=raw,value=edit
+            build_args: |
+              BUILD_TYPE=edit
 
     steps:
       - name: Checkout Repository
@@ -26,9 +50,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=main
-            type=raw,value=full
+          tags: ${{ matrix.variant.tags }}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -37,7 +59,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Docker Image (${{ matrix.variant.name }})
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -45,5 +67,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            PUBLIC_HELLO=world
+          build-args: ${{ matrix.variant.build_args }}
