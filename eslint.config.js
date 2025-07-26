@@ -29,15 +29,13 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'prefer-const': 'error',
-      'no-var': 'error'
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/array-type': 'off'
     }
   },
   {
-    files: ['src/**/__tests__/**/*.ts', 'src/**/*.test.ts'],
+    files: ['src/**/*.test.ts', 'src/**/__tests__/**/*.ts'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -60,12 +58,10 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       ...jest.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'prefer-const': 'error',
-      'no-var': 'error',
-      'jest/no-conditional-expect': 'off'
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'jest/no-conditional-expect': 'off',
+      '@typescript-eslint/array-type': 'off'
     }
   },
   {
