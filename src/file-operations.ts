@@ -115,7 +115,9 @@ export async function writeFileSecure(filePath: string, content: string): Promis
       } catch (renameError) {
         try {
           await fs.unlink(tempPath);
-        } catch {}
+        } catch {
+          // Ignore cleanup errors
+        }
         throw renameError;
       }
     } else {

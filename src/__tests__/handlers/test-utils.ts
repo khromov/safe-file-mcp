@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import '@jest/globals';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,7 +22,7 @@ export async function setupTestDir(): Promise<string> {
 export async function cleanupTestDir(testDir: string): Promise<void> {
   try {
     await fs.rm(testDir, { recursive: true, force: true });
-  } catch (error) {
+  } catch {
     // Ignore cleanup errors
   }
 }

@@ -4,7 +4,6 @@ import {
   setupTestDir,
   cleanupTestDir,
   createTestContext,
-  fileExists,
   readTestFile,
   createTestFile,
 } from './test-utils.js';

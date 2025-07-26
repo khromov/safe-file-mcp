@@ -54,7 +54,7 @@ describe('file-operations', () => {
     afterEach(async () => {
       try {
         await fs.rm(searchTestDir, { recursive: true, force: true });
-      } catch (error) {
+      } catch {
         // Ignore cleanup errors
       }
     });
@@ -180,7 +180,7 @@ describe('file-operations', () => {
     afterEach(async () => {
       try {
         await fs.rm(treeTestDir, { recursive: true, force: true });
-      } catch (error) {
+      } catch {
         // Ignore cleanup errors
       }
     });
@@ -248,7 +248,7 @@ describe('file-operations', () => {
     afterEach(async () => {
       try {
         await fs.rm(writeTestDir, { recursive: true, force: true });
-      } catch (error) {
+      } catch {
         // Ignore cleanup errors
       }
     });
@@ -381,7 +381,7 @@ describe('file-operations', () => {
     afterEach(async () => {
       try {
         await fs.rm(integrationTestDir, { recursive: true, force: true });
-      } catch (error) {
+      } catch {
         // Ignore cleanup errors
       }
     });
