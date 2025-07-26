@@ -64,7 +64,8 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'prefer-const': 'error',
-      'no-var': 'error'
+      'no-var': 'error',
+      'jest/no-conditional-expect': 'off'
     }
   },
   {
