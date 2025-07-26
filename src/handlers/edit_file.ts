@@ -56,7 +56,7 @@ export async function handleEditFile(args: any, context: HandlerContext): Promis
     );
     return response;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('ENOENT')) {
+    if ((error as any).code === 'ENOENT') {
       throw new Error(`File not found: ${formatDisplayPath(parsed.data.path)}`);
     }
     throw error;
