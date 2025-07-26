@@ -86,7 +86,7 @@ const additionalTools = [
           'Make line-based edits to a text file. Each edit replaces exact line sequences ' +
           "with new content. Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
           'By default, throws an error if text appears multiple times. Set replace_all to true to replace all occurrences. ' +
-          'Only works within allowed directories.',
+          'Use this tool only if you have a small, focused set of edits that need to be made. If you are making larger changes or are unsure, use the write_file tool instead.',
         inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
         handler: handleEditFile,
       }
