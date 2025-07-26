@@ -22,7 +22,7 @@ export function getVersion(): string {
     const packageJsonPath = join(__dirname, '..', '..', 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
     version = packageJson.version || '1.0.0';
-  } catch (error) {
+  } catch {
     // If package.json is not found, use a default version
     version = 'UNKNOWN';
   }

@@ -9,8 +9,7 @@ export interface TreeEntry {
 }
 
 // MCP tool types
-const ToolInputSchema = ToolSchema.shape.inputSchema;
-export type ToolInput = z.infer<typeof ToolInputSchema>;
+export type ToolInput = z.infer<typeof ToolSchema.shape.inputSchema>;
 
 // Handler types
 export interface HandlerContext {

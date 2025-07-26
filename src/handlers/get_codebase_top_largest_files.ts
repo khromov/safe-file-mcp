@@ -7,7 +7,6 @@ import {
   normalizeDisplayPath,
 } from './utils.js';
 import aiDigest from 'ai-digest';
-import path from 'path';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseTopLargestFiles(

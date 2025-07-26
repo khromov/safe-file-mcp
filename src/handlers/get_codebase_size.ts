@@ -7,7 +7,6 @@ import {
   normalizeDisplayPath,
 } from './utils.js';
 import aiDigest from 'ai-digest';
-import path from 'path';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseSize(
@@ -50,7 +49,6 @@ export async function handleGetCodebaseSize(
     const claudeTokenLimit = 150000;
     // const gptTokenLimit = 128000;
 
-    let hasWarning = false;
     const hitClaudeLimit = stats.totalClaudeTokens > claudeTokenLimit;
 
     // Show token summary
@@ -78,7 +76,6 @@ export async function handleGetCodebaseSize(
     }
 
     if (hitClaudeLimit) {
-      hasWarning = true;
       output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
       output += `Tell the user that the codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
       output += `Tell the user that the codebase is likely too large for your context window, and that they should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;

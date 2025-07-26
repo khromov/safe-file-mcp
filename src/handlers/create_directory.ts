@@ -22,7 +22,7 @@ export async function handleCreateDirectory(
   try {
     const stats = await fs.stat(absolutePath);
     directoryExisted = stats.isDirectory();
-  } catch (error) {
+  } catch {
     // Directory doesn't exist, which is expected
   }
 

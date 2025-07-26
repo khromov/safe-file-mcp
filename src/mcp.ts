@@ -10,7 +10,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { getTools, ToolWithHandler } from './tools.js';
+import { getTools } from './tools.js';
 import { HandlerContext } from './types.js';
 import logger from './logger.js';
 import { prompts, getPromptContent } from './lib/prompts.js';
@@ -23,7 +23,7 @@ const __dirname = dirname(__filename);
 let instructions = '';
 try {
   instructions = readFileSync(join(__dirname, 'instructions.md'), 'utf-8');
-} catch (error) {
+} catch {
   logger.warn('Warning: instructions.md not found, continuing without instructions');
 }
 
@@ -53,7 +53,7 @@ export const createServer = async () => {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     // Convert ToolWithHandler[] to Tool[] for the response
-    const toolsWithoutHandlers: Tool[] = tools.map(({ handler, ...tool }) => tool);
+    const toolsWithoutHandlers: Tool[] = tools.map(({ handler: _handler, ...tool }) => tool);
     return { tools: toolsWithoutHandlers };
   });
 

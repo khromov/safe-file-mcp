@@ -33,7 +33,7 @@ export async function listFiles(options: ListFilesOptions) {
       additionalDefaultIgnores: ['.cocoignore'],
     });
 
-    let files = stats.files || [];
+    const files = stats.files || [];
 
     // Sort files
     if (sortBy === 'size') {

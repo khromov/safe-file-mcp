@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { exec, spawn } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -42,7 +42,7 @@ describe('CLI with Commander', () => {
 
   describe('Main command', () => {
     it('should show help when --help is passed', async () => {
-      const { stdout, stderr } = await execAsync(`node ${CLI_PATH} --help`);
+      const { stdout } = await execAsync(`node ${CLI_PATH} --help`);
 
       expect(stdout).toContain('Usage: context-coder [options] [command]');
       expect(stdout).toContain('Context Coder: MCP server for full-context coding');
@@ -67,7 +67,7 @@ describe('CLI with Commander', () => {
       const port = 4000 + Math.floor(Math.random() * 1000);
 
       // Start the server in the background
-      const serverProcess = exec(`PORT=${port} node ${CLI_PATH}`, (error, stdout, stderr) => {
+      const serverProcess = exec(`PORT=${port} node ${CLI_PATH}`, (_error, _stdout, _stderr) => {
         // This callback is called when the process exits
       });
 
@@ -89,7 +89,7 @@ describe('CLI with Commander', () => {
 
       const serverProcess = exec(
         `PORT=${port} node ${CLI_PATH} --mini`,
-        (error, stdout, stderr) => {
+        (_error, _stdout, _stderr) => {
           // Process will be killed, so we don't check here
         }
       );
@@ -108,7 +108,7 @@ describe('CLI with Commander', () => {
 
       const serverProcess = exec(
         `PORT=${port} node ${CLI_PATH} --full`,
-        (error, stdout, stderr) => {
+        (_error, _stdout, _stderr) => {
           // Process will be killed, so we don't check here
         }
       );
@@ -125,7 +125,7 @@ describe('CLI with Commander', () => {
     it('should accept --stdio flag', async () => {
       // For stdio mode, we need to handle it differently
       // Create a child process that will be killed after a short time
-      const child = exec(`node ${CLI_PATH} --stdio`, (error, stdout, stderr) => {
+      const child = exec(`node ${CLI_PATH} --stdio`, (_error, _stdout, _stderr) => {
         // We expect this to be killed, so error is normal
       });
 

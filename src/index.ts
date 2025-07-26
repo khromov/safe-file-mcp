@@ -5,7 +5,7 @@ import logger from './logger.js';
 import { getVersion } from './lib/version.js';
 
 // Async function to run the server
-async function runServer(options: any, command: any) {
+async function runServer(options: any, _command: any) {
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
   let isFullMode = true; // Default to full

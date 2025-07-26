@@ -38,7 +38,7 @@ export async function handleGetCodebase(
     logger.debug(`Generated codebase digest with length: ${result.content.length}`);
 
     // The message is already in the correct format from codebase-digest.ts
-    let content = result.content;
+    const content = result.content;
 
     const handlerResult = {
       content: [{ type: 'text', text: content }],

@@ -1,5 +1,4 @@
 import aiDigest from 'ai-digest';
-import path from 'path';
 import { getIgnoreFile, normalizeDisplayPath } from './handlers/utils.js';
 import logger from './logger.js';
 
