@@ -69,7 +69,7 @@ const miniTools: ToolWithHandler[] = [
 ];
 
 // Define additional tools for the full version
-const additionalTools: ToolWithHandler[] = [
+const additionalTools = [
   {
     name: 'read_file',
     description:
@@ -90,15 +90,16 @@ const additionalTools: ToolWithHandler[] = [
         inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
         handler: handleEditFile,
       }
-    : {
-        name: 'write_file',
-        description:
-          'Create a new file or completely overwrite an existing file with new content. ' +
-          "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
-          'You must write out the file in full each time you call write_file.',
-        inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
-        handler: handleWriteFile,
-      },
+    : undefined,
+  {
+    name: 'write_file',
+    description:
+      'Create a new file or completely overwrite an existing file with new content. ' +
+      "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
+      'You must write out the file in full each time you call write_file.',
+    inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
+    handler: handleWriteFile,
+  },
   {
     name: 'create_directory',
     description:
@@ -158,7 +159,7 @@ const additionalTools: ToolWithHandler[] = [
     inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
     handler: handleExecuteCommand,
   },
-];
+].filter((tool): tool is NonNullable<typeof tool> => tool !== undefined);
 
 // Function to get tools based on runtime mode
 export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
