@@ -22,7 +22,7 @@ jobs:
               type=raw,value=main
               type=raw,value=full
             build_args: |
-              PUBLIC_HELLO=world
+              BUILD_TYPE=full
           - name: mini
             build_type: mini
             tags: |
