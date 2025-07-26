@@ -2,7 +2,6 @@ import { EditFileArgsSchema } from '../schemas.js';
 import { HandlerContext, HandlerResponse } from '../types.js';
 import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
-import path from 'path';
 import logger from '../logger.js';
 
 export async function handleEditFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
