@@ -40,12 +40,12 @@ export async function searchFiles(
           if (entry.isDirectory()) {
             await search(fullPath);
           }
-        } catch (error) {
+        } catch {
           // Skip paths that can't be accessed
           continue;
         }
       }
-    } catch (error) {
+    } catch {
       // Skip directories that can't be read
       return;
     }
@@ -115,7 +115,9 @@ export async function writeFileSecure(filePath: string, content: string): Promis
       } catch (renameError) {
         try {
           await fs.unlink(tempPath);
-        } catch {}
+        } catch {
+          // Ignore cleanup errors
+        }
         throw renameError;
       }
     } else {
