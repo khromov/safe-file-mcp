@@ -39,7 +39,7 @@ export const getPromptContent = (
   const editModeEnabled = process.env.CONTEXT_CODER_EDIT_MODE !== 'false';
 
   switch (name) {
-    case 'context-coder-claude-desktop':
+    case 'context-coder-claude-desktop': {
       const desktopEditingText = editModeEnabled 
         ? "You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes."
         : "You have access to the write_file tool for complete file rewrites. Use write_file to create or completely overwrite files with new content.";
@@ -52,8 +52,9 @@ export const getPromptContent = (
         },
       });
       break;
+    }
 
-    case 'context-coder-claude-code':
+    case 'context-coder-claude-code': {
       const codeEditingText = editModeEnabled
         ? "For file editing: Use Context Coder's edit_file tool for small, targeted changes (line-based partial edits) and write_file for complete file rewrites. You can also use Claude Code's built-in file editing tools when appropriate."
         : "For file editing: Use Context Coder's write_file tool for complete file rewrites. You can also use Claude Code's built-in file editing tools when appropriate.";
@@ -71,6 +72,7 @@ export const getPromptContent = (
         },
       });
       break;
+    }
 
     default:
       throw new Error(`Unknown prompt: ${name}`);
