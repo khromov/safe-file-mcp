@@ -37,11 +37,14 @@ Once you have the codebase digest, you can:
 
 ### 4. Modify with Confidence
 
-Use writing tools to make changes:
+Use editing tools to make changes:
 
-- `write_file` - Create or update files
+- `edit_file` - Make line-based partial edits to files (enabled by default)
+- `write_file` - Create or completely overwrite files
 - `create_directory` - Set up new directories
 - `move_file` - Reorganize code structure
+
+**Editing Strategy**: Use `edit_file` for small, targeted changes and `write_file` when rewriting entire files or making extensive changes. The `edit_file` tool is enabled by default and provides more efficient editing for small modifications.
 
 ### 5. Use Other Tools Sparingly
 
@@ -60,21 +63,24 @@ If `get_codebase_size` warns about a large codebase:
 1. **Create a `.cocoignore` file** in the project root (similar to `.gitignore`)
 2. Add patterns for files/directories to exclude:
 
-   ```
-   # Large generated files
-   dist/
-   build/
-   *.min.js
+```
+# Large generated files
 
-   # Dependencies
-   node_modules/
-   vendor/
+dist/
+build/
+\*.min.js
 
-   # Large data files
-   *.csv
-   *.json
-   data/
-   ```
+# Dependencies
+
+node_modules/
+vendor/
+
+# Large data files
+
+_.csv
+_.json
+data/
+```
 
 3. Common patterns to exclude:
    - Build outputs (`dist/`, `build/`, `out/`)
@@ -95,9 +101,10 @@ All paths are relative to the mounted root directory:
 
 1. **Size Check First**: Always run `get_codebase_size` before `get_codebase`
 2. **Context Awareness**: Use the full codebase context to understand patterns
-3. **Respect Patterns**: Follow existing conventions found in the codebase
-4. **Minimal Reads**: Avoid redundant file reads when information is already in context
-5. **Smart Navigation**: Use search instead of browsing when looking for specific code
-6. **Safe Operations**: All file operations are atomic and secure
+3. **Efficient Editing**: Use `edit_file` for small changes, `write_file` for complete rewrites
+4. **Respect Patterns**: Follow existing conventions found in the codebase
+5. **Minimal Reads**: Avoid redundant file reads when information is already in context
+6. **Smart Navigation**: Use search instead of browsing when looking for specific code
+7. **Safe Operations**: All file operations are atomic and secure
 
-Remember: Coco's strength is providing complete context awareness. Use this to write better, more integrated code that truly fits the project.
+Remember: Coco's strength is providing complete context awareness with flexible editing options. Use this to write better, more integrated code that truly fits the project.

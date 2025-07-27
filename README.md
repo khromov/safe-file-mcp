@@ -23,10 +23,10 @@ Start a terminal in your current project folder and run:
 npx context-coder
 ```
 
-For line-based partial editing instead of complete file rewrites, use:
+By default, Context Coder includes both line-based partial editing (`edit_file`) and complete file rewriting (`write_file`) tools. If you prefer to use only complete file rewrites, you can disable the partial editing tool:
 
 ```
-npx context-coder --edit-file-mode
+npx context-coder --no-edit
 ```
 
 Then add this to the Claude Desktop config and restart Claude Desktop afterwards:
@@ -99,7 +99,7 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 <summary>Starting prompt</summary>
 
 ```
-Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
+Use the Context Coder MCP to edit files. You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the MCP tools directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
 ```
 
 </details>
@@ -124,14 +124,14 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-For line-based partial editing instead of complete file rewrites, use:
+If you prefer to disable the partial editing tool and use only complete file rewrites, use:
 
 ```json
 {
   "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["-y", "context-coder", "--mini", "--stdio", "--edit-file-mode"]
+      "args": ["-y", "context-coder", "--mini", "--stdio", "--no-edit"]
     }
   }
 }
@@ -210,8 +210,9 @@ _The reason for using the `mini` build is that Claude Code already comes with fi
 You have access to both Claude Code's built-in file tools and the Context Coder MCP for enhanced codebase analysis. Follow this workflow:
 
 1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
-2. Use Context Coders's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
-3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically
+2. Use Context Coder's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. For file editing: Use Context Coder's edit_file tool for small, targeted changes (line-based partial edits) and write_file for complete file rewrites. You can also use Claude Code's built-in file editing tools when appropriate.
+4. Remember: Context Coder gives you full codebase context and flexible editing options, Claude Code gives you precise editing control - use both strategically
 ```
 
 </details>
@@ -239,7 +240,7 @@ volumes:
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
 - `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
 - `PORT`: Override default port 3001 (HTTP mode only)
-- `CONTEXT_CODER_EDIT_MODE`: Set to "true" to enable `edit_file` tool (equivalent to `--edit-file-mode` flag)
+- `CONTEXT_CODER_EDIT_MODE`: Set to "false" to disable `edit_file` tool (equivalent to `--no-edit` flag)
 
 </details>
 
@@ -252,7 +253,7 @@ volumes:
 | `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
 | `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
 | `write_file`                     | Create or overwrite files                                                                                 |
-| `edit_file`                      | Make line-based partial edits to files (available when `--edit-file-mode` is enabled)                     |
+| `edit_file`                      | Make line-based partial edits to files (enabled by default, disable with `--no-edit`)                    |
 | `create_directory`               | Create directories                                                                                        |
 | `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
 | `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
@@ -328,15 +329,15 @@ npx context-coder [options]
 - `--mini` - Run in mini mode (only core tools)
 - `--full` - Run in full mode (all tools) - this is the default
 - `--stdio` - Use stdio transport instead of HTTP
-- `--edit-file-mode` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
+- `--no-edit` - Disable the `edit_file` tool for line-based partial edits, use `write_file` only for complete file rewrites
 
 **Examples:**
 
 ```bash
-npx context-coder                           # Default: full mode with HTTP transport
+npx context-coder                           # Default: full mode with HTTP transport and edit_file enabled
 npx context-coder --mini                    # Mini mode with core tools only
 npx context-coder --stdio                   # Use stdio transport (for Claude Code)
-npx context-coder --edit-file-mode          # Enable partial file editing
+npx context-coder --no-edit                 # Disable partial file editing, use complete file rewrites only
 npx context-coder --mini --stdio            # Combine options
 ```
 

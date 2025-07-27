@@ -79,7 +79,7 @@ const additionalTools = [
     inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
     handler: handleReadFile,
   },
-  process.env.CONTEXT_CODER_EDIT_MODE === 'true'
+  process.env.CONTEXT_CODER_EDIT_MODE !== 'false'
     ? {
         name: 'edit_file',
         description:

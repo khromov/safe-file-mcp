@@ -25,6 +25,6 @@ echo "  Mini:    docker run -it --rm -p 3001:3001 -v ./:/app -w /app context-cod
 echo "  Edit:    docker run -it --rm -p 3001:3001 -v ./:/app -w /app context-coder:edit"
 
 echo "\nVariant descriptions:"
-echo "  Regular: Full mode with all tools including write_file (complete file rewrites)"
+echo "  Regular: Full mode with all tools including both edit_file (partial edits) and write_file (complete file rewrites)"
 echo "  Mini:    Core analysis tools only (get_codebase_size, get_codebase, get_codebase_top_largest_files)"
-echo "  Edit:    Full mode with edit_file tool for partial file edits instead of write_file"
+echo "  Edit:    Full mode with edit_file tool enabled by default (same as regular now - edit_file is enabled by default)"
