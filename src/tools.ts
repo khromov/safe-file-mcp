@@ -68,8 +68,20 @@ const miniTools: ToolWithHandler[] = [
   },
 ];
 
-// Define additional tools for the full version
-const additionalTools = [
+// Define the edit_file tool separately so we can conditionally include it at runtime
+const editFileTool: ToolWithHandler = {
+  name: 'edit_file',
+  description:
+    'Make line-based edits to a text file. Each edit replaces exact line sequences ' +
+    "with new content. Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
+    'By default, throws an error if text appears multiple times. Set replace_all to true to replace all occurrences. ' +
+    'Use this tool only if you have a small, focused set of edits that need to be made. If you are making larger changes or are unsure, use the write_file tool instead.',
+  inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
+  handler: handleEditFile,
+};
+
+// Define additional tools for the full version (without edit_file which is added conditionally)
+const additionalToolsBase = [
   {
     name: 'read_file',
     description:
@@ -79,18 +91,6 @@ const additionalTools = [
     inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
     handler: handleReadFile,
   },
-  process.env.CONTEXT_CODER_EDIT_MODE !== 'false'
-    ? {
-        name: 'edit_file',
-        description:
-          'Make line-based edits to a text file. Each edit replaces exact line sequences ' +
-          "with new content. Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
-          'By default, throws an error if text appears multiple times. Set replace_all to true to replace all occurrences. ' +
-          'Use this tool only if you have a small, focused set of edits that need to be made. If you are making larger changes or are unsure, use the write_file tool instead.',
-        inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
-        handler: handleEditFile,
-      }
-    : undefined,
   {
     name: 'write_file',
     description:
@@ -161,7 +161,7 @@ const additionalTools = [
     inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
     handler: handleExecuteCommand,
   },
-].filter((tool): tool is NonNullable<typeof tool> => tool !== undefined);
+];
 
 // Function to get tools based on runtime mode
 export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
@@ -172,7 +172,19 @@ export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
   const resolvedMode: 'mini' | 'full' =
     mode || (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') || 'full';
 
-  return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
+  if (resolvedMode === 'mini') {
+    return miniTools;
+  }
+
+  // For full mode, check if edit mode is enabled and build tools array cleanly
+  const editModeEnabled = process.env.CONTEXT_CODER_EDIT_MODE !== 'false';
+  const additionalTools = [
+    additionalToolsBase[0], // read_file
+    ...(editModeEnabled ? [editFileTool] : []), // conditionally include edit_file
+    ...additionalToolsBase.slice(1) // write_file, create_directory, etc.
+  ];
+
+  return [...miniTools, ...additionalTools];
 }
 
 // Export default tools for backward compatibility (defaults to full)

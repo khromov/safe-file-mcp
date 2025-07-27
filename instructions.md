@@ -39,12 +39,12 @@ Once you have the codebase digest, you can:
 
 Use editing tools to make changes:
 
-- `edit_file` - Make line-based partial edits to files (enabled by default)
+{EDIT_FILE_TOOL_LIST}
 - `write_file` - Create or completely overwrite files
 - `create_directory` - Set up new directories
 - `move_file` - Reorganize code structure
 
-**Editing Strategy**: Use `edit_file` for small, targeted changes and `write_file` when rewriting entire files or making extensive changes. The `edit_file` tool is enabled by default and provides more efficient editing for small modifications.
+{EDITING_STRATEGY}
 
 ### 5. Use Other Tools Sparingly
 
@@ -101,7 +101,7 @@ All paths are relative to the mounted root directory:
 
 1. **Size Check First**: Always run `get_codebase_size` before `get_codebase`
 2. **Context Awareness**: Use the full codebase context to understand patterns
-3. **Efficient Editing**: Use `edit_file` for small changes, `write_file` for complete rewrites
+3. {EFFICIENT_EDITING_PRACTICE}
 4. **Respect Patterns**: Follow existing conventions found in the codebase
 5. **Minimal Reads**: Avoid redundant file reads when information is already in context
 6. **Smart Navigation**: Use search instead of browsing when looking for specific code
