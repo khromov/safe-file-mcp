@@ -6,9 +6,8 @@ if [ "$BUILD_TYPE" = "mini" ]; then
   MODE_FLAG="--mini"
 elif [ "$BUILD_TYPE" = "full" ]; then
   MODE_FLAG="--full"
-elif [ "$BUILD_TYPE" = "edit" ]; then
-  # Edit build type now runs with default edit mode enabled (no special flag needed)
-  MODE_FLAG="--full"
+elif [ "$BUILD_TYPE" = "noedit" ]; then
+  MODE_FLAG="--full --no-edit"
 fi
 
 if [ "$MCP_TRANSPORT" = "stdio" ]; then

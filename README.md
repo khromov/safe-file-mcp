@@ -66,6 +66,19 @@ services:
     working_dir: /app
 ```
 
+For the no-edit variant (write_file only):
+
+```yaml
+services:
+  context-coder:
+    image: ghcr.io/khromov/context-coder:noedit
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./:/app
+    working_dir: /app
+```
+
 Start the service:
 
 ```bash
@@ -253,7 +266,7 @@ volumes:
 | `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
 | `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
 | `write_file`                     | Create or overwrite files                                                                                 |
-| `edit_file`                      | Make line-based partial edits to files (enabled by default, disable with `--no-edit`)                    |
+| `edit_file`                      | Make line-based partial edits to files (enabled by default, disable with `--no-edit`)                     |
 | `create_directory`               | Create directories                                                                                        |
 | `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
 | `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
@@ -370,12 +383,22 @@ In development mode, file operations are sandboxed to the `./mount` directory.
 
 </details>
 
+## Docker Variants
+
+Context Coder provides three Docker variants:
+
+| Variant    | Image                                  | Description                                                                                      |
+| ---------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Full**   | `ghcr.io/khromov/context-coder:full`   | All tools including both `edit_file` (partial edits) and `write_file` (complete rewrites)        |
+| **Mini**   | `ghcr.io/khromov/context-coder:mini`   | Core analysis tools only (`get_codebase_size`, `get_codebase`, `get_codebase_top_largest_files`) |
+| **NoEdit** | `ghcr.io/khromov/context-coder:noedit` | Full tools but with `edit_file` disabled - only `write_file` (complete file rewrites)            |
+
 ## Docker Build
 
 <details>
 <summary>Docker build instructions</summary>
 
-Build both versions:
+Build all versions:
 
 ```bash
 ./build-all.sh
@@ -384,11 +407,14 @@ Build both versions:
 Or build individually:
 
 ```bash
-# Full version
+# Full version (with edit_file enabled by default)
 docker build -t context-coder:latest .
 
-# Mini version
-docker build --target release-mini --build-arg BUILD_TYPE=mini -t context-coder:mini .
+# Mini version (core tools only)
+docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
+
+# NoEdit version (edit_file disabled, write_file only)
+docker build --build-arg BUILD_TYPE=noedit -t context-coder:noedit .
 ```
 
 Build a custom image:
