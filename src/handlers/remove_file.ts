@@ -24,7 +24,7 @@ export async function handleRemoveFile(
 
     if (stats.isDirectory()) {
       throw new Error(
-        `Cannot remove directory with remove_file. Use a directory removal command instead.`
+        `Cannot remove directory with remove_file. Use rm with execute_command instead.`
       );
     }
 
