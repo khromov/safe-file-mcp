@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import logger from './logger.js';
 import { getVersion } from './lib/version.js';
 
-const buildType = process.env.BUILD_TYPE || 'NOT_SET';
+const buildType = process.env.COCO_BUILD_TYPE || 'NOT_SET';
 const mode = process.env.CONTEXT_CODER_MODE || 'mini';
 const version = getVersion();
 logger.info(
@@ -171,7 +171,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.COCO_PORT || 3001;
 app.listen(PORT, () => {
   logger.info(`🥥 Coco MCP Server listening on port ${PORT} (${mode} mode)`);
 });

@@ -69,6 +69,17 @@ When working on this codebase:
 7. **Mode Selection**: Server runs in 'mini' mode by default. Use `--full` flag or set `CONTEXT_CODER_MODE=full` for all tools
 8. **Development Sandbox**: In dev mode (`COCO_DEV=true`), file operations are sandboxed to `./mount` directory
 
+## Environment Variables
+
+All environment variables use the `COCO_` prefix for consistency:
+
+- `COCO_PORT`: Server port (default: 3001) - can also be set via `--port` CLI flag
+- `COCO_DEV`: Set to "true" for development mode (uses ./mount sandbox)
+- `COCO_MCP_TRANSPORT`: Transport protocol - "http" or "stdio" (default: "http")
+- `COCO_BUILD_TYPE`: Docker build variant - "regular", "mini", or "edit"
+- `CONTEXT_CODER_MODE`: Runtime mode - "mini" or "full" (set by CLI flags)
+- `CONTEXT_CODER_EDIT_MODE`: Enable edit_file tool when set to "true"
+
 ## Available Tools
 
 The server exposes 11 MCP tools for file operations (mini mode has 3, full mode adds 8 more):
@@ -85,6 +96,7 @@ The server exposes 11 MCP tools for file operations (mini mode has 3, full mode 
 - Directory operations: `list_directory`, `directory_tree`, `create_directory`
 - Search: `search_files`
 - Command execution: `execute_command`
+- Line-based editing: `edit_file` (when edit mode is enabled)
 
 **Important Workflow:**
 

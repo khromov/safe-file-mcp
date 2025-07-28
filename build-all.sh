@@ -10,10 +10,10 @@ docker build -t context-coder:latest -t context-coder:regular .
 
 # Build mini version
 echo "\n📦 Building Coco Mini image..."
-docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
+docker build --build-arg COCO_BUILD_TYPE=mini -t context-coder:mini .
 
 echo "\n📦 Building Coco Edit image..."
-docker build --build-arg BUILD_TYPE=edit -t context-coder:edit .
+docker build --build-arg COCO_BUILD_TYPE=edit -t context-coder:edit .
 
 echo "\n✅ Build complete!"
 echo "\nAvailable images:"

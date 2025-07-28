@@ -6,6 +6,11 @@ import { getVersion } from './lib/version.js';
 
 // Async function to run the server
 async function runServer(options: any, _command: any) {
+  // Set port from command line argument or environment variable
+  if (options.port) {
+    process.env.COCO_PORT = options.port.toString();
+  }
+
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
   let isFullMode = true; // Default to full
@@ -17,8 +22,8 @@ async function runServer(options: any, _command: any) {
   }
 
   let transportMode = 'http'; // Default to http
-  if (process.env.MCP_TRANSPORT) {
-    transportMode = process.env.MCP_TRANSPORT;
+  if (process.env.COCO_MCP_TRANSPORT) {
+    transportMode = process.env.COCO_MCP_TRANSPORT;
   } else if (options.stdio) {
     transportMode = 'stdio';
   }
@@ -30,6 +35,9 @@ async function runServer(options: any, _command: any) {
   if (options.editFileMode || options.edit) {
     process.env.CONTEXT_CODER_EDIT_MODE = 'true';
   }
+
+  // Set transport mode for other modules
+  process.env.COCO_MCP_TRANSPORT = transportMode;
 
   // Log startup information
   logger.info(`Current directory: ${process.cwd()}`);
@@ -56,6 +64,7 @@ program
   .option('-s, --stdio', 'use stdio transport instead of HTTP')
   .option('-e, --edit', 'use edit_file tool instead of write_file (partial edits)')
   .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
+  .option('-p, --port <number>', 'port to listen on (default: 3001)', parseInt)
   .action(runServer);
 
 // Add the 'ls' subcommand

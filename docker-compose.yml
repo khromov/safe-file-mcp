@@ -8,5 +8,5 @@ services:
       - ./:/app
     working_dir: /app
     environment:
-      - MCP_TRANSPORT=http
+      - COCO_MCP_TRANSPORT=http
     restart: unless-stopped

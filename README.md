@@ -183,7 +183,7 @@ Create `.mcp.json` in your project root:
         "-w",
         "/app",
         "-e",
-        "MCP_TRANSPORT=stdio",
+        "COCO_MCP_TRANSPORT=stdio",
         "ghcr.io/khromov/context-coder:mini"
       ]
     }
@@ -220,7 +220,7 @@ services:
       - ./:/app
     working_dir: /app
     environment:
-      - MCP_TRANSPORT=http
+      - COCO_MCP_TRANSPORT=http
     restart: unless-stopped
 ```
 
@@ -261,8 +261,8 @@ volumes:
 ### Environment Variables
 
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
-- `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
-- `PORT`: Override default port 3001 (HTTP mode only)
+- `COCO_MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
+- `COCO_PORT`: Override default port 3001 (HTTP mode only)
 - `CONTEXT_CODER_EDIT_MODE`: Set to "true" to enable `edit_file` tool (equivalent to `--edit-file-mode` flag)
 
 </details>
@@ -354,6 +354,7 @@ npx context-coder [options]
 - `-s, --stdio` - Use stdio transport instead of HTTP
 - `-e, --edit` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
 - `--edit-file-mode` - Same as `-e, --edit` (legacy flag)
+- `-p, --port <number>` - Port to listen on (default: 3001)
 
 **Shorthand Examples:**
 
@@ -362,8 +363,9 @@ npx context-coder                           # Default: full mode with HTTP trans
 npx context-coder -m                        # Mini mode with core tools only
 npx context-coder -s                        # Use stdio transport (for Claude Code)
 npx context-coder -e                        # Enable partial file editing
+npx context-coder -p 8080                   # Use port 8080 instead of 3001
 npx context-coder -m -s                     # Combine options for mini mode with stdio
-npx context-coder -s -e                     # stdio transport with edit mode enabled
+npx context-coder -s -e -p 8080             # stdio transport with edit mode enabled and custom port
 ```
 
 **Full Examples:**
@@ -372,6 +374,7 @@ npx context-coder -s -e                     # stdio transport with edit mode ena
 npx context-coder --mini                    # Mini mode with core tools only
 npx context-coder --stdio                   # Use stdio transport (for Claude Code)
 npx context-coder --edit-file-mode          # Enable partial file editing
+npx context-coder --port 8080               # Use custom port
 npx context-coder --mini --stdio            # Combine options
 ```
 
@@ -432,10 +435,10 @@ Or build individually:
 docker build -t context-coder:latest .
 
 # Mini version
-docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
+docker build --build-arg COCO_BUILD_TYPE=mini -t context-coder:mini .
 
 # Edit version
-docker build --build-arg BUILD_TYPE=edit -t context-coder:edit .
+docker build --build-arg COCO_BUILD_TYPE=edit -t context-coder:edit .
 ```
 
 Build a custom image:

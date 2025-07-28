@@ -18,7 +18,7 @@ const logFormat = winston.format.combine(
 );
 
 // Determine transport mode
-const isStdioMode = process.env.MCP_TRANSPORT === 'stdio' || process.argv.includes('--stdio');
+const isStdioMode = process.env.COCO_MCP_TRANSPORT === 'stdio' || process.argv.includes('--stdio');
 
 const consoleTransport = isStdioMode
   ? new winston.transports.Console({
