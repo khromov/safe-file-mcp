@@ -14,6 +14,10 @@ export const WriteFileArgsSchema = z.object({
   content: z.string(),
 });
 
+export const RemoveFileArgsSchema = z.object({
+  path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
+});
+
 export const CreateDirectoryArgsSchema = z.object({
   path: z.string().describe('Relative path from root directory (with or without "./" prefix)'),
 });

@@ -6,6 +6,7 @@ import {
   GetCodebaseTopLargestFilesArgsSchema,
   ReadFileArgsSchema,
   WriteFileArgsSchema,
+  RemoveFileArgsSchema,
   EditFileArgsSchema,
   CreateDirectoryArgsSchema,
   ListDirectoryArgsSchema,
@@ -22,6 +23,7 @@ import { handleGetCodebase } from './handlers/get_codebase.js';
 import { handleGetCodebaseTopLargestFiles } from './handlers/get_codebase_top_largest_files.js';
 import { handleReadFile } from './handlers/read_file.js';
 import { handleWriteFile } from './handlers/write_file.js';
+import { handleRemoveFile } from './handlers/remove_file.js';
 import { handleEditFile } from './handlers/edit_file.js';
 import { handleCreateDirectory } from './handlers/create_directory.js';
 import { handleListDirectory } from './handlers/list_directory.js';
@@ -99,6 +101,15 @@ const additionalTools = [
       'You must write out the file in full each time you call write_file.',
     inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
     handler: handleWriteFile,
+  },
+  {
+    name: 'remove_file',
+    description:
+      'Delete a file from the file system. ' +
+      "Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
+      'This operation is irreversible. Only works with files, not directories.',
+    inputSchema: zodToJsonSchema(RemoveFileArgsSchema) as ToolInput,
+    handler: handleRemoveFile,
   },
   {
     name: 'create_directory',
