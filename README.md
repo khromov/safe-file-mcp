@@ -66,6 +66,19 @@ services:
     working_dir: /app
 ```
 
+For the edit variant (line-based partial edits):
+
+```yaml
+services:
+  context-coder:
+    image: ghcr.io/khromov/context-coder:edit
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./:/app
+    working_dir: /app
+```
+
 Start the service:
 
 ```bash
@@ -96,10 +109,21 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 **Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
 
 <details>
-<summary>Starting prompt</summary>
+<summary>Starting prompt (default)</summary>
 
 ```
 Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
+```
+
+</details>
+
+<details>
+<summary>Starting prompt (with edit mode enabled)</summary>
+
+If you're using `--edit-file-mode`, use this prompt instead:
+
+```
+Use the Context Coder MCP to edit files. You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes. Always use write_file if writing with edit_file fails. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the MCP tools directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
 ```
 
 </details>
@@ -369,12 +393,22 @@ In development mode, file operations are sandboxed to the `./mount` directory.
 
 </details>
 
+## Docker Variants
+
+Context Coder provides three Docker variants:
+
+| Variant  | Image                                | Description                                                                              |
+| -------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| **Full** | `ghcr.io/khromov/context-coder:full` | Full mode with all tools using `write_file` (complete file rewrites)                     |
+| **Mini** | `ghcr.io/khromov/context-coder:mini` | Core analysis tools only (`get_codebase_size`, `get_codebase`, `get_codebase_top_largest_files`) |
+| **Edit** | `ghcr.io/khromov/context-coder:edit` | Full mode with `edit_file` tool for line-based partial edits in addition to `write_file`     |
+
 ## Docker Build
 
 <details>
 <summary>Docker build instructions</summary>
 
-Build both versions:
+Build all versions:
 
 ```bash
 ./build-all.sh
@@ -387,7 +421,10 @@ Or build individually:
 docker build -t context-coder:latest .
 
 # Mini version
-docker build --target release-mini --build-arg BUILD_TYPE=mini -t context-coder:mini .
+docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
+
+# Edit version
+docker build --build-arg BUILD_TYPE=edit -t context-coder:edit .
 ```
 
 Build a custom image:

@@ -141,9 +141,11 @@ const additionalTools = [
   {
     name: 'search_files',
     description:
-      'Recursively search for files and directories matching a pattern. ' +
+      'Recursively search for files by file name matching a pattern. ' +
       "Use relative paths with or without './' prefix for the search root. " +
-      'The search is case-insensitive and matches partial names.',
+      'The search is case-insensitive and matches partial file names. ' +
+      'Do NOT call this tool unless the user specifically asks to search for files or you get stuck and need it to debug something.' +
+      'Remember that you generally already have access to all the codebase, so there is little reason to search for files.',
     inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
     handler: handleSearchFiles,
   },
