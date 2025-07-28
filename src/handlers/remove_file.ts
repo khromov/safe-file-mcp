@@ -21,9 +21,11 @@ export async function handleRemoveFile(
   try {
     // Check if file exists and get file info
     const stats = await fs.stat(absolutePath);
-    
+
     if (stats.isDirectory()) {
-      throw new Error(`Cannot remove directory with remove_file. Use a directory removal command instead.`);
+      throw new Error(
+        `Cannot remove directory with remove_file. Use a directory removal command instead.`
+      );
     }
 
     // Remove the file

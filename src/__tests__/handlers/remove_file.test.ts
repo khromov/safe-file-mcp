@@ -1,109 +1,88 @@
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { handleRemoveFile } from '../../handlers/remove_file.js';
-import { HandlerContext } from '../../types.js';
+import {
+  setupTestDir,
+  cleanupTestDir,
+  createTestContext,
+  fileExists,
+  createTestFile,
+} from './test-utils.js';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-describe('remove_file handler', () => {
+describe('handleRemoveFile', () => {
   let testDir: string;
-  let context: HandlerContext;
 
   beforeEach(async () => {
-    // Create a unique test directory for each test
-    testDir = path.join(__dirname, 'test-handlers-temp', `remove-file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-    await fs.mkdir(testDir, { recursive: true });
-    
-    context = {
-      absoluteRootDir: testDir,
-    };
+    testDir = await setupTestDir();
   });
 
   afterEach(async () => {
-    // Clean up test directory
-    try {
-      await fs.rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    await cleanupTestDir(testDir);
   });
 
   describe('successful file removal', () => {
     it('should remove a file successfully', async () => {
-      // Create a test file
-      const testFilePath = path.join(testDir, 'test.txt');
-      await fs.writeFile(testFilePath, 'test content');
+      const context = createTestContext(testDir);
+      await createTestFile(testDir, 'test.txt', 'test content');
 
-      // Remove the file
       const result = await handleRemoveFile({ path: 'test.txt' }, context);
 
-      // Verify response
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe('text');
       expect(result.content[0].text).toBe('Successfully removed file test.txt');
       expect(result.isError).toBeUndefined();
-
-      // Verify file is actually removed
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(await fileExists(testDir, 'test.txt')).toBe(false);
     });
 
     it('should remove a file with ./ prefix', async () => {
-      // Create a test file
-      const testFilePath = path.join(testDir, 'test.txt');
-      await fs.writeFile(testFilePath, 'test content');
+      const context = createTestContext(testDir);
+      await createTestFile(testDir, 'test.txt', 'test content');
 
-      // Remove the file with ./ prefix
       const result = await handleRemoveFile({ path: './test.txt' }, context);
 
-      // Verify response
       expect(result.content[0].text).toBe('Successfully removed file test.txt');
-
-      // Verify file is actually removed
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(await fileExists(testDir, 'test.txt')).toBe(false);
     });
 
     it('should remove a file in a subdirectory', async () => {
-      // Create subdirectory and file
-      const subDir = path.join(testDir, 'subdir');
-      await fs.mkdir(subDir);
-      const testFilePath = path.join(subDir, 'nested.txt');
-      await fs.writeFile(testFilePath, 'nested content');
+      const context = createTestContext(testDir);
+      await createTestFile(testDir, 'subdir/nested.txt', 'nested content');
 
-      // Remove the file
       const result = await handleRemoveFile({ path: 'subdir/nested.txt' }, context);
 
-      // Verify response
       expect(result.content[0].text).toBe('Successfully removed file subdir/nested.txt');
-
-      // Verify file is actually removed
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(await fileExists(testDir, 'subdir/nested.txt')).toBe(false);
     });
   });
 
   describe('error cases', () => {
     it('should throw error for missing arguments', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({}, context)).rejects.toThrow(
         'Invalid arguments for remove_file'
       );
     });
 
     it('should throw error for invalid path type', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: 123 }, context)).rejects.toThrow(
         'Invalid arguments for remove_file'
       );
     });
 
     it('should throw error for non-existent file', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: 'nonexistent.txt' }, context)).rejects.toThrow(
         'File not found: nonexistent.txt'
       );
     });
 
     it('should throw error when trying to remove a directory', async () => {
-      // Create a directory
+      const context = createTestContext(testDir);
       const dirPath = path.join(testDir, 'testdir');
       await fs.mkdir(dirPath);
 
@@ -113,94 +92,98 @@ describe('remove_file handler', () => {
     });
 
     it('should throw error for parent directory traversal', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: '../outside.txt' }, context)).rejects.toThrow(
         'Path cannot contain parent directory references'
       );
     });
 
     it('should throw error for complex parent directory traversal', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: 'subdir/../../outside.txt' }, context)).rejects.toThrow(
         'Path cannot contain parent directory references'
       );
     });
 
     it('should throw error for Windows-style parent directory traversal', async () => {
-      await expect(handleRemoveFile({ path: 'subdir\\..\\..\\outside.txt' }, context)).rejects.toThrow(
-        'Path cannot contain parent directory references'
-      );
+      const context = createTestContext(testDir);
+
+      await expect(
+        handleRemoveFile({ path: 'subdir\\..\\..\\outside.txt' }, context)
+      ).rejects.toThrow('Path cannot contain parent directory references');
     });
   });
 
   describe('path normalization', () => {
     it('should handle empty path gracefully', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: '' }, context)).rejects.toThrow();
     });
 
     it('should handle current directory reference', async () => {
+      const context = createTestContext(testDir);
+
       await expect(handleRemoveFile({ path: '.' }, context)).rejects.toThrow();
     });
 
     it('should handle various path formats', async () => {
-      // Create test files
-      const testFilePath1 = path.join(testDir, 'file1.txt');
-      const testFilePath2 = path.join(testDir, 'file2.txt');
-      await fs.writeFile(testFilePath1, 'content1');
-      await fs.writeFile(testFilePath2, 'content2');
+      const context = createTestContext(testDir);
+      await createTestFile(testDir, 'file1.txt', 'content1');
+      await createTestFile(testDir, 'file2.txt', 'content2');
 
-      // Test different path formats
       await handleRemoveFile({ path: './file1.txt' }, context);
       await handleRemoveFile({ path: 'file2.txt' }, context);
 
-      // Verify both files are removed
-      await expect(fs.access(testFilePath1)).rejects.toThrow();
-      await expect(fs.access(testFilePath2)).rejects.toThrow();
+      expect(await fileExists(testDir, 'file1.txt')).toBe(false);
+      expect(await fileExists(testDir, 'file2.txt')).toBe(false);
     });
   });
 
   describe('file system edge cases', () => {
     it('should handle files with special characters in name', async () => {
+      const context = createTestContext(testDir);
       const specialFileName = 'test file with spaces & symbols!.txt';
-      const testFilePath = path.join(testDir, specialFileName);
-      await fs.writeFile(testFilePath, 'special content');
+      await createTestFile(testDir, specialFileName, 'special content');
 
       const result = await handleRemoveFile({ path: specialFileName }, context);
 
       expect(result.content[0].text).toBe(`Successfully removed file ${specialFileName}`);
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(await fileExists(testDir, specialFileName)).toBe(false);
     });
 
     it('should handle removing a file with no extension', async () => {
-      const testFilePath = path.join(testDir, 'README');
-      await fs.writeFile(testFilePath, 'readme content');
+      const context = createTestContext(testDir);
+      await createTestFile(testDir, 'README', 'readme content');
 
       const result = await handleRemoveFile({ path: 'README' }, context);
 
       expect(result.content[0].text).toBe('Successfully removed file README');
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(await fileExists(testDir, 'README')).toBe(false);
     });
 
     it('should handle deeply nested file paths', async () => {
-      const deepPath = 'level1/level2/level3/level4';
-      const fullDeepPath = path.join(testDir, deepPath);
-      await fs.mkdir(fullDeepPath, { recursive: true });
-      
-      const testFilePath = path.join(fullDeepPath, 'deep.txt');
-      await fs.writeFile(testFilePath, 'deep content');
+      const context = createTestContext(testDir);
+      const deepPath = 'level1/level2/level3/level4/deep.txt';
+      await createTestFile(testDir, deepPath, 'deep content');
 
-      const result = await handleRemoveFile({ path: `${deepPath}/deep.txt` }, context);
+      const result = await handleRemoveFile({ path: deepPath }, context);
 
-      expect(result.content[0].text).toBe(`Successfully removed file ${deepPath}/deep.txt`);
-      await expect(fs.access(testFilePath)).rejects.toThrow();
+      expect(result.content[0].text).toBe(`Successfully removed file ${deepPath}`);
+      expect(await fileExists(testDir, deepPath)).toBe(false);
     });
   });
 
   describe('concurrent operations', () => {
     it('should handle multiple file removals concurrently', async () => {
+      const context = createTestContext(testDir);
+
       // Create multiple test files
       const filePromises = [];
       for (let i = 0; i < 5; i++) {
-        const filePath = path.join(testDir, `concurrent-${i}.txt`);
-        filePromises.push(fs.writeFile(filePath, `content ${i}`));
+        filePromises.push(createTestFile(testDir, `concurrent-${i}.txt`, `content ${i}`));
       }
       await Promise.all(filePromises);
 
@@ -218,8 +201,7 @@ describe('remove_file handler', () => {
 
       // Verify all files are removed
       for (let i = 0; i < 5; i++) {
-        const filePath = path.join(testDir, `concurrent-${i}.txt`);
-        await expect(fs.access(filePath)).rejects.toThrow();
+        expect(await fileExists(testDir, `concurrent-${i}.txt`)).toBe(false);
       }
     });
   });
