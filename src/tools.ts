@@ -6,6 +6,7 @@ import {
   GetCodebaseTopLargestFilesArgsSchema,
   ReadFileArgsSchema,
   WriteFileArgsSchema,
+  RemoveFileArgsSchema,
   EditFileArgsSchema,
   CreateDirectoryArgsSchema,
   ListDirectoryArgsSchema,
@@ -22,6 +23,7 @@ import { handleGetCodebase } from './handlers/get_codebase.js';
 import { handleGetCodebaseTopLargestFiles } from './handlers/get_codebase_top_largest_files.js';
 import { handleReadFile } from './handlers/read_file.js';
 import { handleWriteFile } from './handlers/write_file.js';
+import { handleRemoveFile } from './handlers/remove_file.js';
 import { handleEditFile } from './handlers/edit_file.js';
 import { handleCreateDirectory } from './handlers/create_directory.js';
 import { handleListDirectory } from './handlers/list_directory.js';
@@ -101,6 +103,15 @@ const additionalTools = [
     handler: handleWriteFile,
   },
   {
+    name: 'remove_file',
+    description:
+      'Delete a file from the file system. ' +
+      "Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
+      'This operation is irreversible. Only works with files, not directories.',
+    inputSchema: zodToJsonSchema(RemoveFileArgsSchema) as ToolInput,
+    handler: handleRemoveFile,
+  },
+  {
     name: 'create_directory',
     description:
       'Create a new directory or ensure a directory exists. ' +
@@ -141,9 +152,11 @@ const additionalTools = [
   {
     name: 'search_files',
     description:
-      'Recursively search for files and directories matching a pattern. ' +
+      'Recursively search for files by file name matching a pattern. ' +
       "Use relative paths with or without './' prefix for the search root. " +
-      'The search is case-insensitive and matches partial names.',
+      'The search is case-insensitive and matches partial file names. ' +
+      'Do NOT call this tool unless the user specifically asks to search for files or you get stuck and need it to debug something.' +
+      'Remember that you generally already have access to all the codebase, so there is little reason to search for files.',
     inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
     handler: handleSearchFiles,
   },
