@@ -109,7 +109,7 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 **Recommended setup and starting prompt**: Create a Claude Project and add this to your project instructions:
 
 <details>
-<summary>Starting prompt (default)</summary>
+<summary>Starting prompt (default - without edit mode)</summary>
 
 ```
 Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
@@ -319,8 +319,8 @@ Lists all files that will be included in the codebase analysis, showing file siz
 **Options:**
 
 - `--sort-by <type>` - Sort by "size" or "path" (default: "size")
-- `--reverse` - Reverse sort order (ascending instead of descending)
-- `--directory <dir>` - Directory to analyze (default: current directory)
+- `-r, --reverse` - Reverse sort order (ascending instead of descending)
+- `-d, --directory <dir>` - Directory to analyze (default: current directory)
 - `--help` - Show usage information
 
 **Examples:**
@@ -328,9 +328,9 @@ Lists all files that will be included in the codebase analysis, showing file siz
 ```bash
 npx context-coder ls                           # Default: sort by size descending
 npx context-coder ls --sort-by path            # Sort alphabetically by path
-npx context-coder ls --reverse                 # Sort by size ascending
+npx context-coder ls -r                        # Sort by size ascending
 npx context-coder ls --sort-by path --reverse  # Sort by path Z-A
-npx context-coder ls --directory ./src         # Analyze specific directory
+npx context-coder ls -d ./src                  # Analyze specific directory
 ```
 
 The command shows:
@@ -349,15 +349,26 @@ npx context-coder [options]
 
 **Options:**
 
-- `--mini` - Run in mini mode (only core tools)
-- `--full` - Run in full mode (all tools) - this is the default
-- `--stdio` - Use stdio transport instead of HTTP
-- `--edit-file-mode` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
+- `-m, --mini` - Run in mini mode (only core tools)
+- `-f, --full` - Run in full mode (all tools) - this is the default
+- `-s, --stdio` - Use stdio transport instead of HTTP
+- `-e, --edit` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
+- `--edit-file-mode` - Same as `-e, --edit` (legacy flag)
 
-**Examples:**
+**Shorthand Examples:**
 
 ```bash
 npx context-coder                           # Default: full mode with HTTP transport
+npx context-coder -m                        # Mini mode with core tools only
+npx context-coder -s                        # Use stdio transport (for Claude Code)
+npx context-coder -e                        # Enable partial file editing
+npx context-coder -m -s                     # Combine options for mini mode with stdio
+npx context-coder -s -e                     # stdio transport with edit mode enabled
+```
+
+**Full Examples:**
+
+```bash
 npx context-coder --mini                    # Mini mode with core tools only
 npx context-coder --stdio                   # Use stdio transport (for Claude Code)
 npx context-coder --edit-file-mode          # Enable partial file editing
@@ -397,11 +408,11 @@ In development mode, file operations are sandboxed to the `./mount` directory.
 
 Context Coder provides three Docker variants:
 
-| Variant  | Image                                | Description                                                                              |
-| -------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| **Full** | `ghcr.io/khromov/context-coder:full` | Full mode with all tools using `write_file` (complete file rewrites)                     |
+| Variant  | Image                                | Description                                                                                      |
+| -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **Full** | `ghcr.io/khromov/context-coder:full` | Full mode with all tools using `write_file` (complete file rewrites)                             |
 | **Mini** | `ghcr.io/khromov/context-coder:mini` | Core analysis tools only (`get_codebase_size`, `get_codebase`, `get_codebase_top_largest_files`) |
-| **Edit** | `ghcr.io/khromov/context-coder:edit` | Full mode with `edit_file` tool for line-based partial edits in addition to `write_file`     |
+| **Edit** | `ghcr.io/khromov/context-coder:edit` | Full mode with `edit_file` tool for line-based partial edits instead of `write_file`             |
 
 ## Docker Build
 

@@ -34,16 +34,16 @@ export const getPromptContent = (
   args?: Record<string, any>
 ): Array<{ role: string; content: { type: string; text: string } }> => {
   const messages: Array<{ role: string; content: { type: string; text: string } }> = [];
-  
+
   // Check if edit mode is enabled
   const editModeEnabled = process.env.CONTEXT_CODER_EDIT_MODE === 'true';
 
   switch (name) {
     case 'context-coder-claude-desktop': {
-      const desktopEditingText = editModeEnabled 
-        ? "You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes. Always use write_file if writing with edit_file fails."
-        : "Remember that partial edits are not allowed, always write out the edited files in full through the MCP.";
-      
+      const desktopEditingText = editModeEnabled
+        ? 'You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes. Always use write_file if writing with edit_file fails.'
+        : 'Remember that partial edits are not allowed, always write out the edited files in full through the MCP.';
+
       messages.push({
         role: 'user',
         content: {
@@ -57,8 +57,8 @@ export const getPromptContent = (
     case 'context-coder-claude-code': {
       const codeEditingText = editModeEnabled
         ? "3. For file editing: Use Context Coder's edit_file tool for small, targeted changes (line-based partial edits) and write_file for complete file rewrites. You can also use Claude Code's built-in file editing tools when appropriate.\n4. Remember: Context Coder gives you full codebase context and flexible editing options, Claude Code gives you precise editing control - use both strategically"
-        : "3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically";
-      
+        : '3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically';
+
       messages.push({
         role: 'user',
         content: {

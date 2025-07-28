@@ -40,6 +40,7 @@ Once you have the codebase digest, you can:
 Use editing tools to make changes:
 
 {EDIT_FILE_TOOL_LIST}
+
 - `write_file` - Create or completely overwrite files
 - `create_directory` - Set up new directories
 - `move_file` - Reorganize code structure

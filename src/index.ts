@@ -27,7 +27,7 @@ async function runServer(options: any, _command: any) {
   const mode = isFullMode ? 'full' : 'mini';
   process.env.CONTEXT_CODER_MODE = mode;
 
-  if (options.editFileMode) {
+  if (options.editFileMode || options.edit) {
     process.env.CONTEXT_CODER_EDIT_MODE = 'true';
   }
 
@@ -51,9 +51,10 @@ program
   .version(getVersion())
   .name('context-coder')
   .description('Context Coder: MCP server for full-context coding')
-  .option('--mini', 'run in mini mode (only core tools)')
-  .option('--full', 'run in full mode (all tools)')
-  .option('--stdio', 'use stdio transport instead of HTTP')
+  .option('-m, --mini', 'run in mini mode (only core tools)')
+  .option('-f, --full', 'run in full mode (all tools)')
+  .option('-s, --stdio', 'use stdio transport instead of HTTP')
+  .option('-e, --edit', 'use edit_file tool instead of write_file (partial edits)')
   .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
   .action(runServer);
 
@@ -63,7 +64,7 @@ program
   .description('List all files that will be included in the codebase analysis')
   .option('--sort-by <type>', 'Sort by "size" or "path"', 'size')
   .option('-r, --reverse', 'Reverse sort order (ascending instead of descending)')
-  .option('--directory <dir>', 'Directory to analyze', '.')
+  .option('-d, --directory <dir>', 'Directory to analyze', '.')
   .action(async (options) => {
     // Import and run the list functionality
     const { listFiles } = await import('./list-files-cli.js');
