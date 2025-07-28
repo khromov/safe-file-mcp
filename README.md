@@ -23,10 +23,10 @@ Start a terminal in your current project folder and run:
 npx context-coder
 ```
 
-By default, Context Coder includes both line-based partial editing (`edit_file`) and complete file rewriting (`write_file`) tools. If you prefer to use only complete file rewrites, you can disable the partial editing tool:
+For line-based partial editing instead of complete file rewrites, use:
 
 ```
-npx context-coder --no-edit
+npx context-coder --edit-file-mode
 ```
 
 Then add this to the Claude Desktop config and restart Claude Desktop afterwards:
@@ -59,19 +59,6 @@ Create a `docker-compose.yml` file in the project(s) you want to work on.
 services:
   context-coder:
     image: ghcr.io/khromov/context-coder:full
-    ports:
-      - '3001:3001'
-    volumes:
-      - ./:/app
-    working_dir: /app
-```
-
-For the no-edit variant (write_file only):
-
-```yaml
-services:
-  context-coder:
-    image: ghcr.io/khromov/context-coder:noedit
     ports:
       - '3001:3001'
     volumes:
@@ -112,7 +99,7 @@ Next, create a Claude Project and insert the recommended starting prompt just be
 <summary>Starting prompt</summary>
 
 ```
-Use the Context Coder MCP to edit files. You have access to both edit_file (for line-based partial edits) and write_file (for complete file rewrites) tools. Use edit_file when making small, targeted changes and write_file when rewriting entire files or making extensive changes. Always use write_file if writing with edit_file fails. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the MCP tools directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
+Use the Context Coder MCP to edit files. Remember that partial edits are not allowed, always write out the edited files in full through the MCP. You MUST call the get_codebase_size and get_codebase MCP tools at the start of every new chat. Do not call read_file, as you already have the codebase via get_codebase - use this reference instead. ONLY call read_file if you can't find the file in your context. Do not create any artifacts unless the user asks for it, just call the write_file tool directly with the updated code. If you get cut off when writing code and the user asks you to continue, continue from the last successfully written file to not omit anything.
 ```
 
 </details>
@@ -137,14 +124,14 @@ Create `.mcp.json` in your project root:
 }
 ```
 
-If you prefer to disable the partial editing tool and use only complete file rewrites, use:
+For line-based partial editing instead of complete file rewrites, use:
 
 ```json
 {
   "mcpServers": {
     "context-coder": {
       "command": "npx",
-      "args": ["-y", "context-coder", "--mini", "--stdio", "--no-edit"]
+      "args": ["-y", "context-coder", "--mini", "--stdio", "--edit-file-mode"]
     }
   }
 }
@@ -223,8 +210,8 @@ _The reason for using the `mini` build is that Claude Code already comes with fi
 You have access to both Claude Code's built-in file tools and the Context Coder MCP for enhanced codebase analysis. Follow this workflow:
 
 1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
-2. Use Context Coder's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
-3. Use Claude Code's built-in file editing tools.
+2. Use Context Coders's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
+3. Remember: Context Coder gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 ```
 
 </details>
@@ -252,7 +239,7 @@ volumes:
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
 - `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
 - `PORT`: Override default port 3001 (HTTP mode only)
-- `CONTEXT_CODER_EDIT_MODE`: Set to "false" to disable `edit_file` tool (equivalent to `--no-edit` flag)
+- `CONTEXT_CODER_EDIT_MODE`: Set to "true" to enable `edit_file` tool (equivalent to `--edit-file-mode` flag)
 
 </details>
 
@@ -265,7 +252,7 @@ volumes:
 | `get_codebase_top_largest_files` | Get top X largest files in codebase - helpful for identifying files to add to .cocoignore                 |
 | `read_file`                      | Read file contents (only use when specifically asked to re-read or for debugging)                         |
 | `write_file`                     | Create or overwrite files                                                                                 |
-| `edit_file`                      | Make line-based partial edits to files (enabled by default, disable with `--no-edit`)                     |
+| `edit_file`                      | Make line-based partial edits to files (available when `--edit-file-mode` is enabled)                     |
 | `create_directory`               | Create directories                                                                                        |
 | `list_directory`                 | List directory contents (only use when specifically asked or for debugging)                               |
 | `directory_tree`                 | Get directory structure as JSON (only use when specifically asked or for debugging)                       |
@@ -341,15 +328,15 @@ npx context-coder [options]
 - `--mini` - Run in mini mode (only core tools)
 - `--full` - Run in full mode (all tools) - this is the default
 - `--stdio` - Use stdio transport instead of HTTP
-- `--no-edit` - Disable the `edit_file` tool for line-based partial edits, use `write_file` only for complete file rewrites
+- `--edit-file-mode` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
 
 **Examples:**
 
 ```bash
-npx context-coder                           # Default: full mode with HTTP transport and edit_file enabled
+npx context-coder                           # Default: full mode with HTTP transport
 npx context-coder --mini                    # Mini mode with core tools only
 npx context-coder --stdio                   # Use stdio transport (for Claude Code)
-npx context-coder --no-edit                 # Disable partial file editing, use complete file rewrites only
+npx context-coder --edit-file-mode          # Enable partial file editing
 npx context-coder --mini --stdio            # Combine options
 ```
 
@@ -382,22 +369,12 @@ In development mode, file operations are sandboxed to the `./mount` directory.
 
 </details>
 
-## Docker Variants
-
-Context Coder provides three Docker variants:
-
-| Variant    | Image                                  | Description                                                                                      |
-| ---------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Full**   | `ghcr.io/khromov/context-coder:full`   | All tools including both `edit_file` (partial edits) and `write_file` (complete rewrites)        |
-| **Mini**   | `ghcr.io/khromov/context-coder:mini`   | Core analysis tools only (`get_codebase_size`, `get_codebase`, `get_codebase_top_largest_files`) |
-| **NoEdit** | `ghcr.io/khromov/context-coder:noedit` | Full tools but with `edit_file` disabled - only `write_file` (complete file rewrites)            |
-
 ## Docker Build
 
 <details>
 <summary>Docker build instructions</summary>
 
-Build all versions:
+Build both versions:
 
 ```bash
 ./build-all.sh
@@ -406,14 +383,11 @@ Build all versions:
 Or build individually:
 
 ```bash
-# Full version (with edit_file enabled by default)
+# Full version
 docker build -t context-coder:latest .
 
-# Mini version (core tools only)
-docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
-
-# NoEdit version (edit_file disabled, write_file only)
-docker build --build-arg BUILD_TYPE=noedit -t context-coder:noedit .
+# Mini version
+docker build --target release-mini --build-arg BUILD_TYPE=mini -t context-coder:mini .
 ```
 
 Build a custom image:

@@ -30,13 +30,13 @@ jobs:
               type=raw,value=mini
             build_args: |
               BUILD_TYPE=mini
-          - name: noedit
-            build_type: noedit
+          - name: edit
+            build_type: edit
             tags: |
-              type=raw,value=main-noedit
-              type=raw,value=noedit
+              type=raw,value=main-edit
+              type=raw,value=edit
             build_args: |
-              BUILD_TYPE=noedit
+              BUILD_TYPE=edit
 
     steps:
       - name: Checkout Repository

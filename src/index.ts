@@ -27,10 +27,7 @@ async function runServer(options: any, _command: any) {
   const mode = isFullMode ? 'full' : 'mini';
   process.env.CONTEXT_CODER_MODE = mode;
 
-  // Edit mode is now enabled by default, disable it with --no-edit
-  if (options.noEdit) {
-    process.env.CONTEXT_CODER_EDIT_MODE = 'false';
-  } else {
+  if (options.editFileMode) {
     process.env.CONTEXT_CODER_EDIT_MODE = 'true';
   }
 
@@ -57,7 +54,7 @@ program
   .option('--mini', 'run in mini mode (only core tools)')
   .option('--full', 'run in full mode (all tools)')
   .option('--stdio', 'use stdio transport instead of HTTP')
-  .option('--no-edit', 'disable edit_file tool and use write_file only (complete file rewrites)')
+  .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
   .action(runServer);
 
 // Add the 'ls' subcommand

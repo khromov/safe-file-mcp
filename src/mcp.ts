@@ -16,46 +16,6 @@ import logger from './logger.js';
 import { prompts, getPromptContent } from './lib/prompts.js';
 import { getVersion } from './lib/version.js';
 
-/**
- * Process instructions.md content based on edit mode
- * Removes edit_file mentions when edit mode is disabled
- */
-function processInstructionsForEditMode(instructions: string, editModeEnabled: boolean): string {
-  let processed = instructions;
-
-  if (editModeEnabled) {
-    // Replace placeholders with edit_file enabled content
-    processed = processed.replace(
-      '{EDIT_FILE_TOOL_LIST}',
-      '- `edit_file` - Make line-based partial edits to files (enabled by default)'
-    );
-    processed = processed.replace(
-      '{EDITING_STRATEGY}',
-      '**Editing Strategy**: Use `edit_file` for small, targeted changes and `write_file` when rewriting entire files or making extensive changes. The `edit_file` tool is enabled by default and provides more efficient editing for small modifications.'
-    );
-    processed = processed.replace(
-      '{EFFICIENT_EDITING_PRACTICE}',
-      '**Efficient Editing**: Use `edit_file` for small changes, `write_file` for larger edits.'
-    );
-  } else {
-    // Replace placeholders with edit_file disabled content
-    processed = processed.replace(
-      '{EDIT_FILE_TOOL_LIST}',
-      ''
-    );
-    processed = processed.replace(
-      '{EDITING_STRATEGY}',
-      '**Editing Strategy**: Use `write_file` to create or completely overwrite files with new content.'
-    );
-    processed = processed.replace(
-      '{EFFICIENT_EDITING_PRACTICE}',
-      '**Efficient Editing**: Use `write_file` for complete file rewrites'
-    );
-  }
-
-  return processed;
-}
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -63,10 +23,6 @@ const __dirname = dirname(__filename);
 let instructions = '';
 try {
   instructions = readFileSync(join(__dirname, 'instructions.md'), 'utf-8');
-  
-  // Process instructions based on edit mode
-  const editModeEnabled = process.env.CONTEXT_CODER_EDIT_MODE !== 'false';
-  instructions = processInstructionsForEditMode(instructions, editModeEnabled);
 } catch {
   logger.warn('Warning: instructions.md not found, continuing without instructions');
 }

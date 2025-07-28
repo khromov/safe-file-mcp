@@ -6,8 +6,7 @@ You have access to both Claude Code's built-in file tools and the Coco MCP for e
 
 1. ALWAYS start every new chat by calling get_codebase_size and get_codebase MCP tools to ingest and understand the full project context
 2. Use Coco's codebase analysis as your primary reference - avoid reading files since you already have the complete codebase, only read file if you are missing something or if the user specifically requests it.
-3. For file editing: Use Coco's edit_file tool for small, targeted changes (line-based partial edits) and write_file for complete file rewrites. You can also use Claude Code's built-in file editing tools when appropriate.
-4. Remember: Coco gives you full codebase context and flexible editing options, Claude Code gives you precise editing control - use both strategically
+3. Remember: Coco gives you full codebase context, Claude Code gives you precise editing control - use both strategically
 
 ## Project Overview
 
@@ -18,25 +17,25 @@ Coco MCP (Context Coder) is a secure file system access server implementing the 
 **Development:**
 
 ```bash
-npm run dev # Start development server with auto-reload (port 3002, ./mount sandbox)
-npm run build # Compile TypeScript to dist/
-npm start # Run production server (port 3001)
+npm run dev          # Start development server with auto-reload (port 3002, ./mount sandbox)
+npm run build        # Compile TypeScript to dist/
+npm start            # Run production server (port 3001)
 ```
 
 **Testing:**
 
 ```bash
-npm test # Run all tests
-npm run test:watch # Run tests in watch mode - never run this, it will get stuck
+npm test             # Run all tests
+npm run test:watch   # Run tests in watch mode - never run this, it will get stuck
 npm run test:coverage # Generate coverage report
 ```
 
 **Code Quality:**
 
 ```bash
-npm run format # Format code with Prettier - run this when you finished with all your changes
+npm run format       # Format code with Prettier - run this when you finished with all your changes
 npm run format:check # Check code formatting
-npm run watch # TypeScript compiler in watch mode
+npm run watch        # TypeScript compiler in watch mode
 ```
 
 ## Architecture
@@ -56,7 +55,6 @@ The server follows a layered architecture:
 - In development mode, operations are sandboxed to the `./mount` directory
 - The server validates all paths to prevent directory traversal attacks
 - Large codebases are handled with token counting and size warnings
-- Edit mode is enabled by default, providing both `edit_file` (partial edits) and `write_file` (complete rewrites)
 
 ## Development Notes
 
@@ -68,9 +66,8 @@ When working on this codebase:
 4. **Handler Pattern**: New MCP tools should follow the modular handler pattern - create handler in `src/handlers/` and register in `src/tools.ts`
 5. **Docker**: The Dockerfile uses a multi-stage build. Test Docker changes with `docker-compose up --build`
 6. **Token Limits**: Be aware of Claude (150k) and ChatGPT (128k) token limits when processing codebases
-7. **Mode Selection**: Server runs in 'full' mode by default. Use `--mini` flag or set `CONTEXT_CODER_MODE=mini` for mini mode
+7. **Mode Selection**: Server runs in 'mini' mode by default. Use `--full` flag or set `CONTEXT_CODER_MODE=full` for all tools
 8. **Development Sandbox**: In dev mode (`COCO_DEV=true`), file operations are sandboxed to `./mount` directory
-9. **Edit Mode**: Edit mode (edit_file tool) is enabled by default. Use `--no-edit` flag to disable it
 
 ## Available Tools
 
@@ -84,7 +81,7 @@ The server exposes 11 MCP tools for file operations (mini mode has 3, full mode 
 
 **Full Mode Additional Tools:**
 
-- File operations: `read_file`, `write_file`, `edit_file` (enabled by default), `move_file`
+- File operations: `read_file`, `write_file`, `move_file`
 - Directory operations: `list_directory`, `directory_tree`, `create_directory`
 - Search: `search_files`
 - Command execution: `execute_command`
@@ -93,7 +90,6 @@ The server exposes 11 MCP tools for file operations (mini mode has 3, full mode 
 
 1. Always run `get_codebase_size` FIRST to check if the codebase is within token limits
 2. Then run `get_codebase` to get the actual code content
-3. Use `edit_file` for small, targeted changes and `write_file` for complete file rewrites
-4. Use other tools only when specifically needed
+3. Use other tools only when specifically needed
 
 See `src/mcp.ts` for the complete tool implementations.
