@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Exit on any error
+set -e
+
+# Also exit on pipe failures
+set -o pipefail
+
 # Build script for Coco, Coco Mini, and Coco Edit
 
 echo "🥥 Building Coco Docker images..."
