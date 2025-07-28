@@ -412,7 +412,7 @@ Context Coder provides three Docker variants:
 | -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | **Full** | `ghcr.io/khromov/context-coder:full` | Full mode with all tools using `write_file` (complete file rewrites)                             |
 | **Mini** | `ghcr.io/khromov/context-coder:mini` | Core analysis tools only (`get_codebase_size`, `get_codebase`, `get_codebase_top_largest_files`) |
-| **Edit** | `ghcr.io/khromov/context-coder:edit` | Full mode with `edit_file` tool for line-based partial edits in addition to `write_file`             |
+| **Edit** | `ghcr.io/khromov/context-coder:edit` | Full mode with `edit_file` tool for line-based partial edits in addition to `write_file`         |
 
 ## Docker Build
 
