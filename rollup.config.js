@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
 import { visualizer } from 'rollup-plugin-visualizer';
+import terser from '@rollup/plugin-terser';
 import { spawn } from 'child_process';
 // import preserveShebang from 'rollup-plugin-preserve-shebang';
 
@@ -69,7 +70,6 @@ export default {
     file: 'dist/index.js',
     format: 'es',
     sourcemap: false,
-    banner: '#!/usr/bin/env node',
     inlineDynamicImports: true,
   },
   external: [
@@ -151,7 +151,30 @@ export default {
       ]
     }),
     
-    // Bundle analyzer - generates stats.html for bundle visualization
+    // Minify the output for production
+    terser({
+      ecma: 2022, // Target Node.js 22+ (ES2022)
+      compress: {
+        drop_console: false, // Keep console logs for debugging
+        drop_debugger: true,
+        passes: 2, // Multiple passes for better compression
+      },
+      mangle: {
+        // Keep function names for better stack traces in production
+        keep_fnames: true,
+        // Keep class names for better debugging
+        keep_classnames: true,
+      },
+      format: {
+        // Preserve shebang at the top
+        preamble: '#!/usr/bin/env node',
+        // Keep some formatting for debugging
+        beautify: false,
+        comments: false,
+      },
+    }),
+    
+    // Bundle analyzer - generates stats.html for bundle visualization (after minification)
     visualizer({
       filename: 'stats.html',
       open: false,
