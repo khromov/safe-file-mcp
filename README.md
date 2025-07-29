@@ -355,6 +355,10 @@ npx context-coder [options]
 - `-e, --edit` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
 - `--edit-file-mode` - Same as `-e, --edit` (legacy flag)
 - `-p, --port <number>` - Port to listen on (default: 3001)
+- `--large-repo-token-limit-claude <number>` - Set Claude token limit for large repository detection (default: 150000)
+- `--claude-limit <number>` - Short version: Set Claude token limit for large repository detection
+- `--large-repo-token-limit-gpt <number>` - Set GPT token limit for large repository detection (default: 128000)
+- `--gpt-limit <number>` - Short version: Set GPT token limit for large repository detection
 
 **Shorthand Examples:**
 
@@ -366,6 +370,8 @@ npx context-coder -e                        # Enable partial file editing
 npx context-coder -p 8080                   # Use port 8080 instead of 3001
 npx context-coder -m -s                     # Combine options for mini mode with stdio
 npx context-coder -s -e -p 8080             # stdio transport with edit mode enabled and custom port
+npx context-coder --claude-limit 200000     # Increase Claude token limit to 200k
+npx context-coder --gpt-limit 150000        # Increase GPT token limit to 150k
 ```
 
 **Full Examples:**
@@ -376,6 +382,21 @@ npx context-coder --stdio                   # Use stdio transport (for Claude Co
 npx context-coder --edit-file-mode          # Enable partial file editing
 npx context-coder --port 8080               # Use custom port
 npx context-coder --mini --stdio            # Combine options
+npx context-coder --large-repo-token-limit-claude 200000  # Set custom Claude token limit
+npx context-coder --large-repo-token-limit-gpt 150000     # Set custom GPT token limit
+```
+
+**Token Limit Examples:**
+
+```bash
+# For very large repositories, you might want to increase the limits
+npx context-coder --claude-limit 300000 --gpt-limit 200000
+
+# For smaller repositories or more restrictive analysis
+npx context-coder --claude-limit 100000 --gpt-limit 80000
+
+# Combine with other options
+npx context-coder --edit-file-mode --claude-limit 250000 --port 8080
 ```
 
 ## Development

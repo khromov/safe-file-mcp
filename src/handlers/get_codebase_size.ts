@@ -45,9 +45,16 @@ export async function handleGetCodebaseSize(
 
     let output = '';
 
-    // Check token counts and provide warnings
-    const claudeTokenLimit = 150000;
-    // const gptTokenLimit = 128000;
+    // Get token limits from environment variables or use defaults
+    const claudeTokenLimit = process.env.COCO_CLAUDE_TOKEN_LIMIT 
+      ? parseInt(process.env.COCO_CLAUDE_TOKEN_LIMIT, 10) 
+      : 150000;
+    const gptTokenLimit = process.env.COCO_GPT_TOKEN_LIMIT 
+      ? parseInt(process.env.COCO_GPT_TOKEN_LIMIT, 10) 
+      : 128000;
+
+    // Log the token limits being used for debugging
+    logger.debug(`Using token limits - Claude: ${claudeTokenLimit}, GPT: ${gptTokenLimit}`);
 
     const hitClaudeLimit = stats.totalClaudeTokens > claudeTokenLimit;
 
@@ -77,7 +84,7 @@ export async function handleGetCodebaseSize(
 
     if (hitClaudeLimit) {
       output += `⚠️ **WARNING: Large Codebase Detected**\n\n`;
-      output += `Tell the user that the codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the recommended limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
+      output += `Tell the user that the codebase contains ${stats.totalClaudeTokens.toLocaleString()} Claude tokens, which exceeds the current limit of ${claudeTokenLimit.toLocaleString()} tokens.\n\n`;
       output += `Tell the user that the codebase is likely too large for your context window, and that they should create a \`.cocoignore\` file in the root of your project (similar to .gitignore) to exclude unnecessary files.\n\n`;
       output += `**Ask the user if they want to proceed anyway?** If yes, run \`get_codebase\` - but make the user aware that the large size may cause issues.\n\n`;
     }

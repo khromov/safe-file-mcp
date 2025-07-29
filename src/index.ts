@@ -9,6 +9,14 @@ async function runServer(options: any, _command: any) {
   // Store port from command line argument (don't override env)
   const serverPort = options.port;
 
+  // Store token limits from command line arguments
+  if (options.claudeTokenLimit) {
+    process.env.COCO_CLAUDE_TOKEN_LIMIT = options.claudeTokenLimit.toString();
+  }
+  if (options.gptTokenLimit) {
+    process.env.COCO_GPT_TOKEN_LIMIT = options.gptTokenLimit.toString();
+  }
+
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
   let isFullMode = true; // Default to full
@@ -65,7 +73,43 @@ program
   .option('-e, --edit', 'use edit_file tool instead of write_file (partial edits)')
   .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
   .option('-p, --port <number>', 'port to listen on (default: 3001)', parseInt)
-  .action(runServer);
+  .option(
+    '--large-repo-token-limit-claude <number>',
+    'set Claude token limit for large repository detection (default: 150000)',
+    parseInt
+  )
+  .option(
+    '--claude-limit <number>',
+    'short version: set Claude token limit for large repository detection',
+    parseInt
+  )
+  .option(
+    '--large-repo-token-limit-gpt <number>',
+    'set GPT token limit for large repository detection (default: 128000)',
+    parseInt
+  )
+  .option(
+    '--gpt-limit <number>',
+    'short version: set GPT token limit for large repository detection',
+    parseInt
+  )
+  .action((options) => {
+    // Handle both long and short versions of token limit flags
+    // Short versions take precedence if both are provided
+    const claudeTokenLimit = options.claudeLimit || options.largeRepoTokenLimitClaude;
+    const gptTokenLimit = options.gptLimit || options.largeRepoTokenLimitGpt;
+
+    // Update options object with resolved values
+    if (claudeTokenLimit) {
+      options.claudeTokenLimit = claudeTokenLimit;
+    }
+    if (gptTokenLimit) {
+      options.gptTokenLimit = gptTokenLimit;
+    }
+
+    // Run the server with resolved options
+    runServer(options, undefined);
+  });
 
 // Add the 'ls' subcommand
 program
