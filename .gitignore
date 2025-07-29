@@ -3,6 +3,9 @@ dist
 codebase.md
 .DS_Store
 
+# Bundle analysis files
+stats.html
+
 # Mount directory contents (except .gitkeep)
 mount/*
 !mount/.gitkeep

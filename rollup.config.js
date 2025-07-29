@@ -3,6 +3,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { spawn } from 'child_process';
 // import preserveShebang from 'rollup-plugin-preserve-shebang';
 
@@ -72,7 +73,7 @@ export default {
     inlineDynamicImports: true,
   },
   external: [
-    // Node.js built-ins
+    // Only keep Node.js built-ins as external - bundle all npm dependencies
     'fs',
     'fs/promises',
     'path',
@@ -114,21 +115,6 @@ export default {
     'module',
     'require',
     
-    // External dependencies that should remain external
-    '@modelcontextprotocol/sdk/server/index.js',
-    '@modelcontextprotocol/sdk/types.js',
-    '@modelcontextprotocol/sdk/server/stdio.js',
-    '@modelcontextprotocol/sdk/server/streamableHttp.js',
-    '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js',
-    'ai-digest',
-    'commander',
-    'express',
-    'ignore',
-    'minimatch',
-    'winston',
-    'zod',
-    'zod-to-json-schema',
-    
     // Node.js module imports with extensions
     /^node:/,
   ],
@@ -163,6 +149,14 @@ export default {
       targets: [
         { src: 'instructions.md', dest: 'dist' }
       ]
+    }),
+    
+    // Bundle analyzer - generates stats.html for bundle visualization
+    visualizer({
+      filename: 'stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
     }),
   ],
   

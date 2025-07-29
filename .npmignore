@@ -49,6 +49,9 @@ Thumbs.db
 # Debug files
 debug-*.js
 
+# Bundle analysis files
+stats.html
+
 # Temporary files
 *.tmp
 *.temp
