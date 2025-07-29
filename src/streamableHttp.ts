@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import logger from './logger.js';
 import { getVersion } from './lib/version.js';
 
-const buildType = process.env.COCO_BUILD_TYPE || 'NOT_SET';
+const buildType = process.env.COCO_BUILD_TYPE || 'none';
 const mode = process.env.CONTEXT_CODER_MODE || 'mini';
 const version = getVersion();
 logger.info(
