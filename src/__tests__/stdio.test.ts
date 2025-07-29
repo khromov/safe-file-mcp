@@ -11,18 +11,6 @@ const __dirname = path.dirname(__filename);
 describe('startStdioServer', () => {
   let originalEnv: typeof process.env;
 
-  beforeAll(async () => {
-    // Ensure build artifacts exist before running stdio tests
-    const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
-    try {
-      await fs.access(indexPath);
-    } catch {
-      // Build the project if dist files don't exist
-      console.log('Building project for stdio tests...');
-      execSync('npm run build', { cwd: path.join(__dirname, '..', '..') });
-    }
-  });
-
   beforeEach(() => {
     // Save original environment
     originalEnv = { ...process.env };
