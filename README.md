@@ -389,8 +389,9 @@ npx context-coder --edit-file-mode -c 300000 -p 8080
 ```
 
 **Model Context Window Reference:**
+
 - **Claude Sonnet 3.5**: ~200k tokens
-- **Claude Enterprise**: ~500k tokens  
+- **Claude Enterprise**: ~500k tokens
 - **GPT-4**: ~128k tokens
 - **GPT-4 Turbo**: ~128k tokens
 - **Custom/Local Models**: Varies widely
