@@ -46,11 +46,11 @@ export async function handleGetCodebaseSize(
     let output = '';
 
     // Get token limits from environment variables or use defaults
-    const claudeTokenLimit = process.env.COCO_CLAUDE_TOKEN_LIMIT 
-      ? parseInt(process.env.COCO_CLAUDE_TOKEN_LIMIT, 10) 
+    const claudeTokenLimit = process.env.COCO_CLAUDE_TOKEN_LIMIT
+      ? parseInt(process.env.COCO_CLAUDE_TOKEN_LIMIT, 10)
       : 150000;
-    const gptTokenLimit = process.env.COCO_GPT_TOKEN_LIMIT 
-      ? parseInt(process.env.COCO_GPT_TOKEN_LIMIT, 10) 
+    const gptTokenLimit = process.env.COCO_GPT_TOKEN_LIMIT
+      ? parseInt(process.env.COCO_GPT_TOKEN_LIMIT, 10)
       : 128000;
 
     // Log the token limits being used for debugging
