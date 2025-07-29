@@ -19,9 +19,29 @@ export function getVersion(): string {
   let version: string;
 
   try {
-    const packageJsonPath = join(__dirname, '..', '..', 'package.json');
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    version = packageJson.version || '1.0.0';
+    // Try different possible paths for package.json based on build/bundling context
+    const possiblePaths = [
+      join(__dirname, '..', '..', 'package.json'), // Original tsc build structure
+      join(__dirname, '..', 'package.json'),       // Bundled structure (dist/index.js -> package.json)
+      join(process.cwd(), 'package.json'),         // Current working directory
+    ];
+    
+    let packageJson: any = null;
+    for (const packageJsonPath of possiblePaths) {
+      try {
+        packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        break;
+      } catch {
+        // Try next path
+        continue;
+      }
+    }
+    
+    if (packageJson) {
+      version = packageJson.version || '1.0.0';
+    } else {
+      throw new Error('No package.json found');
+    }
   } catch {
     // If package.json is not found, use a default version
     version = 'UNKNOWN';

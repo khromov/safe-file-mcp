@@ -18,7 +18,7 @@ Coco MCP (Context Coder) is a secure file system access server implementing the 
 
 ```bash
 npm run dev          # Start development server with auto-reload (port 3002, ./mount sandbox)
-npm run build        # Compile TypeScript to dist/
+npm run build        # Bundle with Rollup to single dist/index.js file
 npm start            # Run production server (port 3001)
 ```
 
@@ -35,7 +35,7 @@ npm run test:coverage # Generate coverage report
 ```bash
 npm run format       # Format code with Prettier - run this when you finished with all your changes
 npm run format:check # Check code formatting
-npm run watch        # TypeScript compiler in watch mode
+npm run watch        # Rollup bundler in watch mode
 ```
 
 ## Architecture
