@@ -3,7 +3,64 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
+import { spawn } from 'child_process';
 // import preserveShebang from 'rollup-plugin-preserve-shebang';
+
+// Custom plugin to run server after build in watch mode
+function runServerPlugin() {
+  let serverProcess = null;
+  
+  return {
+    name: 'run-server',
+    writeBundle() {
+      // Only run in watch mode
+      if (!this.meta.watchMode) return;
+      
+      // Kill existing server process
+      if (serverProcess) {
+        serverProcess.kill('SIGTERM');
+        serverProcess = null;
+      }
+      
+      // Start new server process
+      console.log('🔄 Restarting server...');
+      const serverArgs = process.env.ROLLUP_SERVER_ARGS ? process.env.ROLLUP_SERVER_ARGS.split(' ') : [];
+      serverProcess = spawn('node', ['dist/index.js', ...serverArgs], {
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          COCO_DEV: 'true',
+          COCO_PORT: process.env.COCO_PORT || '3002',
+        },
+      });
+      
+      // Handle server process exit
+      serverProcess.on('exit', (code, signal) => {
+        if (signal !== 'SIGTERM') {
+          console.log(`Server exited with code ${code}, signal ${signal}`);
+        }
+      });
+    },
+    
+    // Clean up on rollup exit
+    buildEnd() {
+      if (serverProcess && this.meta.watchMode) {
+        process.on('exit', () => {
+          if (serverProcess) {
+            serverProcess.kill('SIGTERM');
+          }
+        });
+        
+        process.on('SIGINT', () => {
+          if (serverProcess) {
+            serverProcess.kill('SIGTERM');
+          }
+          process.exit(0);
+        });
+      }
+    }
+  };
+}
 
 export default {
   input: 'src/index.ts',
@@ -77,6 +134,9 @@ export default {
   ],
   plugins: [
     // Note: Using banner in output config instead of preserveShebang to avoid duplication
+    
+    // Run server after build in watch mode
+    runServerPlugin(),
     
     // Resolve node modules
     resolve({
