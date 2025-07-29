@@ -1,6 +1,6 @@
 {
   "name": "context-coder",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Context Coder: MCP server providing secure file system operations with relative path handling for AI context management",
   "license": "MIT",
   "author": "khromov",
@@ -13,15 +13,16 @@
     "dist"
   ],
   "scripts": {
-    "build": "shx rm -rf dist && tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
-    "watch": "tsc --watch",
+    "build": "shx rm -rf dist && rollup -c && shx chmod +x dist/index.js",
+    "build:analyze": "npm run build && echo '📊 Bundle analysis saved to stats.html'",
+    "watch": "rollup -c --watch",
     "start": "node dist/index.js",
     "start:stdio": "COCO_MCP_TRANSPORT=stdio node dist/index.js --stdio",
     "start:http": "node dist/index.js",
     "start:edit": "node dist/index.js --edit-file-mode",
-    "dev": "COCO_PORT=3002 COCO_DEV=true nodemon",
-    "dev:stdio": "COCO_PORT=3002 COCO_DEV=true COCO_MCP_TRANSPORT=stdio nodemon --exec 'node dist/index.js --stdio'",
-    "dev:edit": "COCO_PORT=3002 COCO_DEV=true nodemon --exec 'node dist/index.js --edit-file-mode'",
+    "dev": "COCO_PORT=3002 COCO_DEV=true rollup -c --watch",
+    "dev:stdio": "COCO_PORT=3002 COCO_DEV=true COCO_MCP_TRANSPORT=stdio ROLLUP_SERVER_ARGS='--stdio' rollup -c --watch",
+    "dev:edit": "COCO_PORT=3002 COCO_DEV=true ROLLUP_SERVER_ARGS='--edit-file-mode' rollup -c --watch",
     "test": "npm run build && NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
@@ -50,6 +51,11 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.16.5",
@@ -61,8 +67,13 @@
     "nodemon": "^3.1.10",
     "pre-commit": "^1.2.2",
     "prettier": "^3.6.2",
+    "rollup": "^4.46.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-preserve-shebang": "^1.0.1",
+    "rollup-plugin-visualizer": "^6.0.3",
     "shx": "^0.4.0",
     "ts-jest": "^29.4.0",
+    "tslib": "^2.8.1",
     "typescript": "^5.8.3"
   },
   "pre-commit": [

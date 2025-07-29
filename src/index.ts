@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { program } from 'commander';
 import logger, { configureLogger } from './logger.js';
 import { getVersion } from './lib/version.js';

@@ -3,9 +3,9 @@ src/
 tsconfig.json
 
 # Development files
-nodemon.json
 jest.config.js
 .nvmrc
+rollup.config.js
 
 # Testing
 __tests__/
@@ -48,6 +48,9 @@ Thumbs.db
 
 # Debug files
 debug-*.js
+
+# Bundle analysis files
+stats.html
 
 # Temporary files
 *.tmp
