@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import logger from './logger.js';
+import logger, { configureLogger } from './logger.js';
 import { getVersion } from './lib/version.js';
 
 // Async function to run the server
@@ -34,8 +34,8 @@ async function runServer(options: any, _command: any) {
     process.env.CONTEXT_CODER_EDIT_MODE = 'true';
   }
 
-  // Set transport mode for other modules
-  process.env.COCO_MCP_TRANSPORT = transportMode;
+  // Configure logger with the resolved transport mode
+  configureLogger(transportMode);
 
   // Log startup information
   logger.info(`Current directory: ${process.cwd()}`);
