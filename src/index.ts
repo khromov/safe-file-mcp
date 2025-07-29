@@ -48,6 +48,21 @@ async function runServer(options: any, _command: any) {
   // Log startup information
   logger.info(`Current directory: ${process.cwd()}`);
 
+  // Log token limit overrides if any
+  const defaultClaudeLimit = 150000;
+  const defaultGptLimit = 128000;
+
+  if (options.claudeTokenLimit && options.claudeTokenLimit !== defaultClaudeLimit) {
+    logger.info(
+      `🎯 Claude token limit overridden: ${defaultClaudeLimit.toLocaleString()} -> ${options.claudeTokenLimit.toLocaleString()}`
+    );
+  }
+  if (options.gptTokenLimit && options.gptTokenLimit !== defaultGptLimit) {
+    logger.info(
+      `🎯 GPT token limit overridden: ${defaultGptLimit.toLocaleString()} -> ${options.gptTokenLimit.toLocaleString()}`
+    );
+  }
+
   try {
     if (transportMode === 'stdio') {
       const { startStdioServer } = await import('./stdio.js');
@@ -75,12 +90,12 @@ program
   .option('-p, --port <number>', 'port to listen on (default: 3001)', parseInt)
   .option(
     '-c, --claude-token-limit <number>',
-    'set Claude token limit - useful for models with larger context windows (default: 150000)',
+    'set Claude token limit warning - going over this limit will issue a warning when calling get_codebase_size (default: 150000)',
     parseInt
   )
   .option(
     '-g, --gpt-token-limit <number>',
-    'set GPT token limit - useful for models with larger context windows (default: 128000)',
+    'set GPT token limit warning - going over this limit will issue a warning when calling get_codebase_size (default: 128000)',
     parseInt
   )
   .action(runServer);
