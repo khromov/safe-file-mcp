@@ -170,11 +170,13 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// Start the server
-const PORT = process.env.COCO_PORT || 3001;
-app.listen(PORT, () => {
-  logger.info(`🥥 Coco MCP Server listening on port ${PORT} (${mode} mode)`);
-});
+// Export function to start the server
+export async function startHttpServer(port?: number): Promise<void> {
+  const PORT = port || process.env.COCO_PORT || 3001;
+  app.listen(PORT, () => {
+    logger.info(`🥥 Coco MCP Server listening on port ${PORT} (${mode} mode)`);
+  });
+}
 
 // Handle server shutdown
 const gracefulShutdown = async () => {

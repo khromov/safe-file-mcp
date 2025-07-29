@@ -6,10 +6,8 @@ import { getVersion } from './lib/version.js';
 
 // Async function to run the server
 async function runServer(options: any, _command: any) {
-  // Set port from command line argument or environment variable
-  if (options.port) {
-    process.env.COCO_PORT = options.port.toString();
-  }
+  // Store port from command line argument (don't override env)
+  const serverPort = options.port;
 
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
@@ -44,9 +42,11 @@ async function runServer(options: any, _command: any) {
 
   try {
     if (transportMode === 'stdio') {
-      await import('./stdio.js');
+      const { startStdioServer } = await import('./stdio.js');
+      await startStdioServer();
     } else {
-      await import('./streamableHttp.js');
+      const { startHttpServer } = await import('./streamableHttp.js');
+      await startHttpServer(serverPort);
     }
   } catch (error) {
     logger.error('Error running server:', error);

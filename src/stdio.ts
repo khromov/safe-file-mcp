@@ -8,7 +8,7 @@ import { getVersion } from './lib/version.js';
 // All logging MUST go to stderr in stdio mode
 // stdout is reserved exclusively for MCP protocol messages
 
-async function runStdioServer() {
+export async function startStdioServer(): Promise<void> {
   try {
     const { server, cleanup } = await createServer();
 
@@ -38,5 +38,3 @@ async function runStdioServer() {
     process.exit(1);
   }
 }
-
-runStdioServer();
