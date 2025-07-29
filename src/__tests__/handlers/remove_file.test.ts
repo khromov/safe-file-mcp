@@ -87,7 +87,7 @@ describe('handleRemoveFile', () => {
       await fs.mkdir(dirPath);
 
       await expect(handleRemoveFile({ path: 'testdir' }, context)).rejects.toThrow(
-        'Cannot remove directory with remove_file. Use a directory removal command instead.'
+        'Cannot remove directory with remove_file. Use rm with execute_command instead.'
       );
     });
 

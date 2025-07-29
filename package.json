@@ -16,13 +16,13 @@
     "build": "shx rm -rf dist && tsc && shx cp instructions.md dist/ && shx chmod +x dist/*.js",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "start:stdio": "MCP_TRANSPORT=stdio node dist/index.js --stdio",
+    "start:stdio": "COCO_MCP_TRANSPORT=stdio node dist/index.js --stdio",
     "start:http": "node dist/index.js",
     "start:edit": "node dist/index.js --edit-file-mode",
-    "dev": "PORT=3002 COCO_DEV=true nodemon",
-    "dev:stdio": "PORT=3002 COCO_DEV=true MCP_TRANSPORT=stdio nodemon --exec 'node dist/index.js --stdio'",
-    "dev:edit": "PORT=3002 COCO_DEV=true nodemon --exec 'node dist/index.js --edit-file-mode'",
-    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
+    "dev": "COCO_PORT=3002 COCO_DEV=true nodemon",
+    "dev:stdio": "COCO_PORT=3002 COCO_DEV=true COCO_MCP_TRANSPORT=stdio nodemon --exec 'node dist/index.js --stdio'",
+    "dev:edit": "COCO_PORT=3002 COCO_DEV=true nodemon --exec 'node dist/index.js --edit-file-mode'",
+    "test": "npm run build && NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
@@ -59,9 +59,13 @@
     "eslint-plugin-jest": "^29.0.1",
     "jest": "^30.0.4",
     "nodemon": "^3.1.10",
+    "pre-commit": "^1.2.2",
     "prettier": "^3.6.2",
     "shx": "^0.4.0",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
-  }
+  },
+  "pre-commit": [
+    "format"
+  ]
 }

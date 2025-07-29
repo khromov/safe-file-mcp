@@ -183,7 +183,7 @@ Create `.mcp.json` in your project root:
         "-w",
         "/app",
         "-e",
-        "MCP_TRANSPORT=stdio",
+        "COCO_MCP_TRANSPORT=stdio",
         "ghcr.io/khromov/context-coder:mini"
       ]
     }
@@ -220,7 +220,7 @@ services:
       - ./:/app
     working_dir: /app
     environment:
-      - MCP_TRANSPORT=http
+      - COCO_MCP_TRANSPORT=http
     restart: unless-stopped
 ```
 
@@ -261,8 +261,8 @@ volumes:
 ### Environment Variables
 
 - `COCO_DEV`: "true" or "false" to mount the `./mount` folder instead of using `/app`
-- `MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
-- `PORT`: Override default port 3001 (HTTP mode only)
+- `COCO_MCP_TRANSPORT`: Set to `stdio` or `http` (default: `http`)
+- `COCO_PORT`: Override default port 3001 (HTTP mode only)
 - `CONTEXT_CODER_EDIT_MODE`: Set to "true" to enable `edit_file` tool (equivalent to `--edit-file-mode` flag)
 
 </details>
@@ -354,26 +354,49 @@ npx context-coder [options]
 - `-s, --stdio` - Use stdio transport instead of HTTP
 - `-e, --edit` - Enable the `edit_file` tool for line-based partial edits instead of requiring complete file rewrites with `write_file`
 - `--edit-file-mode` - Same as `-e, --edit` (legacy flag)
+- `-p, --port <number>` - Port to listen on (default: 3001)
+- `-c, --claude-token-limit <number>` - Set Claude token limit - useful for models with larger context windows (default: 150000)
+- `-g, --gpt-token-limit <number>` - Set GPT token limit - useful for models with larger context windows (default: 128000)
 
-**Shorthand Examples:**
+**Examples:**
 
 ```bash
 npx context-coder                           # Default: full mode with HTTP transport
 npx context-coder -m                        # Mini mode with core tools only
 npx context-coder -s                        # Use stdio transport (for Claude Code)
 npx context-coder -e                        # Enable partial file editing
+npx context-coder -p 8080                   # Use port 8080 instead of 3001
 npx context-coder -m -s                     # Combine options for mini mode with stdio
-npx context-coder -s -e                     # stdio transport with edit mode enabled
+npx context-coder -s -e -p 8080             # stdio transport with edit mode enabled and custom port
 ```
 
-**Full Examples:**
+**Token Limit Examples:**
+
+Context Coder helps detect when your codebase might exceed your model's context window. You can adjust these limits based on the model you're using:
 
 ```bash
-npx context-coder --mini                    # Mini mode with core tools only
-npx context-coder --stdio                   # Use stdio transport (for Claude Code)
-npx context-coder --edit-file-mode          # Enable partial file editing
-npx context-coder --mini --stdio            # Combine options
+# For Claude Enterprise with 500k context window
+npx context-coder -c 500000
+
+# For GPT-4 Turbo with 128k context
+npx context-coder -g 128000
+
+# For models with very large context windows
+npx context-coder -c 1000000 -g 1000000
+
+# Combine with other options
+npx context-coder --edit-file-mode -c 300000 -p 8080
 ```
+
+**Model Context Window Reference:**
+
+- **Claude Sonnet 3.5**: ~200k tokens
+- **Claude Enterprise**: ~500k tokens
+- **GPT-4**: ~128k tokens
+- **GPT-4 Turbo**: ~128k tokens
+- **Custom/Local Models**: Varies widely
+
+Setting appropriate token limits helps Context Coder provide better warnings when your codebase might not fit in your model's context window.
 
 ## Development
 
@@ -432,10 +455,10 @@ Or build individually:
 docker build -t context-coder:latest .
 
 # Mini version
-docker build --build-arg BUILD_TYPE=mini -t context-coder:mini .
+docker build --build-arg COCO_BUILD_TYPE=mini -t context-coder:mini .
 
 # Edit version
-docker build --build-arg BUILD_TYPE=edit -t context-coder:edit .
+docker build --build-arg COCO_BUILD_TYPE=edit -t context-coder:edit .
 ```
 
 Build a custom image:

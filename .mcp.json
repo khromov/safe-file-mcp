@@ -17,7 +17,7 @@
         "-w",
         "/app",
         "-e",
-        "MCP_TRANSPORT=stdio",
+        "COCO_MCP_TRANSPORT=stdio",
         "ghcr.io/khromov/context-coder:mini"
       ]
     }

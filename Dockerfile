@@ -11,7 +11,7 @@ RUN npm ci
 COPY src/ ./src/
 COPY instructions.md ./
 
-ENV BUILD_TYPE=$BUILD_TYPE
+ENV COCO_BUILD_TYPE=$BUILD_TYPE
 
 RUN npm run build
 
@@ -28,7 +28,7 @@ FROM node:22-alpine AS release
 
 # Re-declare ARG in this stage so it can be used
 ARG BUILD_TYPE=regular
-ENV BUILD_TYPE=$BUILD_TYPE
+ENV COCO_BUILD_TYPE=$BUILD_TYPE
 
 LABEL org.opencontainers.image.title="Context Coder"
 LABEL org.opencontainers.image.description="Context Coder: MCP server for full-context coding"

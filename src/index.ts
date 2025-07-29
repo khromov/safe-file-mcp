@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import logger from './logger.js';
+import logger, { configureLogger } from './logger.js';
 import { getVersion } from './lib/version.js';
 
 // Async function to run the server
 async function runServer(options: any, _command: any) {
+  // Store port from command line argument (don't override env)
+  const serverPort = options.port;
+
+  // Store token limits from command line arguments
+  if (options.claudeTokenLimit) {
+    process.env.COCO_CLAUDE_TOKEN_LIMIT = options.claudeTokenLimit.toString();
+  }
+  if (options.gptTokenLimit) {
+    process.env.COCO_GPT_TOKEN_LIMIT = options.gptTokenLimit.toString();
+  }
+
   // Determine mode based on command line flags
   // Default to full for npx usage, mini/full passed explicitly by Docker entrypoint
   let isFullMode = true; // Default to full
@@ -17,8 +28,8 @@ async function runServer(options: any, _command: any) {
   }
 
   let transportMode = 'http'; // Default to http
-  if (process.env.MCP_TRANSPORT) {
-    transportMode = process.env.MCP_TRANSPORT;
+  if (process.env.COCO_MCP_TRANSPORT) {
+    transportMode = process.env.COCO_MCP_TRANSPORT;
   } else if (options.stdio) {
     transportMode = 'stdio';
   }
@@ -31,14 +42,34 @@ async function runServer(options: any, _command: any) {
     process.env.CONTEXT_CODER_EDIT_MODE = 'true';
   }
 
+  // Configure logger with the resolved transport mode
+  configureLogger(transportMode);
+
   // Log startup information
   logger.info(`Current directory: ${process.cwd()}`);
 
+  // Log token limit overrides if any
+  const defaultClaudeLimit = 150000;
+  const defaultGptLimit = 128000;
+
+  if (options.claudeTokenLimit && options.claudeTokenLimit !== defaultClaudeLimit) {
+    logger.info(
+      `🎯 Claude token limit overridden: ${defaultClaudeLimit.toLocaleString()} -> ${options.claudeTokenLimit.toLocaleString()}`
+    );
+  }
+  if (options.gptTokenLimit && options.gptTokenLimit !== defaultGptLimit) {
+    logger.info(
+      `🎯 GPT token limit overridden: ${defaultGptLimit.toLocaleString()} -> ${options.gptTokenLimit.toLocaleString()}`
+    );
+  }
+
   try {
     if (transportMode === 'stdio') {
-      await import('./stdio.js');
+      const { startStdioServer } = await import('./stdio.js');
+      await startStdioServer();
     } else {
-      await import('./streamableHttp.js');
+      const { startHttpServer } = await import('./streamableHttp.js');
+      await startHttpServer(serverPort);
     }
   } catch (error) {
     logger.error('Error running server:', error);
@@ -56,6 +87,17 @@ program
   .option('-s, --stdio', 'use stdio transport instead of HTTP')
   .option('-e, --edit', 'use edit_file tool instead of write_file (partial edits)')
   .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
+  .option('-p, --port <number>', 'port to listen on (default: 3001)', parseInt)
+  .option(
+    '-c, --claude-token-limit <number>',
+    'set Claude token limit warning - going over this limit will issue a warning when calling get_codebase_size (default: 150000)',
+    parseInt
+  )
+  .option(
+    '-g, --gpt-token-limit <number>',
+    'set GPT token limit warning - going over this limit will issue a warning when calling get_codebase_size (default: 128000)',
+    parseInt
+  )
   .action(runServer);
 
 // Add the 'ls' subcommand
