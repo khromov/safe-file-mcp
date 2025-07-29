@@ -68,6 +68,7 @@ When working on this codebase:
 6. **Token Limits**: Be aware of Claude (150k) and ChatGPT (128k) token limits when processing codebases
 7. **Mode Selection**: Server runs in 'mini' mode by default. Use `--full` flag or set `CONTEXT_CODER_MODE=full` for all tools
 8. **Development Sandbox**: In dev mode (`COCO_DEV=true`), file operations are sandboxed to `./mount` directory
+9. **Git Hooks**: The project uses the `pre-commit` package to automatically format code before commits (configured in package.json)
 
 ## Environment Variables
 
