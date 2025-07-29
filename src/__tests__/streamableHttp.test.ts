@@ -11,16 +11,6 @@ const __dirname = path.dirname(__filename);
 describe('HTTP Server Integration Tests', () => {
   let originalEnv: typeof process.env;
 
-  beforeAll(async () => {
-    // Ensure build artifacts exist
-    const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
-    try {
-      await fs.access(indexPath);
-    } catch {
-      throw new Error('Build artifacts missing. Run `npm run build` first.');
-    }
-  });
-
   beforeEach(() => {
     originalEnv = { ...process.env };
   });
