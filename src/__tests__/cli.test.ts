@@ -30,16 +30,6 @@ async function runCommand(
 }
 
 describe('CLI with Commander', () => {
-  beforeAll(async () => {
-    // Ensure the project is built before running tests
-    try {
-      await execAsync('npm run build', { cwd: path.join(__dirname, '..', '..') });
-    } catch (error) {
-      console.error('Failed to build project:', error);
-      throw error;
-    }
-  }, 30000); // Increase timeout to 30 seconds for the build process
-
   describe('Main command', () => {
     it('should show help when --help is passed', async () => {
       const { stdout } = await execAsync(`node ${CLI_PATH} --help`);
