@@ -92,11 +92,7 @@ describe('handleGetCodebaseSize', () => {
       process.env.COCO_CLAUDE_TOKEN_LIMIT = '10';
       delete process.env.COCO_GPT_TOKEN_LIMIT;
 
-      await createTestFile(
-        testDir,
-        'test.js',
-        'const x = 1; console.log("this will exceed 10 tokens");'
-      );
+      await createTestFile(testDir, 'test.js', 'const x = 1; console.log("this will exceed 10 tokens");');
       const context = createTestContext(testDir);
       const result = await handleGetCodebaseSize({ path: './' }, context);
 
@@ -145,9 +141,7 @@ describe('handleGetCodebaseSize', () => {
 
       // Should show warning with the custom limit
       expect(result.content[0].text).toContain('WARNING');
-      expect(result.content[0].text).toContain(
-        `current limit of ${customLimit.toLocaleString()} tokens`
-      );
+      expect(result.content[0].text).toContain(`current limit of ${customLimit.toLocaleString()} tokens`);
       expect(result.content[0].text).toContain('## Top 25 Largest Files');
     });
 
@@ -166,9 +160,9 @@ describe('handleGetCodebaseSize', () => {
     });
 
     it('should handle very high custom limits', async () => {
-      // Set very high limits
-      process.env.COCO_CLAUDE_TOKEN_LIMIT = '1000000';
-      process.env.COCO_GPT_TOKEN_LIMIT = '800000';
+      // Set very high limits (like Claude Enterprise with 500k context)
+      process.env.COCO_CLAUDE_TOKEN_LIMIT = '500000';
+      process.env.COCO_GPT_TOKEN_LIMIT = '400000';
 
       await createTestFile(testDir, 'large.js', 'x'.repeat(10000));
       const context = createTestContext(testDir);
@@ -183,19 +177,13 @@ describe('handleGetCodebaseSize', () => {
     it('should show different next step message when limit is exceeded', async () => {
       process.env.COCO_CLAUDE_TOKEN_LIMIT = '10';
 
-      await createTestFile(
-        testDir,
-        'test.js',
-        'const x = 1; console.log("enough to exceed limit");'
-      );
+      await createTestFile(testDir, 'test.js', 'const x = 1; console.log("enough to exceed limit");');
       const context = createTestContext(testDir);
       const result = await handleGetCodebaseSize({ path: './' }, context);
 
       // When limit is exceeded, should show different next step message
       expect(result.content[0].text).toContain('WARNING');
-      expect(result.content[0].text).toContain(
-        'If you want to proceed despite the large codebase size'
-      );
+      expect(result.content[0].text).toContain('If you want to proceed despite the large codebase size');
       expect(result.content[0].text).toContain('consider using a `.cocoignore` file');
     });
 
@@ -210,9 +198,23 @@ describe('handleGetCodebaseSize', () => {
       // When limit is not exceeded, should show normal next step message
       expect(result.content[0].text).not.toContain('WARNING');
       expect(result.content[0].text).toContain('You MUST now run the `get_codebase` tool');
-      expect(result.content[0].text).toContain(
-        'this is required for this MCP to function correctly'
-      );
+      expect(result.content[0].text).toContain('this is required for this MCP to function correctly');
+    });
+
+    it('should handle enterprise model limits correctly', async () => {
+      // Test with Claude Enterprise-like limits
+      process.env.COCO_CLAUDE_TOKEN_LIMIT = '500000';
+      process.env.COCO_GPT_TOKEN_LIMIT = '128000';
+
+      // Create a moderately large file that would trigger default limits but not enterprise limits
+      await createTestFile(testDir, 'enterprise.js', 'x'.repeat(50000));
+      const context = createTestContext(testDir);
+      const result = await handleGetCodebaseSize({ path: './' }, context);
+
+      // Should not show warning with enterprise limits
+      expect(result.content[0].text).not.toContain('WARNING');
+      expect(result.content[0].text).toContain('## Token Summary');
+      expect(result.content[0].text).toContain('You MUST now run the `get_codebase` tool');
     });
   });
 });

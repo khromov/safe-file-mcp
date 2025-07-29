@@ -74,42 +74,16 @@ program
   .option('--edit-file-mode', 'use edit_file tool instead of write_file (partial edits)')
   .option('-p, --port <number>', 'port to listen on (default: 3001)', parseInt)
   .option(
-    '--large-repo-token-limit-claude <number>',
-    'set Claude token limit for large repository detection (default: 150000)',
+    '-c, --claude-token-limit <number>',
+    'set Claude token limit - useful for models with larger context windows (default: 150000)',
     parseInt
   )
   .option(
-    '--claude-limit <number>',
-    'short version: set Claude token limit for large repository detection',
+    '-g, --gpt-token-limit <number>',
+    'set GPT token limit - useful for models with larger context windows (default: 128000)',
     parseInt
   )
-  .option(
-    '--large-repo-token-limit-gpt <number>',
-    'set GPT token limit for large repository detection (default: 128000)',
-    parseInt
-  )
-  .option(
-    '--gpt-limit <number>',
-    'short version: set GPT token limit for large repository detection',
-    parseInt
-  )
-  .action((options) => {
-    // Handle both long and short versions of token limit flags
-    // Short versions take precedence if both are provided
-    const claudeTokenLimit = options.claudeLimit || options.largeRepoTokenLimitClaude;
-    const gptTokenLimit = options.gptLimit || options.largeRepoTokenLimitGpt;
-
-    // Update options object with resolved values
-    if (claudeTokenLimit) {
-      options.claudeTokenLimit = claudeTokenLimit;
-    }
-    if (gptTokenLimit) {
-      options.gptTokenLimit = gptTokenLimit;
-    }
-
-    // Run the server with resolved options
-    runServer(options, undefined);
-  });
+  .action(runServer);
 
 // Add the 'ls' subcommand
 program
