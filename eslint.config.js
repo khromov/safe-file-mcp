@@ -48,7 +48,8 @@ export default [
         Buffer: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
-        jest: 'readonly'
+        jest: 'readonly',
+        URL: 'readonly'
       }
     },
     plugins: {

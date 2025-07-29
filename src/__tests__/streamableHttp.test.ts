@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
 import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,8 +27,8 @@ describe('HTTP Server Integration Tests', () => {
           ...process.env,
           COCO_MCP_TRANSPORT: 'http',
           CONTEXT_CODER_MODE: 'mini',
-          COCO_DEV: 'true'
-        }
+          COCO_DEV: 'true',
+        },
       });
 
       let startupComplete = false;
@@ -50,14 +49,14 @@ describe('HTTP Server Integration Tests', () => {
       serverProcess.stdout?.on('data', (data) => {
         const output = data.toString();
         errorData += output;
-        
+
         // Look for the startup message (goes to stdout)
         if (output.includes(`listening on port ${port}`)) {
           startupComplete = true;
           clearTimeout(timeout);
           resolve({
             process: serverProcess,
-            baseUrl: `http://localhost:${port}`
+            baseUrl: `http://localhost:${port}`,
           });
         }
       });
@@ -76,11 +75,14 @@ describe('HTTP Server Integration Tests', () => {
     });
   };
 
-  const sendHttpRequest = async (url: string, options: { 
-    method?: string; 
-    headers?: Record<string, string>; 
-    body?: string 
-  } = {}): Promise<{ status: number; headers: Record<string, string>; data: any }> => {
+  const sendHttpRequest = async (
+    url: string,
+    options: {
+      method?: string;
+      headers?: Record<string, string>;
+      body?: string;
+    } = {}
+  ): Promise<{ status: number; headers: Record<string, string>; data: any }> => {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
       const requestOptions = {
@@ -90,9 +92,9 @@ describe('HTTP Server Integration Tests', () => {
         method: options.method || 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json, text/event-stream',
-          ...options.headers
-        }
+          Accept: 'application/json, text/event-stream',
+          ...options.headers,
+        },
       };
 
       const req = http.request(requestOptions, (res) => {
@@ -100,24 +102,29 @@ describe('HTTP Server Integration Tests', () => {
         res.on('data', (chunk) => {
           data += chunk;
         });
-        
+
         res.on('end', () => {
           try {
             const responseHeaders: Record<string, string> = {};
             Object.entries(res.headers).forEach(([key, value]) => {
               responseHeaders[key] = Array.isArray(value) ? value.join(', ') : value || '';
             });
-            
+
             resolve({
               status: res.statusCode || 0,
               headers: responseHeaders,
-              data: data ? JSON.parse(data) : {}
+              data: data ? JSON.parse(data) : {},
             });
-          } catch (error) {
+          } catch {
             resolve({
               status: res.statusCode || 0,
-              headers: Object.fromEntries(Object.entries(res.headers).map(([k, v]) => [k, Array.isArray(v) ? v.join(', ') : v || ''])),
-              data: data
+              headers: Object.fromEntries(
+                Object.entries(res.headers).map(([k, v]) => [
+                  k,
+                  Array.isArray(v) ? v.join(', ') : v || '',
+                ])
+              ),
+              data: data,
             });
           }
         });
@@ -130,7 +137,7 @@ describe('HTTP Server Integration Tests', () => {
       if (options.body) {
         req.write(options.body);
       }
-      
+
       req.end();
     });
   };
@@ -143,13 +150,13 @@ describe('HTTP Server Integration Tests', () => {
       // Test that the server is actually listening
       const response = await sendHttpRequest(`${baseUrl}/health`);
       expect(response.status).toBe(200);
-      
+
       expect(response.data).toHaveProperty('status', 'healthy');
       expect(response.data).toHaveProperty('mode', 'mini');
       expect(response.data).toHaveProperty('version');
     } finally {
       serverProcess.kill('SIGTERM');
-      
+
       // Wait for process to exit
       await new Promise<void>((resolve) => {
         serverProcess.on('exit', () => resolve());
@@ -170,35 +177,34 @@ describe('HTTP Server Integration Tests', () => {
         params: {
           protocolVersion: '2024-11-05',
           capabilities: {
-            roots: { listChanged: true }
+            roots: { listChanged: true },
           },
           clientInfo: {
             name: 'test-client',
-            version: '1.0.0'
-          }
-        }
+            version: '1.0.0',
+          },
+        },
       };
 
       const response = await sendHttpRequest(`${baseUrl}/mcp`, {
         method: 'POST',
-        body: JSON.stringify(initializeRequest)
+        body: JSON.stringify(initializeRequest),
       });
-
 
       expect(response.status).toBe(200);
       // StreamableHTTP returns SSE format for initialize
       expect(response.headers['content-type']).toContain('text/event-stream');
-      
+
       // Parse SSE data
       const sseData = response.data;
       expect(typeof sseData).toBe('string');
       expect(sseData).toContain('data: ');
-      
+
       // Extract JSON from SSE format
-      const dataLine = sseData.split('\n').find(line => line.startsWith('data: '));
+      const dataLine = sseData.split('\n').find((line) => line.startsWith('data: '));
       expect(dataLine).toBeTruthy();
       const jsonData = JSON.parse(dataLine!.substring(6)); // Remove 'data: '
-      
+
       expect(jsonData).toHaveProperty('jsonrpc', '2.0');
       expect(jsonData).toHaveProperty('id', 1);
       expect(jsonData).toHaveProperty('result');
@@ -229,9 +235,9 @@ describe('HTTP Server Integration Tests', () => {
           params: {
             protocolVersion: '2024-11-05',
             capabilities: {},
-            clientInfo: { name: 'test-client', version: '1.0.0' }
-          }
-        })
+            clientInfo: { name: 'test-client', version: '1.0.0' },
+          },
+        }),
       });
 
       expect(initResponse.status).toBe(200);
@@ -242,25 +248,25 @@ describe('HTTP Server Integration Tests', () => {
       const toolsResponse = await sendHttpRequest(`${baseUrl}/mcp`, {
         method: 'POST',
         headers: {
-          'mcp-session-id': sessionId!
+          'mcp-session-id': sessionId!,
         },
         body: JSON.stringify({
           jsonrpc: '2.0',
           id: 2,
           method: 'tools/list',
-          params: {}
-        })
+          params: {},
+        }),
       });
 
       expect(toolsResponse.status).toBe(200);
-      
+
       // Parse SSE data for tools response
       const toolsSseData = toolsResponse.data;
       expect(typeof toolsSseData).toBe('string');
-      const toolsDataLine = toolsSseData.split('\n').find(line => line.startsWith('data: '));
+      const toolsDataLine = toolsSseData.split('\n').find((line) => line.startsWith('data: '));
       expect(toolsDataLine).toBeTruthy();
       const toolsJsonData = JSON.parse(toolsDataLine!.substring(6));
-      
+
       expect(toolsJsonData).toHaveProperty('jsonrpc', '2.0');
       expect(toolsJsonData).toHaveProperty('id', 2);
       expect(toolsJsonData).toHaveProperty('result');
@@ -296,16 +302,18 @@ describe('HTTP Server Integration Tests', () => {
           params: {
             protocolVersion: '2024-11-05',
             capabilities: {},
-            clientInfo: { name: 'test-client', version: '1.0.0' }
-          }
-        })
+            clientInfo: { name: 'test-client', version: '1.0.0' },
+          },
+        }),
       });
 
       // Extract session ID from SSE format
       const initSseData = initResponse.data;
-      const initDataLine = initSseData.split('\n').find((line: string) => line.startsWith('data: '));
+      const initDataLine = initSseData
+        .split('\n')
+        .find((line: string) => line.startsWith('data: '));
       expect(initDataLine).toBeTruthy();
-      
+
       expect(initResponse.status).toBe(200);
       expect(initResponse.headers['content-type']).toContain('text/event-stream');
       expect(initResponse.headers['cache-control']).toBe('no-cache');
@@ -331,14 +339,14 @@ describe('HTTP Server Integration Tests', () => {
       const response = await sendHttpRequest(`${baseUrl}/mcp`, {
         method: 'POST',
         headers: {
-          'mcp-session-id': 'invalid-session-id'
+          'mcp-session-id': 'invalid-session-id',
         },
         body: JSON.stringify({
           jsonrpc: '2.0',
           id: 1,
           method: 'tools/list',
-          params: {}
-        })
+          params: {},
+        }),
       });
 
       expect(response.status).toBe(400);

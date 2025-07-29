@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from '@jest/globals';
-import { spawn, ChildProcess } from 'child_process';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
-import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +35,7 @@ describe('startStdioServer', () => {
       const attemptConnection = async (attempt: number): Promise<any> => {
         return new Promise((resolve, reject) => {
           const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
-          
+
           // Verify the index.js file exists before trying to spawn
           fs.access(indexPath)
             .then(() => {
@@ -58,7 +57,11 @@ describe('startStdioServer', () => {
                 if (!serverProcess.killed) {
                   serverProcess.kill('SIGTERM');
                 }
-                reject(new Error(`Test timeout (attempt ${attempt}) - no response received within 5 seconds`));
+                reject(
+                  new Error(
+                    `Test timeout (attempt ${attempt}) - no response received within 5 seconds`
+                  )
+                );
               }, 5000);
 
               const cleanup = () => {
@@ -78,7 +81,7 @@ describe('startStdioServer', () => {
                     cleanup();
                     resolve(response);
                   }
-                } catch (e) {
+                } catch {
                   // Not yet complete JSON, continue collecting
                 }
               });
@@ -89,13 +92,21 @@ describe('startStdioServer', () => {
 
               serverProcess.on('error', (error) => {
                 cleanup();
-                reject(new Error(`Process error (attempt ${attempt}): ${error.message}\nStderr: ${errorData}`));
+                reject(
+                  new Error(
+                    `Process error (attempt ${attempt}): ${error.message}\nStderr: ${errorData}`
+                  )
+                );
               });
 
               serverProcess.on('exit', (code) => {
                 cleanup();
                 if (code !== 0 && code !== null) {
-                  reject(new Error(`Process exited with code ${code} (attempt ${attempt})\nStderr: ${errorData}`));
+                  reject(
+                    new Error(
+                      `Process exited with code ${code} (attempt ${attempt})\nStderr: ${errorData}`
+                    )
+                  );
                 }
               });
 
@@ -105,7 +116,11 @@ describe('startStdioServer', () => {
               }, 100);
             })
             .catch((error) => {
-              reject(new Error(`Cannot access ${indexPath}: ${error.message}. Try running 'npm run build' first.`));
+              reject(
+                new Error(
+                  `Cannot access ${indexPath}: ${error.message}. Try running 'npm run build' first.`
+                )
+              );
             });
         });
       };
@@ -114,7 +129,7 @@ describe('startStdioServer', () => {
       return attemptConnection(1).catch(async (error) => {
         if (retries > 0) {
           console.log(`Stdio test attempt failed, retrying... (${error.message})`);
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retry
           return attemptConnection(2);
         }
         throw error;
@@ -186,7 +201,7 @@ describe('startStdioServer', () => {
 
       // Create a version with shorter timeout for this specific test
       const createServerWithShortTimeout = (message: any): Promise<any> => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
           const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
           const serverProcess = spawn('node', [indexPath, '--stdio', '--mini'], {
             stdio: ['pipe', 'pipe', 'pipe'],
@@ -224,7 +239,7 @@ describe('startStdioServer', () => {
               const response = JSON.parse(data.toString().trim());
               cleanup();
               resolve(response);
-            } catch (e) {
+            } catch {
               // Could not parse response - this is also acceptable for invalid input
               cleanup();
               resolve({ parseError: true });
