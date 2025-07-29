@@ -19,5 +19,5 @@ export default {
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/'],
   globalTeardown: '<rootDir>/src/jest.teardown.js',
   // Limit parallelism for stdio tests that spawn processes as something gets messed up during build stage
-  maxWorkers: 1,
+  //maxWorkers: 1,
 };
