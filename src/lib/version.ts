@@ -22,10 +22,10 @@ export function getVersion(): string {
     // Try different possible paths for package.json based on build/bundling context
     const possiblePaths = [
       join(__dirname, '..', '..', 'package.json'), // Original tsc build structure
-      join(__dirname, '..', 'package.json'),       // Bundled structure (dist/index.js -> package.json)
-      join(process.cwd(), 'package.json'),         // Current working directory
+      join(__dirname, '..', 'package.json'), // Bundled structure (dist/index.js -> package.json)
+      join(process.cwd(), 'package.json'), // Current working directory
     ];
-    
+
     let packageJson: any = null;
     for (const packageJsonPath of possiblePaths) {
       try {
@@ -36,7 +36,7 @@ export function getVersion(): string {
         continue;
       }
     }
-    
+
     if (packageJson) {
       version = packageJson.version || '1.0.0';
     } else {
