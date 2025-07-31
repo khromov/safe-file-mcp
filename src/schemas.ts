@@ -74,6 +74,13 @@ export const SearchFileContentArgsSchema = z.object({
     .optional()
     .default([])
     .describe('File patterns to exclude from search'),
+  includeAllFiles: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      'If false (default), respects .cocoignore file. If true, searches all files including those that would normally be ignored'
+    ),
 });
 
 export const ExecuteCommandArgsSchema = z.object({

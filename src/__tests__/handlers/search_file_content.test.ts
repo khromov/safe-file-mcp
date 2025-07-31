@@ -48,6 +48,32 @@ module.exports = { main };`
   "description": "A test application"
 }`
     );
+
+    // Create a .cocoignore file to test ignore functionality
+    await fs.writeFile(
+      path.join(testDir, '.cocoignore'),
+      `*.json
+node_modules/
+dist/`
+    );
+
+    // Create a file that would be ignored
+    await fs.writeFile(
+      path.join(testDir, 'ignored.json'),
+      `{
+  "ignored": true,
+  "test": "this should not be found"
+}`
+    );
+
+    // Create a node_modules directory with a file
+    await fs.mkdir(path.join(testDir, 'node_modules'), { recursive: true });
+    await fs.writeFile(
+      path.join(testDir, 'node_modules', 'module.js'),
+      `// This is in node_modules
+console.log("I should be ignored by default");
+var moduleTest = "test pattern in node_modules";`
+    );
   });
 
   afterAll(async () => {
@@ -63,6 +89,7 @@ module.exports = { main };`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
@@ -75,6 +102,8 @@ module.exports = { main };`
     expect(text).toContain('console.log');
     expect(text).toContain('test1.ts');
     expect(text).toContain('test2.js');
+    // Should not contain ignored files
+    expect(text).not.toContain('node_modules');
   });
 
   it('should support regex patterns', async () => {
@@ -86,6 +115,7 @@ module.exports = { main };`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
@@ -107,6 +137,7 @@ module.exports = { main };`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
@@ -126,7 +157,8 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: ['*.json'],
+      excludePatterns: ['*.ts'],
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
@@ -135,8 +167,97 @@ module.exports = { main };`
     expect(result.content[0].type).toBe('text');
 
     const text = result.content[0].text;
-    // Should not find matches in config.json due to exclusion
+    // Should not find matches in .ts files due to exclusion
+    expect(text).not.toContain('test1.ts');
+  });
+
+  it('should respect .cocoignore by default (includeAllFiles=false)', async () => {
+    const args = {
+      path: '',
+      pattern: 'test',
+      useRegex: false,
+      caseSensitive: false,
+      contextLines: 1,
+      maxResults: 10,
+      excludePatterns: [],
+      includeAllFiles: false,
+    };
+
+    const result = await handleSearchFileContent(args, context);
+
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+
+    const text = result.content[0].text;
+    // Should not find matches in ignored files (.json files are in .cocoignore)
     expect(text).not.toContain('config.json');
+    expect(text).not.toContain('ignored.json');
+    expect(text).not.toContain('node_modules');
+  });
+
+  it('should ignore .cocoignore when includeAllFiles=true', async () => {
+    const args = {
+      path: '',
+      pattern: 'moduleTest',
+      useRegex: false,
+      caseSensitive: false,
+      contextLines: 1,
+      maxResults: 10,
+      excludePatterns: [],
+      includeAllFiles: true,
+    };
+
+    const result = await handleSearchFileContent(args, context);
+
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+
+    const text = result.content[0].text;
+    // Should find matches in previously ignored files
+    expect(text).toContain('node_modules');
+    expect(text).toContain('moduleTest');
+  });
+
+  it('should provide tip when no matches found with includeAllFiles=false', async () => {
+    const args = {
+      path: '',
+      pattern: 'nonexistentpattern123',
+      useRegex: false,
+      caseSensitive: false,
+      contextLines: 1,
+      maxResults: 10,
+      excludePatterns: [],
+      includeAllFiles: false,
+    };
+
+    const result = await handleSearchFileContent(args, context);
+
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+    const text = result.content[0].text;
+    expect(text).toContain('No matches found');
+    expect(text).toContain('includeAllFiles: true');
+  });
+
+  it('should not provide tip when no matches found with includeAllFiles=true', async () => {
+    const args = {
+      path: '',
+      pattern: 'nonexistentpattern123',
+      useRegex: false,
+      caseSensitive: false,
+      contextLines: 1,
+      maxResults: 10,
+      excludePatterns: [],
+      includeAllFiles: true,
+    };
+
+    const result = await handleSearchFileContent(args, context);
+
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+    const text = result.content[0].text;
+    expect(text).toContain('No matches found');
+    expect(text).not.toContain('includeAllFiles: true');
   });
 
   it('should handle empty results', async () => {
@@ -148,6 +269,7 @@ module.exports = { main };`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
@@ -166,6 +288,7 @@ module.exports = { main };`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
+      includeAllFiles: false,
     };
 
     await expect(handleSearchFileContent(args, context)).rejects.toThrow(/Invalid regex pattern/);

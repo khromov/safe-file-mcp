@@ -169,7 +169,9 @@ const additionalTools = [
       "Use relative paths with or without './' prefix for the search root. " +
       'Supports both literal text search and regular expressions. ' +
       'Returns matching files with line numbers and context around matches. ' +
-      'This is always available and useful for finding specific code patterns, function definitions, variable usages, or any text content across multiple files.',
+      'By default, respects .cocoignore patterns - set includeAllFiles to true to search all files. ' +
+      'IMPORTANT: Only use this tool when the user specifically asks to search for content OR when you are totally stuck and need to find something. ' +
+      'If no results are found with includeAllFiles=false, try again with includeAllFiles=true.',
     inputSchema: zodToJsonSchema(SearchFileContentArgsSchema) as ToolInput,
     handler: handleSearchFileContent,
   },

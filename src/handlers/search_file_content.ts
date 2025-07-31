@@ -4,6 +4,9 @@ import { validateRelativePath, resolveRelativePath, normalizeDisplayPath } from 
 import fs from 'fs/promises';
 import path from 'path';
 import { minimatch } from 'minimatch';
+import { isBinaryFile } from 'isbinaryfile';
+import ignore from 'ignore';
+import { DEFAULT_IGNORES } from '../constants.js';
 import logger from '../logger.js';
 
 interface SearchMatch {
@@ -24,7 +27,7 @@ export async function handleSearchFileContent(
   }
 
   logger.info(
-    `🔍 search_file_content handler started: pattern "${parsed.data.pattern}", path ${parsed.data.path}`
+    `🔍 search_file_content handler started: pattern "${parsed.data.pattern}", path ${parsed.data.path}, includeAllFiles: ${parsed.data.includeAllFiles}`
   );
 
   validateRelativePath(parsed.data.path);
@@ -40,6 +43,7 @@ export async function handleSearchFileContent(
         contextLines: parsed.data.contextLines,
         maxResults: parsed.data.maxResults,
         excludePatterns: parsed.data.excludePatterns,
+        includeAllFiles: parsed.data.includeAllFiles,
       },
       context.absoluteRootDir
     );
@@ -48,6 +52,11 @@ export async function handleSearchFileContent(
 
     if (matches.length === 0) {
       resultText = `No matches found for pattern "${parsed.data.pattern}"`;
+
+      // If no matches found and not including all files, suggest trying with includeAllFiles=true
+      if (!parsed.data.includeAllFiles) {
+        resultText += `\n\n💡 **Tip**: No matches found. If you think the pattern should match something, try setting \`includeAllFiles: true\` to search files that might be excluded by .cocoignore patterns.`;
+      }
     } else {
       resultText = `Found ${matches.length} match(es) for pattern "${parsed.data.pattern}":\n\n`;
 
@@ -113,6 +122,7 @@ async function searchFileContent(
     contextLines: number;
     maxResults: number;
     excludePatterns: string[];
+    includeAllFiles: boolean;
   },
   projectRoot: string
 ): Promise<SearchMatch[]> {
@@ -137,7 +147,23 @@ async function searchFileContent(
     );
   }
 
-  // Define binary file extensions to skip
+  // Set up ignore patterns based on includeAllFiles flag
+  const ig = ignore();
+  if (!options.includeAllFiles) {
+    // Add default ignores and .cocoignore patterns
+    ig.add(DEFAULT_IGNORES);
+
+    // Try to read .cocoignore file if it exists
+    try {
+      const cocoIgnorePath = path.join(projectRoot, '.cocoignore');
+      const cocoIgnoreContent = await fs.readFile(cocoIgnorePath, 'utf-8');
+      ig.add(cocoIgnoreContent);
+    } catch {
+      // .cocoignore doesn't exist, that's fine
+    }
+  }
+
+  // Define binary file extensions to skip (as fallback to isbinaryfile)
   const binaryExtensions = new Set([
     '.exe',
     '.dll',
@@ -191,14 +217,21 @@ async function searchFileContent(
       return;
     }
 
-    // Skip binary files based on extension
+    // Calculate relative path for ignore checking
+    const relativePath = path.relative(projectRoot, filePath);
+
+    // Check if file should be ignored (only if not including all files)
+    if (!options.includeAllFiles && ig.ignores(relativePath)) {
+      return;
+    }
+
+    // Skip binary files based on extension (quick check)
     const ext = path.extname(filePath).toLowerCase();
     if (binaryExtensions.has(ext)) {
       return;
     }
 
     // Check exclude patterns
-    const relativePath = path.relative(projectRoot, filePath);
     const shouldExclude = options.excludePatterns.some((excludePattern) => {
       const globPattern = excludePattern.includes('*') ? excludePattern : `**/${excludePattern}/**`;
       return minimatch(relativePath, globPattern, { dot: true });
@@ -209,6 +242,13 @@ async function searchFileContent(
     }
 
     try {
+      // Use isbinaryfile to check if file is binary
+      const isBinary = await isBinaryFile(filePath);
+      if (isBinary) {
+        logger.debug(`Skipping binary file: ${filePath}`);
+        return;
+      }
+
       const content = await fs.readFile(filePath, 'utf-8');
       const lines = content.split('\n');
 
@@ -242,7 +282,7 @@ async function searchFileContent(
         }
       }
     } catch (error) {
-      // Skip files that can't be read as text (likely binary files)
+      // Skip files that can't be read as text or processed
       if ((error as any).code !== 'EISDIR') {
         logger.debug(
           `Skipping file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
@@ -265,35 +305,46 @@ async function searchFileContent(
         }
 
         const fullPath = path.join(currentPath, entry.name);
+        const relativePath = path.relative(projectRoot, fullPath);
 
         try {
           if (entry.isDirectory()) {
-            // Skip common directories that usually contain non-searchable content
-            const skipDirs = new Set([
-              'node_modules',
-              '.git',
-              '.svn',
-              '.hg',
-              'dist',
-              'build',
-              'target',
-              'vendor',
-              '__pycache__',
-              '.venv',
-              'venv',
-              'ENV',
-              'env',
-              '.cache',
-              '.turbo',
-              '.next',
-              '.nuxt',
-              '.svelte-kit',
-              'coverage',
-            ]);
-
-            if (!skipDirs.has(entry.name)) {
-              await searchDirectory(fullPath);
+            // Check if directory should be ignored (only if not including all files)
+            if (!options.includeAllFiles && ig.ignores(relativePath)) {
+              continue;
             }
+
+            // Skip common directories that usually contain non-searchable content
+            // (only when not including all files)
+            if (!options.includeAllFiles) {
+              const skipDirs = new Set([
+                'node_modules',
+                '.git',
+                '.svn',
+                '.hg',
+                'dist',
+                'build',
+                'target',
+                'vendor',
+                '__pycache__',
+                '.venv',
+                'venv',
+                'ENV',
+                'env',
+                '.cache',
+                '.turbo',
+                '.next',
+                '.nuxt',
+                '.svelte-kit',
+                'coverage',
+              ]);
+
+              if (skipDirs.has(entry.name)) {
+                continue;
+              }
+            }
+
+            await searchDirectory(fullPath);
           } else if (entry.isFile()) {
             await searchInFile(fullPath);
           }
