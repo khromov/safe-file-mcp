@@ -15,6 +15,7 @@ interface SearchMatch {
   line: string;
   context: string[];
   matchedText: string;
+  contextStartLine: number; // Track the actual starting line of the context
 }
 
 export async function handleSearchFileContent(
@@ -52,7 +53,7 @@ export async function handleSearchFileContent(
 
     if (matches.length === 0) {
       resultText = `No matches found for pattern "${parsed.data.pattern}"`;
-
+      
       // If no matches found and not including all files, suggest trying with includeAllFiles=true
       if (!parsed.data.includeAllFiles) {
         resultText += `\n\n💡 **Tip**: No matches found. If you think the pattern should match something, try setting \`includeAllFiles: true\` to search files that might be excluded by .cocoignore patterns.`;
@@ -77,10 +78,10 @@ export async function handleSearchFileContent(
           resultText += `\n**Line ${match.lineNumber}:** \`${match.matchedText}\`\n`;
           resultText += '```\n';
 
-          // Add context lines
+          // Add context lines with correct line numbers
           if (match.context.length > 0) {
             for (let i = 0; i < match.context.length; i++) {
-              const contextLineNumber = match.lineNumber - parsed.data.contextLines + i;
+              const contextLineNumber = match.contextStartLine + i;
               const isMatchLine = contextLineNumber === match.lineNumber;
               const prefix = isMatchLine ? '> ' : '  ';
               resultText += `${prefix}${contextLineNumber}: ${match.context[i]}\n`;
@@ -142,9 +143,7 @@ async function searchFileContent(
       searchRegex = new RegExp(escapedPattern, flags);
     }
   } catch (error) {
-    throw new Error(
-      `Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   // Set up ignore patterns based on includeAllFiles flag
@@ -152,7 +151,7 @@ async function searchFileContent(
   if (!options.includeAllFiles) {
     // Add default ignores and .cocoignore patterns
     ig.add(DEFAULT_IGNORES);
-
+    
     // Try to read .cocoignore file if it exists
     try {
       const cocoIgnorePath = path.join(projectRoot, '.cocoignore');
@@ -165,51 +164,11 @@ async function searchFileContent(
 
   // Define binary file extensions to skip (as fallback to isbinaryfile)
   const binaryExtensions = new Set([
-    '.exe',
-    '.dll',
-    '.so',
-    '.dylib',
-    '.bin',
-    '.dat',
-    '.db',
-    '.sqlite',
-    '.sqlite3',
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.bmp',
-    '.ico',
-    '.svg',
-    '.webp',
-    '.tiff',
-    '.mp3',
-    '.mp4',
-    '.avi',
-    '.mov',
-    '.wmv',
-    '.flv',
-    '.webm',
-    '.mkv',
-    '.wav',
-    '.flac',
-    '.pdf',
-    '.doc',
-    '.docx',
-    '.xls',
-    '.xlsx',
-    '.ppt',
-    '.pptx',
-    '.zip',
-    '.rar',
-    '.7z',
-    '.gz',
-    '.tar',
-    '.woff',
-    '.woff2',
-    '.ttf',
-    '.eot',
-    '.otf',
+    '.exe', '.dll', '.so', '.dylib', '.bin', '.dat', '.db', '.sqlite', '.sqlite3',
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.svg', '.webp', '.tiff',
+    '.mp3', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.wav', '.flac',
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.zip', '.rar', '.7z', '.gz', '.tar',
+    '.woff', '.woff2', '.ttf', '.eot', '.otf'
   ]);
 
   async function searchInFile(filePath: string): Promise<void> {
@@ -262,7 +221,7 @@ async function searchFileContent(
               break;
             }
 
-            // Get context lines
+            // Get context lines with proper bounds checking
             const contextStart = Math.max(0, i - options.contextLines);
             const contextEnd = Math.min(lines.length, i + options.contextLines + 1);
             const contextLines = lines.slice(contextStart, contextEnd);
@@ -275,6 +234,7 @@ async function searchFileContent(
               line: line,
               context: contextLines,
               matchedText: matchText,
+              contextStartLine: contextStart + 1, // 1-based line number for context start
             });
 
             totalMatches++;
@@ -284,9 +244,7 @@ async function searchFileContent(
     } catch (error) {
       // Skip files that can't be read as text or processed
       if ((error as any).code !== 'EISDIR') {
-        logger.debug(
-          `Skipping file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
-        );
+        logger.debug(`Skipping file ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
   }
@@ -318,25 +276,9 @@ async function searchFileContent(
             // (only when not including all files)
             if (!options.includeAllFiles) {
               const skipDirs = new Set([
-                'node_modules',
-                '.git',
-                '.svn',
-                '.hg',
-                'dist',
-                'build',
-                'target',
-                'vendor',
-                '__pycache__',
-                '.venv',
-                'venv',
-                'ENV',
-                'env',
-                '.cache',
-                '.turbo',
-                '.next',
-                '.nuxt',
-                '.svelte-kit',
-                'coverage',
+                'node_modules', '.git', '.svn', '.hg', 'dist', 'build', 'target',
+                'vendor', '__pycache__', '.venv', 'venv', 'ENV', 'env', '.cache',
+                '.turbo', '.next', '.nuxt', '.svelte-kit', 'coverage'
               ]);
 
               if (skipDirs.has(entry.name)) {
@@ -350,17 +292,13 @@ async function searchFileContent(
           }
         } catch (error) {
           // Skip entries that can't be accessed
-          logger.debug(
-            `Skipping ${fullPath}: ${error instanceof Error ? error.message : String(error)}`
-          );
+          logger.debug(`Skipping ${fullPath}: ${error instanceof Error ? error.message : String(error)}`);
           continue;
         }
       }
     } catch (error) {
       // Skip directories that can't be read
-      logger.debug(
-        `Cannot read directory ${currentPath}: ${error instanceof Error ? error.message : String(error)}`
-      );
+      logger.debug(`Cannot read directory ${currentPath}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
