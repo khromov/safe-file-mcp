@@ -87,7 +87,7 @@ dist/`
     // Create a node_modules directory with files to test exclude pattern logic
     await fs.mkdir(path.join(testDir, 'node_modules'), { recursive: true });
     await fs.mkdir(path.join(testDir, 'node_modules', 'subdir'), { recursive: true });
-    
+
     // File directly in node_modules
     await fs.writeFile(
       path.join(testDir, 'node_modules', 'module.js'),
@@ -95,7 +95,7 @@ dist/`
 console.log("I should be ignored by default");
 var moduleTest = "test pattern in node_modules";`
     );
-    
+
     // File in node_modules subdirectory
     await fs.writeFile(
       path.join(testDir, 'node_modules', 'subdir', 'nested.js'),
@@ -176,7 +176,7 @@ var srcTest = "test pattern in src";`
     expect(result.content[0].type).toBe('text');
 
     const text = result.content[0].text;
-    
+
     // Should NOT find files directly in node_modules OR in subdirectories
     expect(text).toContain('No matches found');
     expect(text).not.toContain('node_modules/module.js');
@@ -184,7 +184,7 @@ var srcTest = "test pattern in src";`
     // The pattern name will appear in "No matches found for pattern ..." message, that's expected
   });
 
-  // Test for Fix #1: Exclude pattern logic for glob patterns  
+  // Test for Fix #1: Exclude pattern logic for glob patterns
   it('should correctly handle glob patterns in exclude patterns', async () => {
     const args = {
       path: '',
@@ -203,7 +203,7 @@ var srcTest = "test pattern in src";`
     expect(result.content[0].type).toBe('text');
 
     const text = result.content[0].text;
-    
+
     // Should not find files in dist due to glob pattern exclusion
     expect(text).toContain('No matches found');
     expect(text).not.toContain('dist/bundle.js');
@@ -229,16 +229,16 @@ var srcTest = "test pattern in src";`
     expect(result.content[0].type).toBe('text');
 
     const text = result.content[0].text;
-    
+
     // Should find the file with multiple matches
     expect(text).toContain('multi-match.txt');
-    
+
     // Check that multiple matches on the same line are captured
     // Line 1 has 3 occurrences of "test", should show 3 separate match entries
     const line1Matches = (text.match(/Line 1:/g) || []).length;
     expect(line1Matches).toBeGreaterThanOrEqual(3); // At least 3 matches on line 1
-    
-    // Line 3 has 3 occurrences of "test", should show 3 separate match entries  
+
+    // Line 3 has 3 occurrences of "test", should show 3 separate match entries
     const line3Matches = (text.match(/Line 3:/g) || []).length;
     expect(line3Matches).toBeGreaterThanOrEqual(3); // At least 3 matches on line 3
   });
@@ -273,7 +273,7 @@ var srcTest = "test pattern in src";`
     const text1 = result1.content[0].text;
     expect(text1).toContain('console');
 
-    // Second search - should work independently 
+    // Second search - should work independently
     const result2 = await handleSearchFileContent(args2, context);
     expect(result2.content).toHaveLength(1);
     const text2 = result2.content[0].text;
@@ -284,7 +284,7 @@ var srcTest = "test pattern in src";`
     expect(result3.content).toHaveLength(1);
     const text3 = result3.content[0].text;
     expect(text3).toContain('console');
-    
+
     // Results should be consistent
     expect(text1).toEqual(text3);
   });
@@ -310,7 +310,7 @@ var srcTest = "test pattern in src";`
     // All results should be identical
     expect(result1.content[0].text).toEqual(result2.content[0].text);
     expect(result2.content[0].text).toEqual(result3.content[0].text);
-    
+
     // Should find matches consistently
     expect(result1.content[0].text).toContain('Found');
     expect(result2.content[0].text).toContain('Found');

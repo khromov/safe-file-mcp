@@ -226,7 +226,7 @@ async function searchFileContent(
           `**/${excludePattern}/**`, // files in subdirectories
           `**/${excludePattern}/*`, // files directly inside the directory
         ];
-        return patterns.some(pattern => minimatch(relativePath, pattern, { dot: true }));
+        return patterns.some((pattern) => minimatch(relativePath, pattern, { dot: true }));
       }
     });
   }
@@ -268,9 +268,11 @@ async function searchFileContent(
 
       for (let i = 0; i < lines.length && totalMatches < options.maxResults; i++) {
         const line = lines[i];
-        
+
         // Use matchAll instead of match to avoid executing regex twice
-        const lineMatches = Array.from(line.matchAll(new RegExp(searchRegex.source, searchRegex.flags + 'g')));
+        const lineMatches = Array.from(
+          line.matchAll(new RegExp(searchRegex.source, searchRegex.flags + 'g'))
+        );
 
         for (const match of lineMatches) {
           if (totalMatches >= options.maxResults) {
