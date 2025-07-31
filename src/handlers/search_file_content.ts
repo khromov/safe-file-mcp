@@ -53,7 +53,7 @@ export async function handleSearchFileContent(
 
     if (matches.length === 0) {
       resultText = `No matches found for pattern "${parsed.data.pattern}"`;
-      
+
       // If no matches found and not including all files, suggest trying with includeAllFiles=true
       if (!parsed.data.includeAllFiles) {
         resultText += `\n\n💡 **Tip**: No matches found. If you think the pattern should match something, try setting \`includeAllFiles: true\` to search files that might be excluded by .cocoignore patterns.`;
@@ -143,7 +143,9 @@ async function searchFileContent(
       searchRegex = new RegExp(escapedPattern, flags);
     }
   } catch (error) {
-    throw new Error(`Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   // Set up ignore patterns based on includeAllFiles flag
@@ -151,7 +153,7 @@ async function searchFileContent(
   if (!options.includeAllFiles) {
     // Add default ignores and .cocoignore patterns
     ig.add(DEFAULT_IGNORES);
-    
+
     // Try to read .cocoignore file if it exists
     try {
       const cocoIgnorePath = path.join(projectRoot, '.cocoignore');
@@ -164,11 +166,51 @@ async function searchFileContent(
 
   // Define binary file extensions to skip (as fallback to isbinaryfile)
   const binaryExtensions = new Set([
-    '.exe', '.dll', '.so', '.dylib', '.bin', '.dat', '.db', '.sqlite', '.sqlite3',
-    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.svg', '.webp', '.tiff',
-    '.mp3', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.wav', '.flac',
-    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.zip', '.rar', '.7z', '.gz', '.tar',
-    '.woff', '.woff2', '.ttf', '.eot', '.otf'
+    '.exe',
+    '.dll',
+    '.so',
+    '.dylib',
+    '.bin',
+    '.dat',
+    '.db',
+    '.sqlite',
+    '.sqlite3',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.ico',
+    '.svg',
+    '.webp',
+    '.tiff',
+    '.mp3',
+    '.mp4',
+    '.avi',
+    '.mov',
+    '.wmv',
+    '.flv',
+    '.webm',
+    '.mkv',
+    '.wav',
+    '.flac',
+    '.pdf',
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.ppt',
+    '.pptx',
+    '.zip',
+    '.rar',
+    '.7z',
+    '.gz',
+    '.tar',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.eot',
+    '.otf',
   ]);
 
   async function searchInFile(filePath: string): Promise<void> {
@@ -244,7 +286,9 @@ async function searchFileContent(
     } catch (error) {
       // Skip files that can't be read as text or processed
       if ((error as any).code !== 'EISDIR') {
-        logger.debug(`Skipping file ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+        logger.debug(
+          `Skipping file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
   }
@@ -276,9 +320,25 @@ async function searchFileContent(
             // (only when not including all files)
             if (!options.includeAllFiles) {
               const skipDirs = new Set([
-                'node_modules', '.git', '.svn', '.hg', 'dist', 'build', 'target',
-                'vendor', '__pycache__', '.venv', 'venv', 'ENV', 'env', '.cache',
-                '.turbo', '.next', '.nuxt', '.svelte-kit', 'coverage'
+                'node_modules',
+                '.git',
+                '.svn',
+                '.hg',
+                'dist',
+                'build',
+                'target',
+                'vendor',
+                '__pycache__',
+                '.venv',
+                'venv',
+                'ENV',
+                'env',
+                '.cache',
+                '.turbo',
+                '.next',
+                '.nuxt',
+                '.svelte-kit',
+                'coverage',
               ]);
 
               if (skipDirs.has(entry.name)) {
@@ -292,13 +352,17 @@ async function searchFileContent(
           }
         } catch (error) {
           // Skip entries that can't be accessed
-          logger.debug(`Skipping ${fullPath}: ${error instanceof Error ? error.message : String(error)}`);
+          logger.debug(
+            `Skipping ${fullPath}: ${error instanceof Error ? error.message : String(error)}`
+          );
           continue;
         }
       }
     } catch (error) {
       // Skip directories that can't be read
-      logger.debug(`Cannot read directory ${currentPath}: ${error instanceof Error ? error.message : String(error)}`);
+      logger.debug(
+        `Cannot read directory ${currentPath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 

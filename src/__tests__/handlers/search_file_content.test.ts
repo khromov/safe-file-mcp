@@ -15,7 +15,7 @@ describe('search_file_content handler', () => {
   beforeAll(async () => {
     // Create test directory and files
     await fs.mkdir(testDir, { recursive: true });
-    
+
     // Create test files with different content
     await fs.writeFile(
       path.join(testDir, 'test1.ts'),
@@ -99,25 +99,25 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 2,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('Found');
     expect(text).toContain('line-test.txt');
     expect(text).toContain('Line 2:'); // Should report line 2
-    
+
     // Check that the context shows correct line numbers and marker
-    expect(text).toContain('  1: line 1');           // Line before match
+    expect(text).toContain('  1: line 1'); // Line before match
     expect(text).toContain('> 2: line 2 with target'); // Match line with marker
-    expect(text).toContain('  3: line 3');           // Line after match
-    expect(text).toContain('  4: line 4');           // Second line after match
-    
+    expect(text).toContain('  3: line 3'); // Line after match
+    expect(text).toContain('  4: line 4'); // Second line after match
+
     // Should NOT contain line 0 (bug was showing 0-based indexing)
     expect(text).not.toContain('  0:');
     expect(text).not.toContain('> 0:');
@@ -132,14 +132,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('Found');
     expect(text).toContain('console.log');
@@ -158,14 +158,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('Found');
     expect(text).toContain('match');
@@ -180,14 +180,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('No matches found');
   });
@@ -201,14 +201,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: ['*.ts'],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     // Should not find matches in .ts files due to exclusion
     expect(text).not.toContain('test1.ts');
@@ -223,14 +223,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     // Should not find matches in ignored files (.json files are in .cocoignore)
     expect(text).not.toContain('config.json');
@@ -247,14 +247,14 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: true
+      includeAllFiles: true,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     // Should find matches in previously ignored files
     expect(text).toContain('node_modules');
@@ -270,11 +270,11 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
     const text = result.content[0].text;
@@ -291,11 +291,11 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: true
+      includeAllFiles: true,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
     const text = result.content[0].text;
@@ -312,11 +312,11 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
     expect(result.content[0].text).toContain('No matches found');
@@ -331,7 +331,7 @@ var moduleTest = "test pattern in node_modules";`
       contextLines: 1,
       maxResults: 10,
       excludePatterns: [],
-      includeAllFiles: false
+      includeAllFiles: false,
     };
 
     await expect(handleSearchFileContent(args, context)).rejects.toThrow(/Invalid regex pattern/);
