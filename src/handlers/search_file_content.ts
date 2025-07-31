@@ -76,7 +76,7 @@ export async function handleSearchFileContent(
 
         for (const match of fileMatches) {
           resultText += `\n**Line ${match.lineNumber}:** \`${match.matchedText}\`\n`;
-          resultText += '```\n';
+          resultText += '\`\`\`\n';
 
           // Add context lines with correct line numbers
           if (match.context.length > 0) {
@@ -88,7 +88,7 @@ export async function handleSearchFileContent(
             }
           }
 
-          resultText += '```\n';
+          resultText += '\`\`\`\n';
         }
 
         resultText += '\n';
@@ -134,12 +134,14 @@ async function searchFileContent(
   let searchRegex: RegExp;
   try {
     if (options.useRegex) {
-      const flags = options.caseSensitive ? 'g' : 'gi';
+      // Remove global flag 'g' to avoid state issues with repeated calls
+      const flags = options.caseSensitive ? '' : 'i';
       searchRegex = new RegExp(pattern, flags);
     } else {
       // Escape special regex characters for literal search
       const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const flags = options.caseSensitive ? 'g' : 'gi';
+      // Remove global flag 'g' to avoid state issues with repeated calls
+      const flags = options.caseSensitive ? '' : 'i';
       searchRegex = new RegExp(escapedPattern, flags);
     }
   } catch (error) {
@@ -213,6 +215,22 @@ async function searchFileContent(
     '.otf',
   ]);
 
+  // Helper function to check if a path should be excluded based on exclude patterns
+  function shouldExcludeFile(relativePath: string): boolean {
+    return options.excludePatterns.some((excludePattern) => {
+      if (excludePattern.includes('*')) {
+        return minimatch(relativePath, excludePattern, { dot: true });
+      } else {
+        // Match files directly inside the directory and in any subdirectory
+        const patterns = [
+          `**/${excludePattern}/**`, // files in subdirectories
+          `**/${excludePattern}/*`, // files directly inside the directory
+        ];
+        return patterns.some(pattern => minimatch(relativePath, pattern, { dot: true }));
+      }
+    });
+  }
+
   async function searchInFile(filePath: string): Promise<void> {
     if (totalMatches >= options.maxResults) {
       return;
@@ -232,13 +250,8 @@ async function searchFileContent(
       return;
     }
 
-    // Check exclude patterns
-    const shouldExclude = options.excludePatterns.some((excludePattern) => {
-      const globPattern = excludePattern.includes('*') ? excludePattern : `**/${excludePattern}/**`;
-      return minimatch(relativePath, globPattern, { dot: true });
-    });
-
-    if (shouldExclude) {
+    // Check exclude patterns with improved logic
+    if (shouldExcludeFile(relativePath)) {
       return;
     }
 
@@ -255,32 +268,32 @@ async function searchFileContent(
 
       for (let i = 0; i < lines.length && totalMatches < options.maxResults; i++) {
         const line = lines[i];
-        const lineMatches = line.match(searchRegex);
+        
+        // Use matchAll instead of match to avoid executing regex twice
+        const lineMatches = Array.from(line.matchAll(new RegExp(searchRegex.source, searchRegex.flags + 'g')));
 
-        if (lineMatches) {
-          for (const matchText of lineMatches) {
-            if (totalMatches >= options.maxResults) {
-              break;
-            }
-
-            // Get context lines with proper bounds checking
-            const contextStart = Math.max(0, i - options.contextLines);
-            const contextEnd = Math.min(lines.length, i + options.contextLines + 1);
-            const contextLines = lines.slice(contextStart, contextEnd);
-
-            const displayPath = normalizeDisplayPath(filePath, projectRoot);
-
-            matches.push({
-              file: displayPath,
-              lineNumber: i + 1, // 1-based line numbers
-              line: line,
-              context: contextLines,
-              matchedText: matchText,
-              contextStartLine: contextStart + 1, // 1-based line number for context start
-            });
-
-            totalMatches++;
+        for (const match of lineMatches) {
+          if (totalMatches >= options.maxResults) {
+            break;
           }
+
+          // Get context lines with proper bounds checking
+          const contextStart = Math.max(0, i - options.contextLines);
+          const contextEnd = Math.min(lines.length, i + options.contextLines + 1);
+          const contextLines = lines.slice(contextStart, contextEnd);
+
+          const displayPath = normalizeDisplayPath(filePath, projectRoot);
+
+          matches.push({
+            file: displayPath,
+            lineNumber: i + 1, // 1-based line numbers
+            line: line,
+            context: contextLines,
+            matchedText: match[0],
+            contextStartLine: contextStart + 1, // 1-based line number for context start
+          });
+
+          totalMatches++;
         }
       }
     } catch (error) {
