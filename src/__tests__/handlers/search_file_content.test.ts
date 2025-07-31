@@ -15,7 +15,7 @@ describe('search_file_content handler', () => {
   beforeAll(async () => {
     // Create test directory and files
     await fs.mkdir(testDir, { recursive: true });
-    
+
     // Create test files with different content
     await fs.writeFile(
       path.join(testDir, 'test1.ts'),
@@ -62,14 +62,14 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: []
+      excludePatterns: [],
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('Found');
     expect(text).toContain('console.log');
@@ -85,14 +85,14 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: []
+      excludePatterns: [],
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('Found');
     expect(text).toContain('match');
@@ -106,14 +106,14 @@ module.exports = { main };`
       caseSensitive: true,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: []
+      excludePatterns: [],
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     expect(text).toContain('No matches found');
   });
@@ -126,14 +126,14 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: ['*.json']
+      excludePatterns: ['*.json'],
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    
+
     const text = result.content[0].text;
     // Should not find matches in config.json due to exclusion
     expect(text).not.toContain('config.json');
@@ -147,11 +147,11 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: []
+      excludePatterns: [],
     };
 
     const result = await handleSearchFileContent(args, context);
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
     expect(result.content[0].text).toContain('No matches found');
@@ -165,7 +165,7 @@ module.exports = { main };`
       caseSensitive: false,
       contextLines: 1,
       maxResults: 10,
-      excludePatterns: []
+      excludePatterns: [],
     };
 
     await expect(handleSearchFileContent(args, context)).rejects.toThrow(/Invalid regex pattern/);
