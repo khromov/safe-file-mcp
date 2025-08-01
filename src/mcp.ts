@@ -145,7 +145,9 @@ export const createServer = async () => {
     const filteredPrompts: Prompt[] = (() => {
       if (isClaudeCode && claudeCodePrompt) return [claudeCodePrompt];
       if (isClaudeDesktop && claudeDesktopPrompt) return [claudeDesktopPrompt];
-      return [claudeCodePrompt, claudeDesktopPrompt].filter((prompt): prompt is Prompt => Boolean(prompt));
+      return [claudeCodePrompt, claudeDesktopPrompt].filter((prompt): prompt is Prompt =>
+        Boolean(prompt)
+      );
     })();
 
     logger.info(`📜 Returned ${filteredPrompts.length} prompts`);
