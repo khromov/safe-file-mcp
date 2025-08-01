@@ -5,6 +5,7 @@ import {
   Tool,
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
+  Prompt,
 } from '@modelcontextprotocol/sdk/types.js';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -127,9 +128,30 @@ export const createServer = async () => {
     }
   });
 
-  // Add prompt handlers
-  server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    return { prompts };
+  server.setRequestHandler(ListPromptsRequestSchema, async (data, requestHandler) => {
+    const userAgent = requestHandler.requestInfo?.headers?.['user-agent'] || '';
+    const isClaudeCode = userAgent.includes('claude-code');
+    const isClaudeDesktop = userAgent.includes('claude-desktop');
+
+    logger.info(
+      `👤 User-Agent: ${userAgent}, Claude Code: ${isClaudeCode}, Claude Desktop: ${isClaudeDesktop}`
+    );
+
+    // Find available prompts
+    const claudeCodePrompt = prompts.find((p) => p.name === 'context-coder-claude-code');
+    const claudeDesktopPrompt = prompts.find((p) => p.name === 'context-coder-claude-desktop');
+
+    // Filter prompts based on user agent
+    const filteredPrompts: Prompt[] = (() => {
+      if (isClaudeCode && claudeCodePrompt) return [claudeCodePrompt];
+      if (isClaudeDesktop && claudeDesktopPrompt) return [claudeDesktopPrompt];
+      return [claudeCodePrompt, claudeDesktopPrompt].filter((prompt): prompt is Prompt =>
+        Boolean(prompt)
+      );
+    })();
+
+    logger.info(`📜 Returned ${filteredPrompts.length} prompts`);
+    return { prompts: filteredPrompts };
   });
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
