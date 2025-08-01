@@ -133,15 +133,23 @@ export const createServer = async () => {
     const userAgent = requestHandler.requestInfo?.headers?.['user-agent'];
     const isClaudeCode = userAgent?.includes('claude-code');
     const isClaudeDesktop = userAgent?.includes('claude-desktop');
-    logger.info(`👤 User-Agent: ${userAgent}, Claude Code: ${isClaudeCode}, Claude Desktop: ${isClaudeDesktop}`);
+    logger.info(
+      `👤 User-Agent: ${userAgent}, Claude Code: ${isClaudeCode}, Claude Desktop: ${isClaudeDesktop}`
+    );
 
     // filter only propmpt with name context-coder-claude-desktop
     const claudeCodePrompt = prompts.find((p) => p.name === 'context-coder-claude-code');
     const claudeDesktopPrompt = prompts.find((p) => p.name === 'context-coder-claude-desktop');
-    const allPrompts: Prompt[] = [
-      claudeCodePrompt,
-      claudeDesktopPrompt,
-    ]
+    let prompts: Prompt[] = [];
+    
+    if(isClaudeCode) {
+      prompts = [claudeCodePrompt];
+    } else if(isClaudeDesktop) {
+      prompts = [claudeDesktopPrompt];
+    } else {
+      prompts = [claudeCodePrompt, claudeDesktopPrompt]
+    }
+    logger.info(`📜 Returned ${prompts.length} prompts`);
     return { prompts };
   });
 
