@@ -128,30 +128,29 @@ export const createServer = async () => {
     }
   });
 
-  // Add prompt handlers
   server.setRequestHandler(ListPromptsRequestSchema, async (data, requestHandler) => {
-    const userAgent = requestHandler.requestInfo?.headers?.['user-agent'];
-    const isClaudeCode = userAgent?.includes('claude-code');
-    const isClaudeDesktop = userAgent?.includes('claude-desktop');
-    logger.info(
-      `👤 User-Agent: ${userAgent}, Claude Code: ${isClaudeCode}, Claude Desktop: ${isClaudeDesktop}`
-    );
+  const userAgent = requestHandler.requestInfo?.headers?.['user-agent'] || '';
+  const isClaudeCode = userAgent.includes('claude-code');
+  const isClaudeDesktop = userAgent.includes('claude-desktop');
+  
+  logger.info(
+    `👤 User-Agent: ${userAgent}, Claude Code: ${isClaudeCode}, Claude Desktop: ${isClaudeDesktop}`
+  );
 
-    // filter only propmpt with name context-coder-claude-desktop
-    const claudeCodePrompt = prompts.find((p) => p.name === 'context-coder-claude-code');
-    const claudeDesktopPrompt = prompts.find((p) => p.name === 'context-coder-claude-desktop');
-    let prompts: Prompt[] = [];
-    
-    if(isClaudeCode) {
-      prompts = [claudeCodePrompt];
-    } else if(isClaudeDesktop) {
-      prompts = [claudeDesktopPrompt];
-    } else {
-      prompts = [claudeCodePrompt, claudeDesktopPrompt]
-    }
-    logger.info(`📜 Returned ${prompts.length} prompts`);
-    return { prompts };
-  });
+  // Find available prompts
+  const claudeCodePrompt = prompts.find(p => p.name === 'context-coder-claude-code');
+  const claudeDesktopPrompt = prompts.find(p => p.name === 'context-coder-claude-desktop');
+
+  // Filter prompts based on user agent
+  const filteredPrompts: Prompt[] = (() => {
+    if (isClaudeCode && claudeCodePrompt) return [claudeCodePrompt];
+    if (isClaudeDesktop && claudeDesktopPrompt) return [claudeDesktopPrompt];
+    return [claudeCodePrompt, claudeDesktopPrompt].filter(Boolean);
+  })();
+
+  logger.info(`📜 Returned ${filteredPrompts.length} prompts`);
+  return { prompts: filteredPrompts };
+});
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
