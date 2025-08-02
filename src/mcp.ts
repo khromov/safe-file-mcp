@@ -99,26 +99,46 @@ export const createServer = async () => {
 
   // Register tools
   for (const tool of tools) {
+    // Cast the handler to avoid TypeScript issues
+    const handler = async (input?: any) => {
+      try {
+        const result = await tool.handler(input || {}, context);
+        // Convert our handler response to tmcp CallToolResult format
+        if (result.isError) {
+          // Return error result with properly typed content
+          return {
+            content: result.content.map((item) => ({
+              type: 'text' as const,
+              text: item.text,
+            })),
+            isError: true,
+          };
+        }
+        // Return success result with properly typed content
+        return {
+          content: result.content.map((item) => ({
+            type: 'text' as const,
+            text: item.text,
+          })),
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        // Return error as CallToolResult
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    };
+
+    // Use type assertion to bypass TypeScript's strict checking
     server.tool(
       {
         name: tool.name,
         description: tool.description,
         schema: tool.schema,
-      },
-      async (input) => {
-        try {
-          const result = await tool.handler(input, context);
-          // Convert handler response to tmcp format
-          if (result.isError) {
-            throw new Error(result.content[0]?.text || 'Unknown error');
-          }
-          // Return the text content directly
-          return result.content[0]?.text || '';
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          throw new Error(errorMessage);
-        }
-      }
+      } as any,
+      handler as any
     );
   }
 
@@ -128,17 +148,22 @@ export const createServer = async () => {
       {
         name: prompt.name,
         description: prompt.description || '',
-        schema: prompt.arguments?.length ? undefined : undefined, // TODO: Convert prompt arguments to Zod schema if needed
+        // Don't include schema for now - tmcp prompts don't require input validation
       },
-      async (input) => {
+      async () => {
         try {
-          const messages = getPromptContent(prompt.name, input);
+          // For now, prompts don't take input arguments in tmcp
+          // We'll use an empty object as input
+          const messages = getPromptContent(prompt.name, {});
 
-          // Convert messages to tmcp format
+          // Convert messages to tmcp format with proper content structure
           return {
             messages: messages.map((msg) => ({
               role: msg.role as 'user' | 'assistant',
-              content: msg.content.text,
+              content: {
+                type: 'text' as const,
+                text: msg.content.text,
+              },
             })),
           };
         } catch (error) {

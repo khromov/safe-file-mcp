@@ -14,7 +14,6 @@ import {
   ExecuteCommandArgsSchema,
 } from './schemas.js';
 import { ToolHandler } from './types.js';
-import { z } from 'zod';
 
 // Import handlers
 import { handleGetCodebaseSize } from './handlers/get_codebase_size.js';
@@ -35,7 +34,7 @@ import { handleExecuteCommand } from './handlers/execute_command.js';
 export interface TmcpTool {
   name: string;
   description: string;
-  schema?: z.ZodType<any>;
+  schema?: any; // Use any to avoid Zod type conflicts
   handler: ToolHandler;
 }
 
