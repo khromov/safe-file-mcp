@@ -75,14 +75,16 @@ describe('startStdioServer', () => {
               const parseJsonRpcResponse = (data: string): any | null => {
                 // Split by lines and try to find a valid JSON-RPC response
                 const lines = data.split('\n').filter((line) => line.trim());
-                
+
                 for (const line of lines) {
                   try {
                     const parsed = JSON.parse(line);
                     // Check if this looks like a JSON-RPC response (not a request)
-                    if (parsed.jsonrpc === '2.0' && 
-                        ('result' in parsed || 'error' in parsed) && 
-                        'id' in parsed) {
+                    if (
+                      parsed.jsonrpc === '2.0' &&
+                      ('result' in parsed || 'error' in parsed) &&
+                      'id' in parsed
+                    ) {
                       return parsed;
                     }
                   } catch {
@@ -94,7 +96,7 @@ describe('startStdioServer', () => {
 
               serverProcess.stdout?.on('data', (data) => {
                 responseData += data.toString();
-                
+
                 if (!responseFound) {
                   const response = parseJsonRpcResponse(responseData);
                   if (response) {
@@ -184,20 +186,20 @@ describe('startStdioServer', () => {
       expect(response).toBeDefined();
       expect(response).not.toBeNull();
       expect(typeof response).toBe('object');
-      
+
       expect(response).toHaveProperty('jsonrpc', '2.0');
       expect(response).toHaveProperty('id', 1);
-      
+
       // Verify response has result property before accessing its contents
       expect(response).toHaveProperty('result');
       expect(response.result).toBeDefined();
       expect(response.result).not.toBeNull();
       expect(typeof response.result).toBe('object');
-      
+
       expect(response.result).toHaveProperty('protocolVersion');
       expect(response.result).toHaveProperty('capabilities');
       expect(response.result).toHaveProperty('serverInfo');
-      
+
       // Verify serverInfo exists before accessing its properties
       expect(response.result.serverInfo).toBeDefined();
       expect(response.result.serverInfo).not.toBeNull();
@@ -219,16 +221,16 @@ describe('startStdioServer', () => {
       expect(response).toBeDefined();
       expect(response).not.toBeNull();
       expect(typeof response).toBe('object');
-      
+
       expect(response).toHaveProperty('jsonrpc', '2.0');
       expect(response).toHaveProperty('id', 1);
-      
+
       // Verify response has result property before accessing its contents
       expect(response).toHaveProperty('result');
       expect(response.result).toBeDefined();
       expect(response.result).not.toBeNull();
       expect(typeof response.result).toBe('object');
-      
+
       expect(response.result).toHaveProperty('tools');
       expect(Array.isArray(response.result.tools)).toBe(true);
 
