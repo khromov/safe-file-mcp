@@ -2,8 +2,6 @@
 
 Context Coder (aka. Coco) provides AI models with an MCP tools to load your entire codebase into the LLM context. This gives AI assistants everything they need to write code that fits your existing patterns and architecture.
 
-> **Note**: This project now uses [tmcp](https://github.com/ianmagenta/tmcp) instead of the official MCP SDK for improved performance and flexibility.
-
 📦 **[Available on npm](https://www.npmjs.com/package/context-coder)**
 
 ## Quick Start
