@@ -1,6 +1,5 @@
 import { HttpTransport } from '@tmcp/transport-http';
 import { createServer } from 'http';
-import { createServer as createHttpsServer } from 'https';
 import { URL } from 'url';
 import { createServer as createServer2 } from './mcp.js';
 import logger from './logger.js';
@@ -13,8 +12,7 @@ logger.info(
   `Starting 🥥 Coco MCP Server v${version} (HTTP) using build type ${buildType} (${mode} mode)`
 );
 
-// Store server instance globally for health check and cleanup
-let serverInstance: any = null;
+// Store transport instance for cleanup
 let transport: HttpTransport | null = null;
 
 // Export function to start the server
@@ -23,7 +21,6 @@ export async function startHttpServer(port?: number): Promise<void> {
 
   // Create the MCP server
   const { server, cleanup } = await createServer2();
-  serverInstance = server;
 
   // Create HTTP transport
   transport = new HttpTransport(server);

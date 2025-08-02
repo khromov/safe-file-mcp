@@ -1,10 +1,13 @@
 import { EditFileArgsSchema } from '../schemas.js';
-import { HandlerContext, HandlerResponse } from '../types.js';
+import type { HandlerContext, HandlerResponse, ToolInput } from '../types.js';
 import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
 import logger from '../logger.js';
 
-export async function handleEditFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleEditFile(
+  args: ToolInput,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   logger.debug('✏️ edit_file handler started');
 
   const parsed = EditFileArgsSchema.safeParse(args);
@@ -60,7 +63,7 @@ export async function handleEditFile(args: any, context: HandlerContext): Promis
     );
     return response;
   } catch (error) {
-    if ((error as any).code === 'ENOENT') {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       throw new Error(`File not found: ${formatDisplayPath(parsed.data.path)}`);
     }
     throw error;

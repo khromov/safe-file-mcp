@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getToolsForTmcp } from './tools.js';
-import { HandlerContext } from './types.js';
+import type { HandlerContext, McpCallToolResult, ToolInput } from './types.js';
 import logger from './logger.js';
 import { prompts, getPromptContent } from './lib/prompts.js';
 import { getVersion } from './lib/version.js';
@@ -72,7 +72,7 @@ export const createServer = async () => {
   // Create Zod adapter
   const adapter = new ZodV3JsonSchemaAdapter();
 
-  // Create MCP server
+  // Create MCP server with proper typing
   const server = new McpServer(
     {
       name: 'context-coder',
@@ -97,12 +97,12 @@ export const createServer = async () => {
     absoluteRootDir,
   };
 
-  // Register tools
+  // Register tools with proper typing
   for (const tool of tools) {
-    // Cast the handler to avoid TypeScript issues
-    const handler = async (input?: any) => {
+    const handler = async (input: ToolInput): Promise<McpCallToolResult> => {
       try {
-        const result = await tool.handler(input || {}, context);
+        const result = await tool.handler(input, context);
+
         // Convert our handler response to tmcp CallToolResult format
         if (result.isError) {
           // Return error result with properly typed content
@@ -114,6 +114,7 @@ export const createServer = async () => {
             isError: true,
           };
         }
+
         // Return success result with properly typed content
         return {
           content: result.content.map((item) => ({
@@ -131,14 +132,14 @@ export const createServer = async () => {
       }
     };
 
-    // Use type assertion to bypass TypeScript's strict checking
+    // Register tool with tmcp server using proper typing
     server.tool(
       {
         name: tool.name,
         description: tool.description,
         schema: tool.schema,
-      } as any,
-      handler as any
+      },
+      handler
     );
   }
 
@@ -148,7 +149,6 @@ export const createServer = async () => {
       {
         name: prompt.name,
         description: prompt.description || '',
-        // Don't include schema for now - tmcp prompts don't require input validation
       },
       async () => {
         try {

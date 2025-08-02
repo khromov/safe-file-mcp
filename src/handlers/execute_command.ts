@@ -1,10 +1,10 @@
 import { ExecuteCommandArgsSchema } from '../schemas.js';
-import { HandlerContext, HandlerResponse } from '../types.js';
+import type { HandlerContext, HandlerResponse, ToolInput } from '../types.js';
 import { spawn } from 'child_process';
 import logger from '../logger.js';
 
 export async function handleExecuteCommand(
-  args: any,
+  args: ToolInput,
   context: HandlerContext
 ): Promise<HandlerResponse> {
   const parsed = ExecuteCommandArgsSchema.safeParse(args);

@@ -1,5 +1,5 @@
 import { GetCodebaseSizeArgsSchema } from '../schemas.js';
-import { HandlerContext, HandlerResponse } from '../types.js';
+import type { HandlerContext, HandlerResponse, ToolInput } from '../types.js';
 import {
   validateRelativePath,
   resolveRelativePath,
@@ -10,7 +10,7 @@ import aiDigest from 'ai-digest';
 import logger from '../logger.js';
 
 export async function handleGetCodebaseSize(
-  args: any,
+  args: ToolInput,
   context: HandlerContext
 ): Promise<HandlerResponse> {
   logger.debug('📊 get_codebase_size handler started');

@@ -1,11 +1,14 @@
 import { MoveFileArgsSchema } from '../schemas.js';
-import { HandlerContext, HandlerResponse } from '../types.js';
+import type { HandlerContext, HandlerResponse, ToolInput } from '../types.js';
 import { validateRelativePath, resolveRelativePath, formatDisplayPath } from './utils.js';
 import fs from 'fs/promises';
 import path from 'path';
 import logger from '../logger.js';
 
-export async function handleMoveFile(args: any, context: HandlerContext): Promise<HandlerResponse> {
+export async function handleMoveFile(
+  args: ToolInput,
+  context: HandlerContext
+): Promise<HandlerResponse> {
   logger.debug('🚚 move_file handler started');
 
   const parsed = MoveFileArgsSchema.safeParse(args);

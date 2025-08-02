@@ -16,7 +16,17 @@ export interface HandlerResponse {
   [key: string]: unknown; // Allow additional properties
 }
 
-export type ToolHandler = (args: any, context: HandlerContext) => Promise<HandlerResponse>;
+// Generic tool handler with properly typed arguments
+export type ToolHandler<T = Record<string, unknown>> = (
+  args: T,
+  context: HandlerContext
+) => Promise<HandlerResponse>;
 
-// MCP tool input type (generic object for tmcp compatibility)
-export type ToolInput = Record<string, any>;
+// MCP-specific types using proper structure based on tmcp specification
+export interface McpCallToolResult {
+  content?: Array<{ type: 'text'; text: string }>;
+  isError?: boolean;
+}
+
+// Tool input type for tmcp compatibility - prefer Record<string, unknown> over any
+export type ToolInput = Record<string, unknown>;
