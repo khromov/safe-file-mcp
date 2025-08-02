@@ -36,7 +36,7 @@
     "mcp": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
-    "tmcp": "^1.10.0",
+    "tmcp": "^1.10.1",
     "@tmcp/adapter-zod": "^0.1.5",
     "@tmcp/transport-stdio": "^0.1.2",
     "@tmcp/transport-http": "^0.5.2",
@@ -63,7 +63,7 @@
     "prettier": "^3.6.2",
     "shx": "^0.4.0",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.0"
   },
   "pre-commit": [
     "format"
