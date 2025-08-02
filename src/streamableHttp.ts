@@ -34,13 +34,15 @@ export async function startHttpServer(port?: number): Promise<void> {
       // Handle health check endpoint
       if (req.url === '/health' && req.method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          status: 'healthy',
-          version: getVersion(),
-          mode: mode,
-          buildType: buildType,
-          timestamp: new Date().toISOString(),
-        }));
+        res.end(
+          JSON.stringify({
+            status: 'healthy',
+            version: getVersion(),
+            mode: mode,
+            buildType: buildType,
+            timestamp: new Date().toISOString(),
+          })
+        );
         return;
       }
 
@@ -52,7 +54,7 @@ export async function startHttpServer(port?: number): Promise<void> {
           // Create a standard Request object from the Node.js request
           const url = new URL(req.url || '/', `http://localhost:${PORT}`);
           const headers = new Headers();
-          
+
           // Copy headers from Node.js request
           Object.entries(req.headers).forEach(([key, value]) => {
             if (typeof value === 'string') {
@@ -70,18 +72,20 @@ export async function startHttpServer(port?: number): Promise<void> {
 
           // Get response from HttpTransport
           const response = await transport!.respond(request);
-          
+
           // If response is null, the request wasn't for MCP
           if (response === null) {
             res.writeHead(404, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              jsonrpc: '2.0',
-              error: {
-                code: -32601,
-                message: 'Method not found',
-              },
-              id: null,
-            }));
+            res.end(
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32601,
+                  message: 'Method not found',
+                },
+                id: null,
+              })
+            );
             return;
           }
 
@@ -108,14 +112,16 @@ export async function startHttpServer(port?: number): Promise<void> {
                 if (!res.headersSent) {
                   res.writeHead(500, { 'Content-Type': 'application/json' });
                 }
-                res.end(JSON.stringify({
-                  jsonrpc: '2.0',
-                  error: {
-                    code: -32603,
-                    message: 'Internal server error',
-                  },
-                  id: null,
-                }));
+                res.end(
+                  JSON.stringify({
+                    jsonrpc: '2.0',
+                    error: {
+                      code: -32603,
+                      message: 'Internal server error',
+                    },
+                    id: null,
+                  })
+                );
               }
             };
             await pump();
@@ -127,14 +133,16 @@ export async function startHttpServer(port?: number): Promise<void> {
           if (!res.headersSent) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
           }
-          res.end(JSON.stringify({
-            jsonrpc: '2.0',
-            error: {
-              code: -32603,
-              message: 'Internal server error',
-            },
-            id: null,
-          }));
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              error: {
+                code: -32603,
+                message: 'Internal server error',
+              },
+              id: null,
+            })
+          );
         }
       });
     } catch (error) {
@@ -142,14 +150,16 @@ export async function startHttpServer(port?: number): Promise<void> {
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
       }
-      res.end(JSON.stringify({
-        jsonrpc: '2.0',
-        error: {
-          code: -32603,
-          message: 'Internal server error',
-        },
-        id: null,
-      }));
+      res.end(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          error: {
+            code: -32603,
+            message: 'Internal server error',
+          },
+          id: null,
+        })
+      );
     }
   });
 
