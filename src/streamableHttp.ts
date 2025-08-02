@@ -17,7 +17,7 @@ let serverInstance: any = null;
 // Export function to start the server
 export async function startHttpServer(port?: number): Promise<void> {
   const PORT = port || process.env.COCO_PORT || 3001;
-  
+
   const app = express();
 
   // Create the MCP server
@@ -30,10 +30,10 @@ export async function startHttpServer(port?: number): Promise<void> {
   // Main MCP endpoint - delegate all /mcp requests to tmcp transport
   app.all('/mcp*', async (req: Request, res: Response) => {
     logger.debug(`Received MCP ${req.method} request to ${req.path}`);
-    
+
     try {
       const response = await transport.respond(req);
-      
+
       if (response === null) {
         // Transport couldn't handle this request
         res.status(404).json({
@@ -46,7 +46,7 @@ export async function startHttpServer(port?: number): Promise<void> {
         });
         return;
       }
-      
+
       // Return the response from tmcp
       return response;
     } catch (error) {

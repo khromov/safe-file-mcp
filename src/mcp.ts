@@ -91,7 +91,7 @@ export const createServer = async () => {
 
   // Get tools based on current mode and register them
   const tools = getToolsForTmcp();
-  
+
   // Create handler context
   const context: HandlerContext = {
     absoluteRootDir,
@@ -133,10 +133,10 @@ export const createServer = async () => {
       async (input) => {
         try {
           const messages = getPromptContent(prompt.name, input);
-          
+
           // Convert messages to tmcp format
           return {
-            messages: messages.map(msg => ({
+            messages: messages.map((msg) => ({
               role: msg.role as 'user' | 'assistant',
               content: msg.content.text,
             })),

@@ -39,7 +39,7 @@
     "tmcp": "^1.10.0",
     "@tmcp/adapter-zod": "^0.1.5",
     "@tmcp/transport-stdio": "^0.1.2",
-    "@tmcp/transport-http": "^0.1.0",
+    "@tmcp/transport-http": "^0.5.2",
     "ai-digest": "^1.4.1",
     "commander": "^14.0.0",
     "express": "^4.21.2",

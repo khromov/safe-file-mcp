@@ -199,9 +199,9 @@ export interface ToolWithHandler {
 // Function to get tools in legacy format (kept for any code that still expects this format)
 export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
   const tmcpTools = getToolsForTmcp(mode);
-  
+
   // Convert to legacy format - this is a temporary compatibility layer
-  return tmcpTools.map(tool => ({
+  return tmcpTools.map((tool) => ({
     name: tool.name,
     description: tool.description,
     inputSchema: {}, // Empty object since we don't need JSON schema anymore
