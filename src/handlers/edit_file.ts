@@ -49,7 +49,7 @@ export async function handleEditFile(
     await fs.writeFile(absolutePath, result.content);
     const displayPath = formatDisplayPath(parsed.data.path);
 
-    const response = {
+    const response: HandlerResponse = {
       content: [
         {
           type: 'text',

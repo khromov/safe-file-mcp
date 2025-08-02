@@ -103,25 +103,8 @@ export const createServer = async () => {
       try {
         const result = await tool.handler(input, context);
 
-        // Convert our handler response to tmcp CallToolResult format
-        if (result.isError) {
-          // Return error result with properly typed content
-          return {
-            content: result.content.map((item) => ({
-              type: 'text' as const,
-              text: item.text,
-            })),
-            isError: true,
-          };
-        }
-
-        // Return success result with properly typed content
-        return {
-          content: result.content.map((item) => ({
-            type: 'text' as const,
-            text: item.text,
-          })),
-        };
+        // Handlers now return the correct format directly
+        return result;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         // Return error as CallToolResult

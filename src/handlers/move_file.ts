@@ -29,7 +29,7 @@ export async function handleMoveFile(
   const displaySource = formatDisplayPath(parsed.data.source);
   const displayDest = formatDisplayPath(parsed.data.destination);
 
-  const result = {
+  const result: HandlerResponse = {
     content: [
       {
         type: 'text',

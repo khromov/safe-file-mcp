@@ -33,7 +33,7 @@ export async function handleRemoveFile(
 
     const displayPath = formatDisplayPath(parsed.data.path);
 
-    const result = {
+    const result: HandlerResponse = {
       content: [{ type: 'text', text: `Successfully removed file ${displayPath}` }],
     };
 

@@ -20,7 +20,7 @@ export async function handleReadFile(
 
   const content = await fs.readFile(absolutePath, 'utf-8');
 
-  const result = {
+  const result: HandlerResponse = {
     content: [{ type: 'text', text: content }],
   };
 

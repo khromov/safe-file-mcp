@@ -34,7 +34,7 @@ export async function handleCreateDirectory(
     ? `Directory ${displayPath} already exists`
     : `Successfully created directory ${displayPath}`;
 
-  const result = {
+  const result: HandlerResponse = {
     content: [{ type: 'text', text: message }],
   };
 

@@ -95,7 +95,7 @@ export async function handleGetCodebaseSize(
       output += `You MUST now run the \`get_codebase\` tool to retrieve the actual codebase content - this is required for this MCP to function correctly.`;
     }
 
-    const handlerResult = {
+    const handlerResult: HandlerResponse = {
       content: [{ type: 'text', text: output }],
     };
 

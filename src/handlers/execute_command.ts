@@ -79,7 +79,7 @@ export async function handleExecuteCommand(
         output += `\n=== killed by signal: ${signal} ===`;
       }
 
-      const result = {
+      const result: HandlerResponse = {
         content: [{ type: 'text', text: output.trim() }],
         isError: code !== 0,
       };

@@ -40,7 +40,7 @@ export async function handleGetCodebase(
     // The message is already in the correct format from codebase-digest.ts
     const content = result.content;
 
-    const handlerResult = {
+    const handlerResult: HandlerResponse = {
       content: [{ type: 'text', text: content }],
     };
 

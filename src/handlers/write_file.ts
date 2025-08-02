@@ -27,7 +27,7 @@ export async function handleWriteFile(
 
   const displayPath = formatDisplayPath(parsed.data.path);
 
-  const result = {
+  const result: HandlerResponse = {
     content: [{ type: 'text', text: `Successfully wrote to ${displayPath}` }],
   };
 

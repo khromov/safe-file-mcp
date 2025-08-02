@@ -23,7 +23,7 @@ export async function handleDirectoryTree(
     context.absoluteRootDir
   );
 
-  const result = {
+  const result: HandlerResponse = {
     content: [
       {
         type: 'text',

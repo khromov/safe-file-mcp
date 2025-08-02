@@ -28,7 +28,7 @@ export async function handleSearchFiles(
     return relPath;
   });
 
-  const result = {
+  const result: HandlerResponse = {
     content: [
       {
         type: 'text',

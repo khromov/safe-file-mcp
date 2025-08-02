@@ -69,7 +69,7 @@ export async function handleGetCodebaseTopLargestFiles(
     output += `- **Total GPT tokens**: ${stats.totalGptTokens.toLocaleString()}\n`;
     output += `- **Total files**: ${sortedFiles.length}\n`;
 
-    const handlerResult = {
+    const handlerResult: HandlerResponse = {
       content: [{ type: 'text', text: output }],
     };
 

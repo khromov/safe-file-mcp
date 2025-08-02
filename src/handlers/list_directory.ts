@@ -21,7 +21,7 @@ export async function handleListDirectory(
     .map((entry) => `${entry.isDirectory() ? '[DIR]' : '[FILE]'} ${entry.name}`)
     .join('\n');
 
-  const result = {
+  const result: HandlerResponse = {
     content: [{ type: 'text', text: formatted }],
   };
 

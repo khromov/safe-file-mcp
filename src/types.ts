@@ -10,10 +10,10 @@ export interface HandlerContext {
   absoluteRootDir: string;
 }
 
+// Updated to match tmcp CallToolResult format directly
 export interface HandlerResponse {
-  content: Array<{ type: string; text: string }>;
+  content?: Array<{ type: 'text'; text: string }>;
   isError?: boolean;
-  [key: string]: unknown; // Allow additional properties
 }
 
 // Generic tool handler with properly typed arguments
