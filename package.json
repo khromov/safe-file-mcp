@@ -33,7 +33,7 @@
     "cc-http": "npx context-coder --http",
     "check-updates": "npx npm-check-updates",
     "check-updates:upgrade": "npx npm-check-updates -u",
-    "mcp": "DANGEROUSLY_OMIT_AUTH=true npx tmcp-inspector"
+    "mcp": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "tmcp": "^1.10.0",
