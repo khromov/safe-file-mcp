@@ -344,7 +344,7 @@ describe('HTTP Server Integration Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.headers['content-type']).toContain('text/event-stream');
-      
+
       // Parse SSE data for tools response
       const sseData = response.data;
       expect(typeof sseData).toBe('string');
