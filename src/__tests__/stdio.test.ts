@@ -159,7 +159,6 @@ describe('startStdioServer', () => {
 
       expect(response).toHaveProperty('jsonrpc', '2.0');
       expect(response).toHaveProperty('id', 1);
-      expect(response).toHaveProperty('result');
       expect(response.result).toHaveProperty('protocolVersion');
       expect(response.result).toHaveProperty('capabilities');
       expect(response.result).toHaveProperty('serverInfo');
@@ -178,7 +177,6 @@ describe('startStdioServer', () => {
 
       expect(response).toHaveProperty('jsonrpc', '2.0');
       expect(response).toHaveProperty('id', 1);
-      expect(response).toHaveProperty('result');
       expect(response.result).toHaveProperty('tools');
       expect(Array.isArray(response.result.tools)).toBe(true);
 
