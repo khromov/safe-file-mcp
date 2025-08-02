@@ -1,5 +1,5 @@
 import { McpServer } from 'tmcp';
-import { ZodJsonSchemaAdapter } from '@tmcp/adapter-zod';
+import { ZodV3JsonSchemaAdapter } from '@tmcp/adapter-zod-v3';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -70,7 +70,7 @@ export const createServer = async () => {
   const absoluteRootDir = path.resolve(ROOT_DIR);
 
   // Create Zod adapter
-  const adapter = new ZodJsonSchemaAdapter();
+  const adapter = new ZodV3JsonSchemaAdapter();
 
   // Create MCP server
   const server = new McpServer(
