@@ -1,16 +1,10 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  Tool,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { McpServer } from 'tmcp';
+import { ZodJsonSchemaAdapter } from '@tmcp/adapter-zod';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { getTools } from './tools.js';
+import { getToolsForTmcp } from './tools.js';
 import { HandlerContext } from './types.js';
 import logger from './logger.js';
 import { prompts, getPromptContent } from './lib/prompts.js';
@@ -75,78 +69,85 @@ export const createServer = async () => {
   // Resolve to absolute path for internal use only
   const absoluteRootDir = path.resolve(ROOT_DIR);
 
-  // Get tools based on current mode
-  const tools = getTools();
+  // Create Zod adapter
+  const adapter = new ZodJsonSchemaAdapter();
 
-  const server = new Server(
+  // Create MCP server
+  const server = new McpServer(
     {
       name: 'context-coder',
       version: getVersion(),
+      description: instructions || 'Context Coder: MCP server for full-context coding',
     },
     {
+      adapter,
       capabilities: {
-        prompts: {},
-        tools: {},
+        tools: { listChanged: true },
+        prompts: { listChanged: true },
+        resources: { listChanged: false },
       },
-      instructions,
     }
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    // Convert ToolWithHandler[] to Tool[] for the response
-    const toolsWithoutHandlers: Tool[] = tools.map(({ handler: _handler, ...tool }) => tool);
-    return { tools: toolsWithoutHandlers };
-  });
+  // Get tools based on current mode and register them
+  const tools = getToolsForTmcp();
+  
+  // Create handler context
+  const context: HandlerContext = {
+    absoluteRootDir,
+  };
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+  // Register tools
+  for (const tool of tools) {
+    server.tool(
+      {
+        name: tool.name,
+        description: tool.description,
+        schema: tool.schema,
+      },
+      async (input) => {
+        try {
+          const result = await tool.handler(input, context);
+          // Convert handler response to tmcp format
+          if (result.isError) {
+            throw new Error(result.content[0]?.text || 'Unknown error');
+          }
+          // Return the text content directly
+          return result.content[0]?.text || '';
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new Error(errorMessage);
+        }
+      }
+    );
+  }
 
-    // Find the tool by name
-    const tool = tools.find((t) => t.name === name);
-    if (!tool) {
-      return {
-        content: [{ type: 'text', text: `Error: Unknown tool: ${name}` }],
-        isError: true,
-      };
-    }
-
-    // Create handler context
-    const context: HandlerContext = {
-      absoluteRootDir,
-    };
-
-    // Execute the handler
-    try {
-      return await tool.handler(args, context);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{ type: 'text', text: `Error: ${errorMessage}` }],
-        isError: true,
-      };
-    }
-  });
-
-  // Add prompt handlers
-  server.setRequestHandler(ListPromptsRequestSchema, async () => {
-    return { prompts };
-  });
-
-  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
-    const prompt = prompts.find((p) => p.name === name);
-
-    if (!prompt) {
-      throw new Error(`Unknown prompt: ${name}`);
-    }
-
-    const promptMessages = getPromptContent(name, args);
-
-    return {
-      description: prompt.description,
-      messages: promptMessages,
-    };
-  });
+  // Register prompts
+  for (const prompt of prompts) {
+    server.prompt(
+      {
+        name: prompt.name,
+        description: prompt.description || '',
+        schema: prompt.arguments?.length ? undefined : undefined, // TODO: Convert prompt arguments to Zod schema if needed
+      },
+      async (input) => {
+        try {
+          const messages = getPromptContent(prompt.name, input);
+          
+          // Convert messages to tmcp format
+          return {
+            messages: messages.map(msg => ({
+              role: msg.role as 'user' | 'assistant',
+              content: msg.content.text,
+            })),
+          };
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new Error(errorMessage);
+        }
+      }
+    );
+  }
 
   const cleanup = async () => {
     // Add any cleanup logic here if needed

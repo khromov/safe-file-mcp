@@ -1,5 +1,3 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import {
   GetCodebaseSizeArgsSchema,
   GetCodebaseArgsSchema,
@@ -15,7 +13,8 @@ import {
   SearchFilesArgsSchema,
   ExecuteCommandArgsSchema,
 } from './schemas.js';
-import { ToolInput, ToolHandler } from './types.js';
+import { ToolHandler } from './types.js';
+import { z } from 'zod';
 
 // Import handlers
 import { handleGetCodebaseSize } from './handlers/get_codebase_size.js';
@@ -32,13 +31,16 @@ import { handleMoveFile } from './handlers/move_file.js';
 import { handleSearchFiles } from './handlers/search_files.js';
 import { handleExecuteCommand } from './handlers/execute_command.js';
 
-// Extend Tool type to include handler
-export interface ToolWithHandler extends Tool {
+// Tool definition for tmcp
+export interface TmcpTool {
+  name: string;
+  description: string;
+  schema?: z.ZodType<any>;
   handler: ToolHandler;
 }
 
 // Define the core mini tools that are always included
-const miniTools: ToolWithHandler[] = [
+const miniTools: TmcpTool[] = [
   {
     name: 'get_codebase_size',
     description:
@@ -47,7 +49,7 @@ const miniTools: ToolWithHandler[] = [
       'and shows the largest files. ' +
       'IMPORTANT: You should ALWAYS run this tool at the start of EVERY NEW CONVERSATION before any other operations. ' +
       'After running this tool, you should then call get_codebase to retrieve the actual code.',
-    inputSchema: zodToJsonSchema(GetCodebaseSizeArgsSchema) as ToolInput,
+    schema: GetCodebaseSizeArgsSchema,
     handler: handleGetCodebaseSize,
   },
   {
@@ -56,7 +58,7 @@ const miniTools: ToolWithHandler[] = [
       'Generate a a merged markdown file of the entire codebase.' +
       'Results are paginated.' +
       'If more content exists, a message will prompt to call again with the next page number. Leave the _pageSize variable empty UNLESS you are running under Claude Code, in that case set it to 30000 to work around the Claude Code limits.',
-    inputSchema: zodToJsonSchema(GetCodebaseArgsSchema) as ToolInput,
+    schema: GetCodebaseArgsSchema,
     handler: handleGetCodebase,
   },
   {
@@ -65,7 +67,7 @@ const miniTools: ToolWithHandler[] = [
       'Returns the top X largest files in the codebase. ' +
       'Use this tool when users want to see more large files beyond the initial 10 shown in get_codebase_size. ' +
       'Helpful for identifying which files to add to .cocoignore for large codebases.',
-    inputSchema: zodToJsonSchema(GetCodebaseTopLargestFilesArgsSchema) as ToolInput,
+    schema: GetCodebaseTopLargestFilesArgsSchema,
     handler: handleGetCodebaseTopLargestFiles,
   },
 ];
@@ -78,7 +80,7 @@ const additionalTools = [
       'Read the complete contents of a file from the file system. ' +
       "Use relative paths with or without './' prefix (e.g., 'file.txt', './file.txt', 'folder/file.txt'). " +
       'IMPORTANT: You should NEVER call this unless the user specifically asks to re-read a file OR you get stuck and need it to debug something.',
-    inputSchema: zodToJsonSchema(ReadFileArgsSchema) as ToolInput,
+    schema: ReadFileArgsSchema,
     handler: handleReadFile,
   },
   process.env.CONTEXT_CODER_EDIT_MODE === 'true'
@@ -89,7 +91,7 @@ const additionalTools = [
           "with new content. Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
           'By default, throws an error if text appears multiple times. Set replace_all to true to replace all occurrences. ' +
           'Use this tool only if you have a small, focused set of edits that need to be made. If you are making larger changes or are unsure, use the write_file tool instead.',
-        inputSchema: zodToJsonSchema(EditFileArgsSchema) as ToolInput,
+        schema: EditFileArgsSchema,
         handler: handleEditFile,
       }
     : undefined,
@@ -99,7 +101,7 @@ const additionalTools = [
       'Create a new file or completely overwrite an existing file with new content. ' +
       "Use relative paths with or without './' prefix (e.g., 'newfile.txt', './folder/file.txt'). " +
       'You must write out the file in full each time you call write_file.',
-    inputSchema: zodToJsonSchema(WriteFileArgsSchema) as ToolInput,
+    schema: WriteFileArgsSchema,
     handler: handleWriteFile,
   },
   {
@@ -108,7 +110,7 @@ const additionalTools = [
       'Delete a file from the file system. ' +
       "Use relative paths with or without './' prefix (e.g., 'file.txt', './folder/file.txt'). " +
       'This operation is irreversible. Only works with files, not directories.',
-    inputSchema: zodToJsonSchema(RemoveFileArgsSchema) as ToolInput,
+    schema: RemoveFileArgsSchema,
     handler: handleRemoveFile,
   },
   {
@@ -117,7 +119,7 @@ const additionalTools = [
       'Create a new directory or ensure a directory exists. ' +
       "Use relative paths with or without './' prefix (e.g., 'newfolder', './parent/child'). " +
       'Can create multiple nested directories in one operation.',
-    inputSchema: zodToJsonSchema(CreateDirectoryArgsSchema) as ToolInput,
+    schema: CreateDirectoryArgsSchema,
     handler: handleCreateDirectory,
   },
   {
@@ -127,7 +129,7 @@ const additionalTools = [
       "Use relative paths with or without './' prefix (use './' or '.' for root directory). " +
       'Results show [FILE] and [DIR] prefixes to distinguish between files and directories. ' +
       'IMPORTANT: You should NEVER call this unless the user specifically asks to find all the files in a directory or use this tool OR you get stuck and need it to debug something.',
-    inputSchema: zodToJsonSchema(ListDirectoryArgsSchema) as ToolInput,
+    schema: ListDirectoryArgsSchema,
     handler: handleListDirectory,
   },
   {
@@ -137,7 +139,7 @@ const additionalTools = [
       'Path is optional - if not provided, shows the root directory. ' +
       'Returns a structured view of the entire directory hierarchy. ' +
       'IMPORTANT: You should NEVER call this UNLESS the user specifically asks for it OR you get stuck and need it to debug something.',
-    inputSchema: zodToJsonSchema(DirectoryTreeArgsSchema) as ToolInput,
+    schema: DirectoryTreeArgsSchema,
     handler: handleDirectoryTree,
   },
   {
@@ -146,7 +148,7 @@ const additionalTools = [
       'Move or rename files and directories. ' +
       "Use relative paths with or without './' prefix for both source and destination. " +
       'Can move files between directories and rename them in a single operation.',
-    inputSchema: zodToJsonSchema(MoveFileArgsSchema) as ToolInput,
+    schema: MoveFileArgsSchema,
     handler: handleMoveFile,
   },
   {
@@ -157,7 +159,7 @@ const additionalTools = [
       'The search is case-insensitive and matches partial file names. ' +
       'Do NOT call this tool unless the user specifically asks to search for files or you get stuck and need it to debug something.' +
       'Remember that you generally already have access to all the codebase, so there is little reason to search for files.',
-    inputSchema: zodToJsonSchema(SearchFilesArgsSchema) as ToolInput,
+    schema: SearchFilesArgsSchema,
     handler: handleSearchFiles,
   },
   {
@@ -169,13 +171,13 @@ const additionalTools = [
       'Returns stdout, stderr, and exit code. ' +
       'Available CLI tools include: fzf (fuzzy finder), gh (GitHub CLI), jq (JSON processor), ' +
       'dig/nslookup (DNS tools), iptables/ipset (network tools), claude-code (Claude CLI).',
-    inputSchema: zodToJsonSchema(ExecuteCommandArgsSchema) as ToolInput,
+    schema: ExecuteCommandArgsSchema,
     handler: handleExecuteCommand,
   },
 ].filter((tool): tool is NonNullable<typeof tool> => tool !== undefined);
 
-// Function to get tools based on runtime mode
-export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
+// Function to get tools based on runtime mode for tmcp
+export function getToolsForTmcp(mode?: 'mini' | 'full'): TmcpTool[] {
   // Determine mode from sources (in order of priority):
   // 1. Explicit mode parameter
   // 2. Runtime environment variable set by index.ts based on command line flags
@@ -184,6 +186,27 @@ export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
     mode || (process.env.CONTEXT_CODER_MODE as 'mini' | 'full') || 'full';
 
   return resolvedMode === 'mini' ? miniTools : [...miniTools, ...additionalTools];
+}
+
+// For backward compatibility with legacy MCP SDK format
+export interface ToolWithHandler {
+  name: string;
+  description: string;
+  inputSchema: any;
+  handler: ToolHandler;
+}
+
+// Function to get tools in legacy format (kept for any code that still expects this format)
+export function getTools(mode?: 'mini' | 'full'): ToolWithHandler[] {
+  const tmcpTools = getToolsForTmcp(mode);
+  
+  // Convert to legacy format - this is a temporary compatibility layer
+  return tmcpTools.map(tool => ({
+    name: tool.name,
+    description: tool.description,
+    inputSchema: {}, // Empty object since we don't need JSON schema anymore
+    handler: tool.handler,
+  }));
 }
 
 // Export default tools for backward compatibility (defaults to full)
